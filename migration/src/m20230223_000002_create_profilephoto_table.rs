@@ -1,4 +1,5 @@
 use sea_orm_migration::prelude::*;
+use super::m20230223_000001_create_profile_table::Profile;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -29,16 +30,12 @@ impl MigrationTrait for Migration {
                             .big_integer()
                             .not_null(),
                     )
-                    .to_owned(),
-            )
-            .await?;
-
-        manager
-            .create_index(
-                Index::create()
-                    .name("idx-profile-photo-profile-id")
-                    .table(ProfilePhoto::Table)
-                    .col(ProfilePhoto::ProfileId)
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-profilephoto-profile_id")
+                            .from(ProfilePhoto::Table, ProfilePhoto::ProfileId)
+                            .to(Profile::Table, Profile::Id)
+                    )
                     .to_owned(),
             )
             .await
