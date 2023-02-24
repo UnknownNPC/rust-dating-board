@@ -1,3 +1,9 @@
 export DATABASE_URL='sqlite://profiles.sqlite?mode=rwc'
 
 sea-orm-cli migrate up
+
+escortdb
+postgres:postgres
+
+
+cargo run -- generate entity -u postgres://postgres:postgres@localhost/escortdb -s public -o src/db

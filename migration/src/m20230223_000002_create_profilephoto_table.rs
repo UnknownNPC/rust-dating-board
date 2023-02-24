@@ -21,7 +21,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(ProfilePhoto::CreatedAt)
-                            .big_integer()
+                            .timestamp()
                             .not_null(),
                     )
                     .col(ColumnDef::new(ProfilePhoto::Status).string().not_null())

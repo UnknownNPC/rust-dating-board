@@ -10,8 +10,9 @@ actix-web = "4.2.1"
 actix-files = "0.6.2"
 sailfish = "0.6.0"
 serde = { version = "1.0.152", features = ["derive"] }
+chrono = "0.4.23"
 
 [dependencies.sea-orm]
 version = "0.11.0"
-features = [ "sqlx-sqlite", "runtime-tokio-rustls", "macros" ]
+features = [ "sqlx-postgres", "runtime-tokio-rustls", "macros" ]
 default-features = false

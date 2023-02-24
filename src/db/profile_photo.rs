@@ -6,10 +6,10 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(table_name = "profile_photo")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
-    pub created_at: i32,
+    pub id: i64,
+    pub created_at: DateTime,
     pub status: String,
-    pub profile_id: i32,
+    pub profile_id: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

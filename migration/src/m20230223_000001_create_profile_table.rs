@@ -18,8 +18,8 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Profile::CreatedAt).big_integer().not_null())
-                    .col(ColumnDef::new(Profile::UpdatedAt).big_integer().not_null())
+                    .col(ColumnDef::new(Profile::CreatedAt).timestamp().not_null())
+                    .col(ColumnDef::new(Profile::UpdatedAt).timestamp().not_null())
                     .col(ColumnDef::new(Profile::Name).string().not_null())
                     .col(ColumnDef::new(Profile::Height).small_integer().not_null())
                     .col(
