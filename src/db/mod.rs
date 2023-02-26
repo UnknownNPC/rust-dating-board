@@ -6,5 +6,5 @@ mod profile;
 mod profile_photo;
 mod user;
 
-pub mod db_provider;
+mod db_provider;
 pub use db_provider::DbProvider;
