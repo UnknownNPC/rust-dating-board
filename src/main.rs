@@ -1,12 +1,14 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 
-use sea_orm::{Database, DbConn};
+
 
 mod db;
 
 // use std::sync::Mutex;
 
 use sailfish::TemplateOnce;
+
+use crate::db::service::{Service, self};
 
 
 
@@ -29,6 +31,9 @@ async fn homepage() -> impl Responder {
 
 #[actix_web::main]
 async fn main() {
+
+    service::Service::addProfile().await;
+
     let addr = "localhost:8080";
     // let db = web::Data::new(Mutex::new(Db::new()));
     let server = HttpServer::new(move || {
