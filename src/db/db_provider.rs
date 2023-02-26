@@ -29,6 +29,8 @@ impl<'a> DbProvider<'a> {
             region: Set(String::from("Central")),
             ..Default::default()
         };
-        post.insert(self.db_con).await;
+        let res = post.insert(self.db_con);
+        println!("test");
+        ()
     }
 }
