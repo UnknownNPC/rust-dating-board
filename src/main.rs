@@ -1,6 +1,7 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 
 
+use sea_orm::{Database, DbConn, DbErr};
 
 mod db;
 
@@ -8,10 +9,9 @@ mod db;
 
 use sailfish::TemplateOnce;
 
-use crate::db::service::{Service, self};
+use crate::db::DbProvider;
 
-
-
+// use crate::db::db_provider::{self, Service};
 
 #[derive(TemplateOnce)]
 #[template(path = "home.stpl")]
@@ -29,10 +29,16 @@ async fn homepage() -> impl Responder {
     )
 }
 
+async fn establish_connection() -> Result<DbConn, DbErr> {
+    let database_url = std::env::var("DATABASE_URL").unwrap();
+    Database::connect(&database_url).await
+}
+
 #[actix_web::main]
 async fn main() {
+    let db_con = establish_connection().await.unwrap();
+    let provider = DbProvider::new(&db_con);
 
-    service::Service::addProfile().await;
 
     let addr = "localhost:8080";
     // let db = web::Data::new(Mutex::new(Db::new()));

@@ -1,20 +1,20 @@
 use chrono::Utc;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{ActiveModelTrait, Set};
-use sea_orm::{Database, DbConn, DbErr};
+use sea_orm::DbConn;
 
 use super::profile;
 
-pub struct Service;
+pub struct DbProvider<'a> {
+    pub db_con: &'a DbConn,
+}
 
-impl Service {
-    async fn establish_connection() -> Result<DbConn, DbErr> {
-        let database_url = std::env::var("DATABASE_URL").unwrap();
-        Database::connect(&database_url).await
+impl<'a> DbProvider<'a> {
+    pub fn new(db_con: &'a DbConn) -> Self {
+        DbProvider { db_con }
     }
 
-    pub async fn addProfile() {
-        let db = Self::establish_connection().await.unwrap();
+    pub async fn add_profile(&self) {
         let post = profile::ActiveModel {
             id: NotSet,
             created_at: Set(Utc::now().naive_utc()),
@@ -24,10 +24,11 @@ impl Service {
             cost_per_hour: Set(2000),
             description: Set(String::from("description")),
             phone_number: Set(String::from("03333333")),
+            user_id: Set(1),
             city: Set(String::from("Kiev")),
             region: Set(String::from("Central")),
             ..Default::default()
         };
-        post.insert(&db).await;
+        post.insert(self.db_con).await;
     }
 }

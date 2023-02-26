@@ -1,3 +1,4 @@
+use super::m20230223_000001_create_user_table::User;
 use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
@@ -31,6 +32,13 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Profile::PhoneNumber).string().not_null())
                     .col(ColumnDef::new(Profile::City).string().not_null())
                     .col(ColumnDef::new(Profile::Region).string().not_null())
+                    .col(ColumnDef::new(Profile::UserId).big_integer().not_null())
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-profile-user_id")
+                            .from(Profile::Table, Profile::UserId)
+                            .to(User::Table, User::Id),
+                    )
                     .to_owned(),
             )
             .await?;
@@ -67,4 +75,5 @@ pub enum Profile {
     PhoneNumber,
     City,
     Region,
+    UserId,
 }

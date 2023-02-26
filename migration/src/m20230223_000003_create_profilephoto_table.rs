@@ -1,5 +1,5 @@
 use sea_orm_migration::prelude::*;
-use super::m20230223_000001_create_profile_table::Profile;
+use super::m20230223_000002_create_profile_table::Profile;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
