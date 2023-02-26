@@ -1,9 +1,10 @@
 use chrono::Utc;
 use sea_orm::ActiveValue::NotSet;
-use sea_orm::{ActiveModelTrait, Set};
 use sea_orm::DbConn;
+use sea_orm::{ActiveModelTrait, DbErr, Set};
 
-use super::profile;
+use super::profile::{self, Model as ProfileModel};
+use super::user::{self, Model as UserModel};
 
 pub struct DbProvider<'a> {
     pub db_con: &'a DbConn,
@@ -14,8 +15,24 @@ impl<'a> DbProvider<'a> {
         DbProvider { db_con }
     }
 
-    pub async fn add_profile(&self) {
-        let post = profile::ActiveModel {
+    pub async fn add_user(
+        &self,
+        id: Option<i64>,
+        name: &str,
+        email: &str,
+    ) -> Result<UserModel, DbErr> {
+        let user = user::ActiveModel {
+            id: id.map_or(NotSet, |f| Set(f)),
+            name: Set(name.to_string()),
+            email: Set(email.to_string()),
+            created_at: Set(Utc::now().naive_utc()),
+            ..Default::default()
+        };
+        user.insert(self.db_con).await
+    }
+
+    pub async fn add_profile(&self) -> Result<ProfileModel, DbErr> {
+        let profile = profile::ActiveModel {
             id: NotSet,
             created_at: Set(Utc::now().naive_utc()),
             updated_at: Set(Utc::now().naive_utc()),
@@ -29,8 +46,6 @@ impl<'a> DbProvider<'a> {
             region: Set(String::from("Central")),
             ..Default::default()
         };
-        let res = post.insert(self.db_con);
-        println!("test");
-        ()
+        profile.insert(self.db_con).await
     }
 }
