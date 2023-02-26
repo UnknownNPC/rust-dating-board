@@ -1,3 +1,4 @@
+
 use chrono::Utc;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::DbConn;
@@ -6,12 +7,13 @@ use sea_orm::{ActiveModelTrait, DbErr, Set};
 use super::profile::{self, Model as ProfileModel};
 use super::user::{self, Model as UserModel};
 
-pub struct DbProvider<'a> {
-    pub db_con: &'a DbConn,
+#[derive(Clone)]
+pub struct DbProvider {
+    pub db_con: DbConn,
 }
 
-impl<'a> DbProvider<'a> {
-    pub fn new(db_con: &'a DbConn) -> Self {
+impl DbProvider {
+    pub fn new(db_con: DbConn) -> Self {
         DbProvider { db_con }
     }
 
@@ -28,7 +30,7 @@ impl<'a> DbProvider<'a> {
             created_at: Set(Utc::now().naive_utc()),
             ..Default::default()
         };
-        user.insert(self.db_con).await
+        user.insert(&self.db_con).await
     }
 
     pub async fn add_profile(&self) -> Result<ProfileModel, DbErr> {
@@ -46,6 +48,6 @@ impl<'a> DbProvider<'a> {
             region: Set(String::from("Central")),
             ..Default::default()
         };
-        profile.insert(self.db_con).await
+        profile.insert(&self.db_con).await
     }
 }
