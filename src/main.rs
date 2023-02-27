@@ -23,11 +23,13 @@ async fn main() {
     let provider = DbProvider::new(db_con);
 
 
-    let addr = "localhost:8080";
+    let addr = "localhost:8000";
     let server = HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(provider.clone()))
-            .route("/", web::get().to(web_api::HomepageEndpoint))
+            .app_data(web::Data::new(conf.clone()))
+            .route("/", web::get().to(web_api::homepage_endpoint))
+            .route("/sign_in/google", web::post().to(web_api::google_sign_in_endpoint))
     })
     .bind(addr)
     .unwrap()

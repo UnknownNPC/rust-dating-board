@@ -10,6 +10,15 @@
             </li>
             <li class="nav-item"><a class="nav-link" href="#">Добавить анкету</a></li>
             <li class="nav-item"><a class="nav-link" href="#">Поиск</a></li>
-        </ul><button class="btn btn-outline-success my-2 my-sm-0 ml-auto" type="submit">Войти через Gmail</button>
+        </ul>
+
+        <div id="g_id_onload" data-client_id="824603210544-6apptbcmddrbud4njlstqfqavim7fgla.apps.googleusercontent.com"
+            data-context="signin" data-ux_mode="popup" data-login_uri="http://localhost:8000/sign_in/google"
+            data-auto_prompt="false">
+        </div>
+
+        <div class="g_id_signin my-2 my-sm-0 ml-auto" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin"
+            data-size="large" data-locale="uk" data-logo_alignment="left">
+        </div>
     </div>
 </nav>

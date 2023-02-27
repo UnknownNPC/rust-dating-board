@@ -1,34 +1,71 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpRequest, HttpResponse, Responder};
 
 use sailfish::TemplateOnce;
+use serde::Deserialize;
 
-use crate::db::DbProvider;
+use crate::{config::Config, db::DbProvider};
+
+use super::sign_in::get_google_user;
+
+#[derive(Deserialize)]
+pub struct OAuthCallback {
+    credential: String,
+    g_csrf_token: String,
+}
 
 #[derive(TemplateOnce)]
 #[template(path = "home.stpl")]
 struct Home<'a> {
     head_title: &'a str,
+    error_msg: &'a str,
 }
 
 pub async fn homepage() -> impl Responder {
-    HttpResponse::Ok().body(
-        Home {
-            head_title: "hello",
-        }
-        .render_once()
-        .unwrap(),
-    )
+    HttpResponse::Ok().body(get_homepage_html_body("OK Page", None))
 }
 
-pub async fn google_verify_token(
-    db_provider: web::Data<DbProvider>,
-    token: web::Path<(String,)>,
+pub async fn google_sign_in(
+    _db_provider: web::Data<DbProvider>,
+    config: web::Data<Config>,
+    callback_payload: web::Form<OAuthCallback>,
+    request: HttpRequest,
 ) -> impl Responder {
-    HttpResponse::Ok().body(
-        Home {
-            head_title: &token.0,
-        }
-        .render_once()
-        .unwrap(),
-    )
+    if callback_payload.credential.is_empty() {
+        return HttpResponse::Ok().body(get_homepage_html_body(
+            "error",
+            Some("credential field is empty"),
+        ));
+    }
+    if callback_payload.g_csrf_token.is_empty() {
+        return HttpResponse::Ok().body(get_homepage_html_body(
+            "error",
+            Some("g_csrf_token field is empty"),
+        ));
+    }
+
+    println!("{:?}", request.headers());
+
+    if Some(callback_payload.g_csrf_token.clone())
+        != request
+            .cookie("g_csrf_token")
+            .map(|f| f.value().to_string())
+    {
+        return HttpResponse::Ok().body(get_homepage_html_body(
+            "error",
+            Some("sign in security attack"),
+        ));
+    }
+
+    let google_user_opt = get_google_user(&callback_payload.credential, &config).await;
+
+    HttpResponse::Ok().body(get_homepage_html_body("User was retrieved", None))
+}
+
+fn get_homepage_html_body(title: &str, error_msg: Option<&str>) -> String {
+    Home {
+        head_title: title,
+        error_msg: error_msg.unwrap_or(""),
+    }
+    .render_once()
+    .unwrap()
 }
