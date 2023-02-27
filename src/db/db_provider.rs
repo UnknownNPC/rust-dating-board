@@ -1,8 +1,7 @@
-
 use chrono::Utc;
 use sea_orm::ActiveValue::NotSet;
-use sea_orm::DbConn;
-use sea_orm::{ActiveModelTrait, DbErr, Set};
+use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, QueryFilter, Set};
+use sea_orm::{DbConn, EntityTrait};
 
 use super::profile::{self, Model as ProfileModel};
 use super::user::{self, Model as UserModel};
@@ -17,17 +16,26 @@ impl DbProvider {
         DbProvider { db_con }
     }
 
+    pub async fn find_user_by_email(&self, email: &str) -> Result<Option<UserModel>, DbErr> {
+        user::Entity::find()
+            .filter(user::Column::Email.contains(email))
+            .one(&self.db_con)
+            .await
+    }
+
     pub async fn add_user(
         &self,
         id: Option<i64>,
         name: &str,
         email: &str,
+        provider_opt: Option<&str>,
     ) -> Result<UserModel, DbErr> {
         let user = user::ActiveModel {
             id: id.map_or(NotSet, |f| Set(f)),
             name: Set(name.to_string()),
             email: Set(email.to_string()),
             created_at: Set(Utc::now().naive_utc()),
+            provider: Set(provider_opt.map(|f| f.to_string())),
             ..Default::default()
         };
         user.insert(&self.db_con).await

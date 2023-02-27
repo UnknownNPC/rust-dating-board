@@ -10,6 +10,7 @@ pub struct Model {
     pub created_at: DateTime,
     pub name: String,
     pub email: String,
+    pub provider: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

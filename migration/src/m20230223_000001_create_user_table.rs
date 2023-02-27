@@ -21,6 +21,17 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::CreatedAt).timestamp().not_null())
                     .col(ColumnDef::new(User::Name).string().not_null())
                     .col(ColumnDef::new(User::Email).string().not_null())
+                    .col(ColumnDef::new(User::Provider).string())
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .create_index(
+                Index::create()
+                    .name("idx-user-email")
+                    .table(User::Table)
+                    .col(User::Email)
                     .to_owned(),
             )
             .await
@@ -41,4 +52,5 @@ pub enum User {
     CreatedAt,
     Name,
     Email,
+    Provider,
 }
