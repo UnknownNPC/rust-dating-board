@@ -14,15 +14,14 @@ pub struct TokenClaims {
 }
 
 pub async fn get_google_user(
-    rawJwtCredentail: &str,
+    raw_jwt_credentail: &str,
     config: &Config,
 ) -> Result<OAuthUser, Box<dyn Error>> {
-
     let parser = Parser::new(&config.oauth_google_client_id);
-    let claims = parser.parse::<TokenClaims>(rawJwtCredentail).await?;
+    let claims = parser.parse::<TokenClaims>(raw_jwt_credentail).await?;
 
-    Ok(OAuthUser { 
+    Ok(OAuthUser {
         email: claims.email,
-        name: claims.name
-     })
+        name: claims.name,
+    })
 }

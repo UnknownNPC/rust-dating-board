@@ -43,8 +43,6 @@ pub async fn google_sign_in(
         ));
     }
 
-    println!("{:?}", request.headers());
-
     if Some(callback_payload.g_csrf_token.clone())
         != request
             .cookie("g_csrf_token")
@@ -56,9 +54,18 @@ pub async fn google_sign_in(
         ));
     }
 
-    let google_user_opt = get_google_user(&callback_payload.credential, &config).await;
+    let oauth_user_opt = get_google_user(&callback_payload.credential, &config).await;
 
-    HttpResponse::Ok().body(get_homepage_html_body("User was retrieved", None))
+    match oauth_user_opt {
+        Ok(google_user) => HttpResponse::Ok().body(get_homepage_html_body(
+            &format!("User was retrieved {:?}", google_user),
+            None,
+        )),
+        Err(err) => HttpResponse::Ok().body(get_homepage_html_body(
+            "Error",
+            Some(&format!("Failed to retrive user {}", err.to_string())),
+        )),
+    }
 }
 
 fn get_homepage_html_body(title: &str, error_msg: Option<&str>) -> String {
