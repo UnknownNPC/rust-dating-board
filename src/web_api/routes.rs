@@ -5,7 +5,7 @@ use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use sailfish::TemplateOnce;
 use serde::Deserialize;
 
-use crate::{config::Config, db::DbProvider};
+use crate::{config::Config, db::DbProvider, db::UserModel};
 
 use super::sign_in::get_google_user;
 
@@ -47,28 +47,32 @@ pub async fn google_sign_in(
         return get_homepage_html_body("error", Some("sign in security attack"));
     }
 
-    let oauth_user_opt = get_google_user(&callback_payload.credential, &config).await;
+    async fn fetch_and_save_user(
+        db_provider: &web::Data<DbProvider>,
+        callback_payload: &web::Form<OAuthCallback>,
+        config: &web::Data<Config>) -> Result<UserModel, Box<dyn Error>> {
+        
+        let oauth_user = get_google_user(&callback_payload.credential, &config).await?;
+        let db_user_opt = db_provider.find_user_by_email(&oauth_user.email).await?;
 
-    match oauth_user_opt {
-        Ok(oauth_user) => {
-            let db_user_res_opt = db_provider.find_user_by_email(&oauth_user.email).await;
-            let db_user = db_user_res_opt.unwrap();
+        let user = if db_user_opt.is_some() {
+            println!("Email {} exists. Just reusing", &oauth_user.email);
+            db_user_opt.unwrap()
+        } else {
+            println!("Email {} is new. Creating new user", &oauth_user.email);
+           let new_user_model =  db_provider.add_user(None, &oauth_user.name, &oauth_user.email, Some("Google")).await?;
+           new_user_model
+        };
 
+        Ok(user)
+    }
 
-            let db_user = if (db_user.is_some()) {
-                println!("Email {} exists. Just reusing", &oauth_user.email);
-                db_user.unwrap()
-            } else {
-                println!("Email {} is new. Creating new user", &oauth_user.email);
-               let save_result =  db_provider.add_user(None, &oauth_user.name, &oauth_user.email, Some("Google")).await;
-               save_result.unwrap()
-            };
+   
+    let user_res = fetch_and_save_user(&db_provider,&callback_payload, &config).await;
 
-
-
-            get_homepage_html_body(&format!("OK Page {:?}", db_user), None)
-
-        }
+    match user_res {
+        Ok(user) => 
+            get_homepage_html_body(&format!("OK Page {:?}", user), None),
         Err(err) => get_homepage_html_body(
             "Error",
             Some(&format!("Failed to retrive user {}", err.to_string())),
