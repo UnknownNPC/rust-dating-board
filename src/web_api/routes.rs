@@ -27,8 +27,15 @@ struct Home<'a> {
     is_authorized: bool,
 }
 
-pub async fn homepage(auth_gate: AuthenticationGate) -> impl Responder {
+#[derive(Deserialize)]
+pub struct HomeQuery {
+    error: Option<String>,
+}
 
+pub async fn homepage(
+    auth_gate: AuthenticationGate,
+    query: web::Query<HomeQuery>,
+) -> impl Responder {
     fn get_homepage_html_body(
         title: &str,
         error_msg: Option<&str>,
@@ -43,7 +50,7 @@ pub async fn homepage(auth_gate: AuthenticationGate) -> impl Responder {
             .render_once()
             .unwrap(),
         );
-    
+
         html
     }
 
@@ -51,7 +58,8 @@ pub async fn homepage(auth_gate: AuthenticationGate) -> impl Responder {
         "Inside the homepage endpoint. User auth status {}",
         auth_gate.is_authorized
     );
-    get_homepage_html_body("OK Page", None, auth_gate.is_authorized)
+
+    get_homepage_html_body("OK Page", query.error.as_deref(), auth_gate.is_authorized)
 }
 
 pub async fn google_sign_in(
@@ -64,7 +72,8 @@ pub async fn google_sign_in(
         let mut response_builder = HttpResponse::build(StatusCode::FOUND);
 
         if error.is_some() {
-            response_builder.append_header((header::LOCATION, format!("/?{}=true", error.unwrap())))
+            response_builder
+                .append_header((header::LOCATION, format!("/?error={}", error.unwrap())))
         } else {
             response_builder.append_header((header::LOCATION, "/"))
         };
