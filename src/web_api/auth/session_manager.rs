@@ -18,11 +18,20 @@ pub struct SessionManager<'a> {
 }
 
 impl<'cfg> SessionManager<'cfg> {
+
     pub fn new(config: &'cfg Config) -> Self {
         Self { config }
     }
 
-    pub async fn get_jwt_token(&self, user_id: i64) -> Cookie {
+    pub fn get_empty_jwt_token() -> Cookie<'cfg> {
+        Cookie::build("token", "")
+            .path("/")
+            .max_age(ActixWebDuration::new(-1, 0))
+            .http_only(true)
+            .finish()
+    }
+
+    pub async fn get_valid_jwt_token(&self, user_id: i64) -> Cookie {
         let jwt_secret = &self.config.jwt_secret;
         let now = Utc::now();
         let iat = now.timestamp() as usize;

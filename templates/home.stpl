@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<%= error_msg %>
-
   <% include!("./head.stpl"); %>
 
     <body>

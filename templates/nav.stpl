@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <a class="navbar-brand" href="#">
-        <%= head_title %>
+        Intim XXX
     </a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span
             class="navbar-toggler-icon"></span></button>
@@ -11,14 +11,34 @@
             <li class="nav-item"><a class="nav-link" href="#">Добавить анкету</a></li>
             <li class="nav-item"><a class="nav-link" href="#">Поиск</a></li>
         </ul>
+        <% if is_authorized { %>
 
-        <div id="g_id_onload" data-client_id="824603210544-6apptbcmddrbud4njlstqfqavim7fgla.apps.googleusercontent.com"
-            data-context="signin" data-ux_mode="popup" data-login_uri="http://localhost:8000/sign_in/google"
-            data-auto_prompt="false">
-        </div>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <%= user_name %>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="#">Профіль</a>
+                        <a class="dropdown-item" href="/sign_out">Вихід</a>
+                    </div>
+                </li>
+            </ul>
 
-        <div class="g_id_signin my-2 my-sm-0 ml-auto" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin"
-            data-size="large" data-locale="uk" data-logo_alignment="left">
-        </div>
+            <% } else { %>
+                <div id="g_id_onload"
+                    data-client_id="824603210544-6apptbcmddrbud4njlstqfqavim7fgla.apps.googleusercontent.com"
+                    data-context="signin" data-ux_mode="popup" data-login_uri="http://localhost:8000/sign_in/google"
+                    data-auto_prompt="false">
+                </div>
+
+                <div class="g_id_signin my-2 my-sm-0 ml-auto" data-type="standard" data-shape="pill"
+                    data-theme="outline" data-text="signin" data-size="large" data-locale="uk"
+                    data-logo_alignment="left">
+                </div>
+                <% } %>
+
+
     </div>
 </nav>

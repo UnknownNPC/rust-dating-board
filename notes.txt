@@ -7,3 +7,5 @@ postgres:postgres
 
 
 sea-orm-cli generate entity -u postgres://postgres:postgres@localhost/escortdb -s public -o src/db
+
+find src | entr -r cargo run

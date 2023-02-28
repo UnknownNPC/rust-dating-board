@@ -16,6 +16,10 @@ impl DbProvider {
         DbProvider { db_con }
     }
 
+    pub async fn find_user_by_id(&self, id: i64) -> Result<Option<UserModel>, DbErr> {
+        user::Entity::find_by_id(id).one(&self.db_con).await
+    }
+
     pub async fn find_user_by_email(&self, email: &str) -> Result<Option<UserModel>, DbErr> {
         user::Entity::find()
             .filter(user::Column::Email.contains(email))
