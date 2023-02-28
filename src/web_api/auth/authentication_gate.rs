@@ -1,21 +1,18 @@
 use std::future::{ready, Ready};
 
-use actix_web::{
-    dev::Payload,
-    error::{Error as ActixWebError, ErrorUnauthorized},
-    web, FromRequest, HttpRequest,
-};
+use actix_web::{dev::Payload, error::Error as ActixWebError, web, FromRequest, HttpRequest};
 use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 
 use crate::config::Config;
 
 use super::session_manager::TokenClaims;
 
-pub struct AuthenticationGuard {
-    pub user_id: i64,
+pub struct AuthenticationGate {
+    pub is_authorized: bool,
+    pub user_id: Option<i64>,
 }
 
-impl FromRequest for AuthenticationGuard {
+impl FromRequest for AuthenticationGate {
     type Error = ActixWebError;
     type Future = Ready<Result<Self, Self::Error>>;
 
@@ -23,8 +20,11 @@ impl FromRequest for AuthenticationGuard {
         let token = req.cookie("token").map(|c| c.value().to_string());
 
         if token.is_none() {
-            println!("Auth guard didn't find token. Rejecting");
-            return ready(Err(ErrorUnauthorized("Auth token doesn't exist")));
+            println!("Auth guard didn't find token. Exit");
+            return ready(Ok(AuthenticationGate {
+                is_authorized: false,
+                user_id: None,
+            }));
         }
 
         let config = req.app_data::<web::Data<Config>>().unwrap();
@@ -39,12 +39,18 @@ impl FromRequest for AuthenticationGuard {
         match decode {
             Ok(token) => {
                 let user_id = token.claims.sub.parse::<i64>().unwrap();
-                println!("Auth guard found token with id {}", user_id);
-                ready(Ok(AuthenticationGuard { user_id: user_id }))
+                println!("Auth gate found token with id {}", user_id);
+                ready(Ok(AuthenticationGate {
+                    is_authorized: true,
+                    user_id: Some(user_id),
+                }))
             }
             Err(_) => {
                 println!("Auth guard found token but wasn't able to verify it. I guess it was hoooker attack :3");
-                ready(Err(ErrorUnauthorized("Invalid token. Are u haker? :3")))
+                ready(Ok(AuthenticationGate {
+                    is_authorized: false,
+                    user_id: None,
+                }))
             }
         }
     }

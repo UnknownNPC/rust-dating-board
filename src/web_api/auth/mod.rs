@@ -1,6 +1,6 @@
 
 mod session_manager;
-mod authentication_guard;
+mod authentication_gate;
 
 pub use session_manager::SessionManager as AuthSessionManager;
-pub use authentication_guard::AuthenticationGuard as AuthenticationGuard;
+pub use authentication_gate::AuthenticationGate;

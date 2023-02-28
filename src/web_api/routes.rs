@@ -7,7 +7,7 @@ use serde::Deserialize;
 
 use crate::{config::Config, db::DbProvider, db::UserModel, web_api::auth::AuthSessionManager};
 
-use super::{auth::AuthenticationGuard, sign_in::get_google_user};
+use super::{auth::AuthenticationGate, sign_in::get_google_user};
 
 #[derive(Deserialize)]
 pub struct OAuthCallback {
@@ -22,10 +22,10 @@ struct Home<'a> {
     error_msg: &'a str,
 }
 
-pub async fn homepage(auth_guard: AuthenticationGuard) -> impl Responder {
+pub async fn homepage(auth_gate: AuthenticationGate) -> impl Responder {
     println!(
-        "Inside the homepage endpoint. User id {}",
-        auth_guard.user_id
+        "Inside the homepage endpoint. User auth status {}",
+        auth_gate.is_authorized
     );
     get_homepage_html_body("OK Page", None, None)
 }
