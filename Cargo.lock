@@ -1095,6 +1095,7 @@ dependencies = [
  "argon2",
  "chrono",
  "dotenv",
+ "jsonwebtoken",
  "jsonwebtoken-google",
  "sailfish",
  "sea-orm",
