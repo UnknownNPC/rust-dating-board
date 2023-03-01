@@ -52,12 +52,11 @@ impl DbProvider {
             updated_at: Set(Utc::now().naive_utc()),
             name: Set(String::from("name")),
             height: Set(165),
-            cost_per_hour: Set(2000),
             description: Set(String::from("description")),
             phone_number: Set(String::from("03333333")),
             user_id: Set(1),
             city: Set(String::from("Kiev")),
-            region: Set(String::from("Central")),
+            status: Set(String::from("draft")),
             ..Default::default()
         };
         profile.insert(&self.db_con).await

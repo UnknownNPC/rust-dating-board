@@ -23,16 +23,11 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Profile::UpdatedAt).timestamp().not_null())
                     .col(ColumnDef::new(Profile::Name).string().not_null())
                     .col(ColumnDef::new(Profile::Height).small_integer().not_null())
-                    .col(
-                        ColumnDef::new(Profile::CostPerHour)
-                            .small_integer()
-                            .not_null(),
-                    )
                     .col(ColumnDef::new(Profile::Description).string().not_null())
                     .col(ColumnDef::new(Profile::PhoneNumber).string().not_null())
                     .col(ColumnDef::new(Profile::City).string().not_null())
-                    .col(ColumnDef::new(Profile::Region).string().not_null())
                     .col(ColumnDef::new(Profile::UserId).big_integer().not_null())
+                    .col(ColumnDef::new(Profile::Status).string().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-profile-user_id")
@@ -70,10 +65,9 @@ pub enum Profile {
     UpdatedAt,
     Name,
     Height,
-    CostPerHour,
     Description,
     PhoneNumber,
     City,
-    Region,
     UserId,
+    Status
 }

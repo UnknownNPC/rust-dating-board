@@ -11,12 +11,11 @@ pub struct Model {
     pub updated_at: DateTime,
     pub name: String,
     pub height: i16,
-    pub cost_per_hour: i16,
     pub description: String,
     pub phone_number: String,
     pub city: String,
-    pub region: String,
     pub user_id: i64,
+    pub status: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
