@@ -31,6 +31,7 @@ async fn main() {
             .route("/", web::get().to(web_api::homepage_endpoint))
             .route("/sign_in/google", web::post().to(web_api::google_sign_in_endpoint))
             .route("/sign_out", web::get().to(web_api::sign_out_endpoint))
+            .route("/add_profile", web::get().to(web_api::sign_out_endpoint))
     })
     .bind(addr)
     .unwrap()

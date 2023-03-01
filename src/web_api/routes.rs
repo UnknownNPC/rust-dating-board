@@ -6,59 +6,20 @@ use actix_web::{
     web, HttpRequest, HttpResponse, Responder,
 };
 
-use sailfish::TemplateOnce;
-use serde::Deserialize;
+use crate::{
+    config::Config,
+    db::DbProvider,
+    db::UserModel,
+    web_api::{auth::AuthSessionManager, html_page::HtmlPage},
+};
 
-use crate::{config::Config, db::DbProvider, db::UserModel, web_api::auth::AuthSessionManager};
-
-use super::{auth::AuthenticationGate, sign_in::get_google_user};
-
-#[derive(Deserialize)]
-pub struct OAuthCallback {
-    credential: String,
-    g_csrf_token: String,
-}
-
-#[derive(TemplateOnce)]
-#[template(path = "home.stpl")]
-struct Home<'a> {
-    head_title: &'a str,
-    error_msg: &'a str,
-
-    is_authorized: bool,
-    user_name: &'a str,
-}
-
-#[derive(Deserialize)]
-pub struct HomeQuery {
-    error: Option<String>,
-}
+use super::{auth::AuthenticationGate, model::*, sign_in::get_google_user};
 
 pub async fn homepage(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     query: web::Query<HomeQuery>,
 ) -> impl Responder {
-    fn get_homepage_html_body(
-        title: &str,
-        error_msg: Option<&str>,
-        is_authorized: bool,
-        user_name: Option<&str>,
-    ) -> HttpResponse {
-        let html = HttpResponse::Ok().body(
-            Home {
-                head_title: title,
-                error_msg: error_msg.unwrap_or(""),
-                is_authorized,
-                user_name: user_name.unwrap_or(""),
-            }
-            .render_once()
-            .unwrap(),
-        );
-
-        html
-    }
-
     println!(
         "Inside the homepage endpoint. User auth status {}",
         auth_gate.is_authorized
@@ -75,7 +36,7 @@ pub async fn homepage(
 
     let user_name = user.map(|f| f.name);
 
-    get_homepage_html_body(
+    HtmlPage::homepage(
         "Home page",
         query.error.as_deref(),
         auth_gate.is_authorized,
@@ -96,13 +57,12 @@ pub async fn sign_out(auth_gate: AuthenticationGate) -> impl Responder {
 pub async fn google_sign_in(
     db_provider: web::Data<DbProvider>,
     config: web::Data<Config>,
-    callback_payload: web::Form<OAuthCallback>,
+    callback_payload: web::Form<GoogleSignInPost>,
     request: HttpRequest,
 ) -> impl Responder {
-
     async fn fetch_and_save_user(
         db_provider: &web::Data<DbProvider>,
-        callback_payload: &web::Form<OAuthCallback>,
+        callback_payload: &web::Form<GoogleSignInPost>,
         config: &web::Data<Config>,
     ) -> Result<UserModel, Box<dyn Error>> {
         let oauth_user = get_google_user(&callback_payload.credential, &config).await?;
