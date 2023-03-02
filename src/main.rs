@@ -1,3 +1,4 @@
+use actix_files::Files;
 use actix_web::{web, App, HttpServer};
 
 use sea_orm::{Database, DbConn, DbErr};
@@ -32,6 +33,7 @@ async fn main() {
             .route("/sign_in/google", web::post().to(web_api::google_sign_in_endpoint))
             .route("/sign_out", web::get().to(web_api::sign_out_endpoint))
             .route("/add_profile", web::get().to(web_api::add_profile_endpoint))
+            .service(Files::new("/static", "static/").show_files_listing())
     })
     .bind(addr)
     .unwrap()

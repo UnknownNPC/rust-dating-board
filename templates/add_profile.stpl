@@ -7,9 +7,7 @@
     <% include!("./includes/nav.stpl"); %>
 
     <div class="container">
-
-      <p class="h1">Додати анкету</p>
-
+      <p class="h1">Нова анкета</p>
       
   </div>
 
