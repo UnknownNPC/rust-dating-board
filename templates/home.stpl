@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<% include!("./includes/head.stpl"); %>
+<head>
+  <% include!("./includes/head_body.stpl"); %>
+</head>
 
   <body>
     <% include!("./includes/nav.stpl"); %>
