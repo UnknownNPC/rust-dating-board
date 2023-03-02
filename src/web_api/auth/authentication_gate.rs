@@ -20,7 +20,7 @@ impl FromRequest for AuthenticationGate {
         let token = req.cookie("token").map(|c| c.value().to_string());
 
         if token.is_none() {
-            println!("Auth guard didn't find token. Exit");
+            println!("[authentication_gate] Token doesn't exist. Exit");
             return ready(Ok(AuthenticationGate {
                 is_authorized: false,
                 user_id: None,
@@ -39,14 +39,14 @@ impl FromRequest for AuthenticationGate {
         match decode {
             Ok(token) => {
                 let user_id = token.claims.sub.parse::<i64>().unwrap();
-                println!("Auth gate found token with id {}", user_id);
+                println!("[authentication_gate] Found token with id {}", user_id);
                 ready(Ok(AuthenticationGate {
                     is_authorized: true,
                     user_id: Some(user_id),
                 }))
             }
             Err(_) => {
-                println!("Auth guard found token but wasn't able to verify it. I guess it was hoooker attack :3");
+                println!("[authentication_gate] Found token but wasn't able to verify it. I guess it was hoooker attack :3");
                 ready(Ok(AuthenticationGate {
                     is_authorized: false,
                     user_id: None,

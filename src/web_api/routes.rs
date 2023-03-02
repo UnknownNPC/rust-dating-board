@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use actix_multipart::form::MultipartForm;
 use actix_web::{
     cookie::Cookie,
     http::{header, StatusCode},
@@ -10,18 +11,19 @@ use crate::{
     config::Config,
     db::DbProvider,
     db::UserModel,
+    web_api::photo::PhotoService,
     web_api::{auth::AuthSessionManager, html_page::HtmlPage},
 };
 
 use super::{auth::AuthenticationGate, model::*, sign_in::get_google_user};
 
-pub async fn index(
+pub async fn index_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     query: web::Query<HomeQuery>,
 ) -> impl Responder {
     println!(
-        "Inside the homepage endpoint. User auth status {}",
+        "[route#index_page] Inside the index page. User auth status {}",
         auth_gate.is_authorized
     );
 
@@ -39,18 +41,20 @@ pub async fn index(
     HtmlPage::homepage("Home page", query.error.as_deref(), user_name.as_deref())
 }
 
-pub async fn add_profile(
+pub async fn add_profile_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     query: web::Query<HomeQuery>,
+    config: web::Data<Config>
 ) -> impl Responder {
+
     println!(
-        "Inside the add_profile endpoint. User auth status {}",
+        "[route#add_profile_page] Inside the add_profile page. User auth status {}",
         auth_gate.is_authorized
     );
 
-    if !auth_gate.is_authorized {
-        return redirect_to_home_page(None, Some("restricted_area"));
+    if let Err(response) = redirect_to_home_if_not_authorized(&auth_gate) {
+        return response;
     }
 
     let user = db_provider
@@ -59,27 +63,89 @@ pub async fn add_profile(
         .unwrap()
         .unwrap();
 
-
+    let last_draft_profile_data = db_provider
+        .find_last_user_draft_profile(user.id)
+        .await
+        .unwrap();
+    let draft_profile_photos = last_draft_profile_data.first()
+        .map(|f| f.to_owned().1).unwrap_or(vec![]);
 
     // GET - before open check for last draft, if exist fill some fields
     // POST image add - image when image upload check for last draft, if exist use it, else - create
     // POST image delete - just delete imagesx, leave empty advert with empty fields
     // POST - draft when user submits check for last draft, if exists use it (images were added before), else - create
 
-    HtmlPage::add_profile("Add new profile", &user.name, &AddProfilePageDto::empty())
+    let context = AddProfilePageContext::new(&config.all_photos_folder_name,
+        user.id, draft_profile_photos); 
+
+    HtmlPage::add_profile("Add new profile", 
+    &user.name, 
+    &context)
 }
 
-pub async fn sign_out(auth_gate: AuthenticationGate) -> impl Responder {
+pub async fn add_profile_photo_endpoint(
+    db_provider: web::Data<DbProvider>,
+    auth_gate: AuthenticationGate,
+    config: web::Data<Config>,
+    form: MultipartForm<AddProfilePhotoMultipart>,
+) -> impl Responder {
+    if !auth_gate.is_authorized {
+        return web::Json(AddProfilePhotoResponse::new_with_error("resticted_area"));
+    }
+
+    let user_id = auth_gate.user_id.unwrap();
+
+    // Find old or create new draft profile
+    let last_draft_profile_data = db_provider
+        .find_last_user_draft_profile(user_id)
+        .await
+        .unwrap();
+    let last_draft_profile_opt = last_draft_profile_data.first();
+    let last_draft_profile_id = if last_draft_profile_opt.is_some() {
+        println!("[routes#add_profile_photo_endpoint]: Found draft profile. Re-useing");
+        last_draft_profile_opt.unwrap().0.id
+    } else {
+        println!("[routes#add_profile_photo_endpoint]: Creating new draft profile");
+        db_provider.add_new_draft_profile(user_id).await.unwrap().id
+    };
+
+    //Save photo to FS for this profile
+    let photo_fs_save_result = PhotoService::save_photo_on_fs(
+        &form.0.new_profile_photo,
+        &config.all_photos_folder_name,
+        last_draft_profile_id.to_string().as_str(),
+    )
+    .unwrap();
+    println!("[routes#add_profile_photo_endpoint]: Photo saved into fs");
+
+    //Save profile photo db entity
+    let profile_photo_db = db_provider
+        .add_new_profile_photo(last_draft_profile_id, &photo_fs_save_result.name.as_str())
+        .await
+        .unwrap();
+    println!("[routes#add_profile_photo_endpoint]: Photo saved into database");
+
+    let new_file_response = AddProfilePhotoResponse::new_with_payload(
+        &config.all_photos_folder_name,
+        last_draft_profile_id,
+        vec![profile_photo_db]
+    );
+    println!("[routes#add_profile_photo_endpoint]: Response is ready");
+
+    web::Json(new_file_response)
+}
+
+pub async fn sign_out_endpoint(auth_gate: AuthenticationGate) -> impl Responder {
     let empty_cookie = AuthSessionManager::get_empty_jwt_token();
     if auth_gate.is_authorized {
-        println!("Auth user {} is loging out", auth_gate.user_id.unwrap());
+        println!("[route#sign_out_endpoint] auth user {} is loging out", auth_gate.user_id.unwrap());
         redirect_to_home_page(Some(empty_cookie), None)
     } else {
         redirect_to_home_page(None, None)
     }
 }
 
-pub async fn google_sign_in(
+pub async fn google_sign_in_endpoint(
     db_provider: web::Data<DbProvider>,
     config: web::Data<Config>,
     callback_payload: web::Form<GoogleSignInPost>,
@@ -94,10 +160,10 @@ pub async fn google_sign_in(
         let db_user_opt = db_provider.find_user_by_email(&oauth_user.email).await?;
 
         let user = if db_user_opt.is_some() {
-            println!("Email {} exists. Just reusing", &oauth_user.email);
+            println!("[route#google_sign_in_endpoint] email {} exists. Just reusing", &oauth_user.email);
             db_user_opt.unwrap()
         } else {
-            println!("Email {} is new. Creating new user", &oauth_user.email);
+            println!("[route#google_sign_in_endpoint] email {} is new. Creating new user", &oauth_user.email);
             let new_user_model = db_provider
                 .add_user(None, &oauth_user.name, &oauth_user.email, Some("Google"))
                 .await?;
@@ -131,9 +197,25 @@ pub async fn google_sign_in(
             redirect_to_home_page(Some(jwt_cookie), None)
         }
         Err(err) => {
-            println!("Error happened during user fetch: {}", err);
+            println!("[route#google_sign_in_endpoint] error happened during user fetch: {}", err);
             redirect_to_home_page(None, Some("invalid_user"))
         }
+    }
+}
+
+fn redirect_to_home_if_not_authorized(auth_gate: &AuthenticationGate) -> Result<(), HttpResponse> {
+    if !auth_gate.is_authorized {
+        println!(
+            "[route#...] endpoint for authorized only. Auth status {}. Redirection!",
+            auth_gate.is_authorized
+        );
+        Result::Err(redirect_to_home_page(None, Some("restricted_area")))
+    } else {
+        println!(
+            "[route#...] endpoint for authorized only. Auth status {}. OK!",
+            auth_gate.is_authorized
+        );
+        Ok(())
     }
 }
 

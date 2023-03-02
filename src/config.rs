@@ -9,6 +9,8 @@ pub struct Config {
     pub oauth_google_client_id: String,
     pub oauth_google_client_secret: String,
     pub oauth_google_redirect_url: String,
+
+    pub all_photos_folder_name: String,
 }
 
 impl Config {
@@ -24,13 +26,16 @@ impl Config {
         let oauth_google_client_secret=std::env::var("OAUTH_GOOGLE_CLIENT_SECRET").expect("OAUTH_GOOGLE_CLIENT_SECRET must be set");
         let oauth_google_redirect_url=std::env::var("OAUTH_GOOGLE_REDIRECT_URL").expect("OAUTH_GOOGLE_REDIRECT_URL must be set");
 
+        let all_photos_folder_name=std::env::var("ALL_PHOTOS_FOLDER_NAME").expect("ALL_PHOTOS_FOLDER_NAME must be set");
+
         Config {
             database_url,
             jwt_secret,
             jwt_max_age: jwt_maxage.parse::<i64>().unwrap(),
             oauth_google_client_id,
             oauth_google_client_secret,
-            oauth_google_redirect_url
+            oauth_google_redirect_url,
+            all_photos_folder_name
         }
     }
 }

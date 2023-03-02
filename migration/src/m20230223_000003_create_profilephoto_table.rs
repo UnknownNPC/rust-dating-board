@@ -25,6 +25,7 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(ColumnDef::new(ProfilePhoto::Status).string().not_null())
+                    .col(ColumnDef::new(ProfilePhoto::OriginalFileName).string().not_null())
                     .col(
                         ColumnDef::new(ProfilePhoto::ProfileId)
                             .big_integer()
@@ -54,5 +55,6 @@ enum ProfilePhoto {
     Id,
     CreatedAt,
     Status,
+    OriginalFileName,
     ProfileId,
 }

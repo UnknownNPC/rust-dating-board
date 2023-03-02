@@ -24,7 +24,7 @@ impl DbProvider {
 
     pub async fn find_user_by_email(&self, email: &str) -> Result<Option<UserModel>, DbErr> {
         user::Entity::find()
-            .filter(user::Column::Email.contains(email))
+            .filter(user::Column::Email.eq(email))
             .one(&self.db_con)
             .await
     }
@@ -52,27 +52,38 @@ impl DbProvider {
         user_id: i64,
     )  -> Result<Vec<(ProfileModel, Vec<ProfilePhotoModel>)>, DbErr>  {
         profile::Entity::find()
-            .filter(profile::Column::UserId.contains(&user_id.to_string()))
-            .filter(profile::Column::Status.contains("draft"))
+            .filter(profile::Column::UserId.eq(user_id))
+            .filter(profile::Column::Status.eq("draft"))
             .find_with_related(profile_photo::Entity)
             .all(&self.db_con)
             .await
     }
 
-    pub async fn add_profile(&self) -> Result<ProfileModel, DbErr> {
+    pub async fn add_new_draft_profile(&self, user_id: i64) -> Result<ProfileModel, DbErr> {
         let profile = profile::ActiveModel {
             id: NotSet,
             created_at: Set(Utc::now().naive_utc()),
             updated_at: Set(Utc::now().naive_utc()),
-            name: Set(String::from("name")),
-            height: Set(165),
-            description: Set(String::from("description")),
-            phone_number: Set(String::from("03333333")),
-            user_id: Set(1),
-            city: Set(String::from("Kiev")),
+            name: Set(String::from("")),
+            height: Set(0),
+            description: Set(String::from("")),
+            phone_number: Set(String::from("")),
+            user_id: Set(user_id),
+            city: Set(String::from("")),
             status: Set(String::from("draft")),
             ..Default::default()
         };
         profile.insert(&self.db_con).await
+    }
+
+    pub async fn add_new_profile_photo(&self, profile_id: i64, original_file_name: &str) ->  Result<ProfilePhotoModel, DbErr> {
+        let profile_photo = profile_photo::ActiveModel {
+            id: NotSet,
+            created_at: Set(Utc::now().naive_utc()),
+            status: Set(String::from("active")),
+            profile_id: Set(profile_id),
+            original_file_name: Set(original_file_name.to_string())
+        };
+        profile_photo.insert(&self.db_con).await
     }
 }

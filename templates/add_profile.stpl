@@ -3,10 +3,8 @@
 
 <head>
     <% include!("./includes/head_body.stpl"); %>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.min.css"
-            crossorigin="anonymous">
-        <link href="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/css/fileinput.min.css" media="all"
-            rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="static/css/bootstrap-icons.min.css" crossorigin="anonymous">
+        <link href="static/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
@@ -17,11 +15,11 @@
             <form>
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <input type="text" class="form-control" id="name_id" value="<%= profile_dto.name %>"
+                        <input type="text" class="form-control" id="name_id" value="<%= profile_context.name %>"
                             placeholder="Ім'я">
                     </div>
                     <div class="form-group col-md-4">
-                        <input type="number" class="form-control" id="height_id" value="<%= profile_dto.height %>"
+                        <input type="number" class="form-control" id="height_id" value="<%= profile_context.height %>"
                             placeholder="Зріст">
                     </div>
                     <div class="form-group col-md-4">
@@ -35,14 +33,14 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-12">
-                        <textarea class="form-control" id="description_id" value="<%= profile_dto.description %>"
+                        <textarea class="form-control" id="description_id" value="<%= profile_context.description %>"
                             rows="4" placeholder="Опис"></textarea>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-12">
                         <div class="file-loading">
-                            <input id="input-700" name="kartik-input-700[]" type="file" multiple>
+                            <input id="photo-files" name="new_profile_photo" type="file" multiple>
                         </div>
                     </div>
                 </div>
@@ -52,33 +50,46 @@
 </body>
 
 <% include!("./includes/extra_scripts.stpl"); %>
-    <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/js/fileinput.min.js"></script>
+    <script src="static/js/fileinput.min.js"></script>
+    <script src="static/js/locales/ru.js"></script>
+    <script src="static/js/locales/ua.js"></script>
     <script>
         $(document).ready(function () {
-            var $el1 = $("#input-700");
+            var $el1 = $("#photo-files");
             $el1.fileinput({
-                uploadUrl: "/photo/upload",
+                uploadUrl: "/profile_photo/upload",
                 enableResumableUpload: false,
                 maxFileCount: 10,
                 duplicate: false,
-                maxSize: 100000,
+                maxSize: 15728640,
                 allowedFileExtensions: ["jpg", "jpeg"],
+                language: 'ua',
+                initialPreviewAsData: true,
+                overwriteInitial: false,
 
-                // initialPreviewConfig: [
-                //     {
-                //         caption: 'desert.jpg',
-                //         width: '120px',
-                //         url: '/localhost/avatar/delete',
-                //         key: 100,
-                //         extra: { id: 100 }
-                //     }],
-
+                initialPreview: [
+                <% for photo_url in &profile_context.init_photos.initialPreview { %>
+                    "<%= photo_url %>",
+                <% } %>
+                ],
+                initialPreviewConfig: [
+                <% for init_photo in &profile_context.init_photos.initialPreviewConfig { %>
+                    {
+                        caption: '<%= init_photo.caption %>',
+                        width: '120px',
+                        url: '<%= init_photo.url %>',
+                        key: <%= init_photo.key %>
+                    },
+                <% } %>
+                ],
                 browseLabel: "Вибрати світлини",
                 dropZoneTitle: "Перетягніть світлини у зону автоматичної загрузки",
                 dropZoneClickTitle: "<br\>(або нажміть для вибору файлів)",
                 fileActionSettings: {
                     showZoom: false,
                     showRotate: false,
+                    showUpload: false,
+                    showDrag: false,
                 },
                 showPause: false,
                 showCancel: false,
