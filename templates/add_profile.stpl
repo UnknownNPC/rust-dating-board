@@ -3,9 +3,10 @@
 
 <head>
     <% include!("./includes/head_body.stpl"); %>
-        <link href="static/css/jquery.filer.css" type="text/css" rel="stylesheet" />
-        <link href="static/css/jquery.filer-dragdropbox-theme.css" type="text/css" rel="stylesheet" />
-
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.min.css"
+            crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/css/fileinput.min.css" media="all"
+            rel="stylesheet" type="text/css" />
 </head>
 
 <body>
@@ -13,180 +14,88 @@
 
         <div class="container">
             <p class="h1">Нова анкета</p>
-            <div class="row">
-                <div class="col-md-6">
-                    <form>
-                        <div class="form-group">
-                            <label for="input1">Field 1</label>
-                            <input type="text" class="form-control" id="input1" placeholder="Enter field 1">
-                        </div>
-                        <div class="form-group">
-                            <label for="input2">Field 2</label>
-                            <input type="text" class="form-control" id="input2" placeholder="Enter field 2">
-                        </div>
-                    </form>
+            <form>
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <input type="text" class="form-control" id="name_id" value="<%= profile_dto.name %>"
+                            placeholder="Ім'я">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <input type="number" class="form-control" id="height_id" value="<%= profile_dto.height %>"
+                            placeholder="Зріст">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <select class="custom-select" id="inlineFormCustomSelectPref">
+                            <option selected>Місто</option>
+                            <option value="1">Київ</option>
+                            <option value="2">Харків</option>
+                            <option value="3">Одеса</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-6">
-                    <input type="file" name="files[]" id="images_input" multiple="multiple">
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <textarea class="form-control" id="description_id" value="<%= profile_dto.description %>"
+                            rows="4" placeholder="Опис"></textarea>
+                    </div>
                 </div>
-            </div>
+                <div class="form-row">
+                    <div class="form-group col-md-12">
+                        <div class="file-loading">
+                            <input id="input-700" name="kartik-input-700[]" type="file" multiple>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
 
 </body>
 
 <% include!("./includes/extra_scripts.stpl"); %>
-    <script src="/static/js/jquery.filer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/js/fileinput.min.js"></script>
     <script>
         $(document).ready(function () {
-            $("#images_input").filer({
-                limit: null,
-                maxSize: null,
-                extensions: null,
-                changeInput: '<div class="jFiler-input-dragDrop"><div class="jFiler-input-inner"><div class="jFiler-input-icon"><i class="icon-jfi-cloud-up-o"></i></div><div class="jFiler-input-text"><h3>Drag&Drop files here</h3> <span style="display:inline-block; margin: 15px 0">or</span></div><a class="jFiler-input-choose-btn blue">Browse Files</a></div></div>',
-                showThumbs: true,
-                theme: "dragdropbox",
-                templates: {
-                    box: '<ul class="jFiler-items-list jFiler-items-grid"></ul>',
-                    item: '<li class="jFiler-item">\
-						<div class="jFiler-item-container">\
-							<div class="jFiler-item-inner">\
-								<div class="jFiler-item-thumb">\
-									<div class="jFiler-item-status"></div>\
-									<div class="jFiler-item-thumb-overlay">\
-										<div class="jFiler-item-info">\
-											<div style="display:table-cell;vertical-align: middle;">\
-												<span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name}}</b></span>\
-												<span class="jFiler-item-others">{{fi-size2}}</span>\
-											</div>\
-										</div>\
-									</div>\
-									{{fi-image}}\
-								</div>\
-								<div class="jFiler-item-assets jFiler-row">\
-									<ul class="list-inline pull-left">\
-										<li>{{fi-progressBar}}</li>\
-									</ul>\
-									<ul class="list-inline pull-right">\
-										<li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\
-									</ul>\
-								</div>\
-							</div>\
-						</div>\
-					</li>',
-                    itemAppend: '<li class="jFiler-item">\
-							<div class="jFiler-item-container">\
-								<div class="jFiler-item-inner">\
-									<div class="jFiler-item-thumb">\
-										<div class="jFiler-item-status"></div>\
-										<div class="jFiler-item-thumb-overlay">\
-											<div class="jFiler-item-info">\
-												<div style="display:table-cell;vertical-align: middle;">\
-													<span class="jFiler-item-title"><b title="{{fi-name}}">{{fi-name}}</b></span>\
-													<span class="jFiler-item-others">{{fi-size2}}</span>\
-												</div>\
-											</div>\
-										</div>\
-										{{fi-image}}\
-									</div>\
-									<div class="jFiler-item-assets jFiler-row">\
-										<ul class="list-inline pull-left">\
-											<li><span class="jFiler-item-others">{{fi-icon}}</span></li>\
-										</ul>\
-										<ul class="list-inline pull-right">\
-											<li><a class="icon-jfi-trash jFiler-item-trash-action"></a></li>\
-										</ul>\
-									</div>\
-								</div>\
-							</div>\
-						</li>',
-                    progressBar: '<div class="bar"></div>',
-                    itemAppendToEnd: false,
-                    canvasImage: true,
-                    removeConfirmation: true,
-                    _selectors: {
-                        list: '.jFiler-items-list',
-                        item: '.jFiler-item',
-                        progressBar: '.bar',
-                        remove: '.jFiler-item-trash-action'
-                    }
-                },
-                dragDrop: {
-                    dragEnter: null,
-                    dragLeave: null,
-                    drop: null,
-                    dragContainer: null,
-                },
-                uploadFile: {
-                    url: "./php/ajax_upload_file.php",
-                    data: null,
-                    type: 'POST',
-                    enctype: 'multipart/form-data',
-                    synchron: true,
-                    beforeSend: function () { },
-                    success: function (data, itemEl, listEl, boxEl, newInputEl, inputEl, id) {
-                        var parent = itemEl.find(".jFiler-jProgressBar").parent(),
-                            new_file_name = JSON.parse(data),
-                            filerKit = inputEl.prop("jFiler");
+            $("#input-700").fileinput({
+                uploadUrl: "/photo/upload",
+                enableResumableUpload: true,
+                maxFileCount: 5,
+                autoUpload: true,
+                multiple: true,
+                duplicate: false,
+                maxSize: 100000,
+                allowedFileExtensions: ["jpg", "jpeg"],
 
-                        filerKit.files_list[id].name = new_file_name;
+                // initialPreviewConfig: [
+                //     {
+                //         caption: 'desert.jpg',
+                //         width: '120px',
+                //         url: '/localhost/avatar/delete',
+                //         key: 100,
+                //         extra: { id: 100 }
+                //     }],
 
-                        itemEl.find(".jFiler-jProgressBar").fadeOut("slow", function () {
-                            $("<div class=\"jFiler-item-others text-success\"><i class=\"icon-jfi-check-circle\"></i> Success</div>").hide().appendTo(parent).fadeIn("slow");
-                        });
-                    },
-                    error: function (el) {
-                        var parent = el.find(".jFiler-jProgressBar").parent();
-                        el.find(".jFiler-jProgressBar").fadeOut("slow", function () {
-                            $("<div class=\"jFiler-item-others text-error\"><i class=\"icon-jfi-minus-circle\"></i> Error</div>").hide().appendTo(parent).fadeIn("slow");
-                        });
-                    },
-                    statusCode: null,
-                    onProgress: null,
-                    onComplete: null
+                browseLabel: "Вибрати світлини",
+                dropZoneTitle: "Перетягніть світлини у зону автоматичної загрузки",
+                dropZoneClickTitle: "<br\>(або нажміть для вибору файлів)",
+                fileActionSettings: {
+                    showZoom: false,
+                    showRotate: false,
+                    showUpload: false
                 },
-                files: null,
-                addMore: false,
-                allowDuplicates: true,
-                clipBoardPaste: true,
-                excludeName: null,
-                beforeRender: null,
-                afterRender: null,
-                beforeShow: null,
-                beforeSelect: null,
-                onSelect: null,
-                afterShow: null,
-                onRemove: function (itemEl, file, id, listEl, boxEl, newInputEl, inputEl) {
-                    var filerKit = inputEl.prop("jFiler"),
-                        file_name = filerKit.files_list[id].name;
-
-                    $.post('./php/ajax_remove_file.php', { file: file_name });
-                },
-                onEmpty: null,
-                options: null,
-                dialogs: {
-                    alert: function (text) {
-                        return alert(text);
-                    },
-                    confirm: function (text, callback) {
-                        confirm(text) ? callback() : null;
-                    }
-                },
-                captions: {
-                    button: "Choose Files",
-                    feedback: "Choose files To Upload",
-                    feedback2: "files were chosen",
-                    drop: "Drop file here to Upload",
-                    removeConfirmation: "Are you sure you want to remove this file?",
-                    errors: {
-                        filesLimit: "Only {{fi-limit}} files are allowed to be uploaded.",
-                        filesType: "Only Images are allowed to be uploaded.",
-                        filesSize: "{{fi-name}} is too large! Please upload file up to {{fi-maxSize}} MB.",
-                        filesSizeAll: "Files you've choosed are too large! Please upload files up to {{fi-maxSize}} MB."
-                    }
-                }
-            });
+                showPause: false,
+                showCancel: false,
+                showBrowse: false,
+                showUpload: false,
+                showCaption: false,
+                showRemove: false,
+                showClose: false,
+                browseOnZoneClick: true
+            }).on('filebatchselected', function (event, previewId, index, fileId) {
+                console.log('File uploaded', previewId, index, fileId);
+            }).on('fileremoved', function (event, key, jqXHR, data) {
+                console.log('name = ' + key);
+            });;
         });
     </script>
-
 
 </html>

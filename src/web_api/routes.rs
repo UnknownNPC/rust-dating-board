@@ -59,7 +59,14 @@ pub async fn add_profile(
         .unwrap()
         .unwrap();
 
-    HtmlPage::add_profile("Add new profile", &user.name)
+
+
+    // GET - before open check for last draft, if exist fill some fields
+    // POST image add - image when image upload check for last draft, if exist use it, else - create
+    // POST image delete - just delete imagesx, leave empty advert with empty fields
+    // POST - draft when user submits check for last draft, if exists use it (images were added before), else - create
+
+    HtmlPage::add_profile("Add new profile", &user.name, &AddProfilePageDto::empty())
 }
 
 pub async fn sign_out(auth_gate: AuthenticationGate) -> impl Responder {

@@ -5,6 +5,8 @@ use sea_orm::{DbConn, EntityTrait};
 
 use super::profile::{self, Model as ProfileModel};
 use super::user::{self, Model as UserModel};
+use super::profile_photo::{self, Model as ProfilePhotoModel};
+
 
 #[derive(Clone)]
 pub struct DbProvider {
@@ -43,6 +45,18 @@ impl DbProvider {
             ..Default::default()
         };
         user.insert(&self.db_con).await
+    }
+
+    pub async fn find_last_user_draft_profile(
+        &self,
+        user_id: i64,
+    )  -> Result<Vec<(ProfileModel, Vec<ProfilePhotoModel>)>, DbErr>  {
+        profile::Entity::find()
+            .filter(profile::Column::UserId.contains(&user_id.to_string()))
+            .filter(profile::Column::Status.contains("draft"))
+            .find_with_related(profile_photo::Entity)
+            .all(&self.db_con)
+            .await
     }
 
     pub async fn add_profile(&self) -> Result<ProfileModel, DbErr> {
