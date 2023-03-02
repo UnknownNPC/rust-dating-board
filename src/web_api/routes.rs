@@ -15,7 +15,7 @@ use crate::{
 
 use super::{auth::AuthenticationGate, model::*, sign_in::get_google_user};
 
-pub async fn homepage(
+pub async fn index(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     query: web::Query<HomeQuery>,
@@ -36,12 +36,30 @@ pub async fn homepage(
 
     let user_name = user.map(|f| f.name);
 
-    HtmlPage::homepage(
-        "Home page",
-        query.error.as_deref(),
-        auth_gate.is_authorized,
-        user_name.as_deref(),
-    )
+    HtmlPage::homepage("Home page", query.error.as_deref(), user_name.as_deref())
+}
+
+pub async fn add_profile(
+    db_provider: web::Data<DbProvider>,
+    auth_gate: AuthenticationGate,
+    query: web::Query<HomeQuery>,
+) -> impl Responder {
+    println!(
+        "Inside the add_profile endpoint. User auth status {}",
+        auth_gate.is_authorized
+    );
+
+    if !auth_gate.is_authorized {
+        return redirect_to_home_page(None, Some("restricted_area"));
+    }
+
+    let user = db_provider
+        .find_user_by_id(auth_gate.user_id.unwrap())
+        .await
+        .unwrap()
+        .unwrap();
+
+    HtmlPage::add_profile("Add new profile", &user.name)
 }
 
 pub async fn sign_out(auth_gate: AuthenticationGate) -> impl Responder {

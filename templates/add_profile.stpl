@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<% include!("./head.stpl"); %>
+
+  <body>
+    <% include!("./nav.stpl"); %>
+
+    <div class="container">
+
+      <p class="h1">Додати анкету</p>
+
+      
+  </div>
+
+  </body>
+
+  <% include!("./extra_scripts.stpl"); %>
+
+</html>
