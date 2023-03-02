@@ -55,12 +55,11 @@
     <script src="https://cdn.jsdelivr.net/gh/kartik-v/bootstrap-fileinput@5.5.2/js/fileinput.min.js"></script>
     <script>
         $(document).ready(function () {
-            $("#input-700").fileinput({
+            var $el1 = $("#input-700");
+            $el1.fileinput({
                 uploadUrl: "/photo/upload",
-                enableResumableUpload: true,
-                maxFileCount: 5,
-                autoUpload: true,
-                multiple: true,
+                enableResumableUpload: false,
+                maxFileCount: 10,
                 duplicate: false,
                 maxSize: 100000,
                 allowedFileExtensions: ["jpg", "jpeg"],
@@ -80,7 +79,6 @@
                 fileActionSettings: {
                     showZoom: false,
                     showRotate: false,
-                    showUpload: false
                 },
                 showPause: false,
                 showCancel: false,
@@ -91,7 +89,7 @@
                 showClose: false,
                 browseOnZoneClick: true
             }).on('filebatchselected', function (event, previewId, index, fileId) {
-                console.log('File uploaded', previewId, index, fileId);
+                $el1.fileinput("upload");
             }).on('fileremoved', function (event, key, jqXHR, data) {
                 console.log('name = ' + key);
             });;
