@@ -49,14 +49,20 @@ impl DbProvider {
         user.insert(&self.db_con).await
     }
 
-    pub async fn find_last_user_draft_profile(
+    pub async fn find_user_draft_profile(
         &self,
         user_id: i64,
-    )  -> Result<Vec<(ProfileModel, Vec<ProfilePhotoModel>)>, DbErr>  {
+    )  -> Result<Option<ProfileModel>, DbErr>  {
         profile::Entity::find()
             .filter(profile::Column::UserId.eq(user_id))
             .filter(profile::Column::Status.eq("draft"))
-            .find_with_related(profile_photo::Entity)
+            .one(&self.db_con)
+            .await
+    }
+
+    pub async fn find_all_profile_photos_for(&self, profile_id: i64) -> Result<Vec<ProfilePhotoModel>, DbErr> {
+        profile_photo::Entity::find()
+            .filter(profile_photo::Column::ProfileId.eq(profile_id))
             .filter(profile_photo::Column::Status.eq("active"))
             .all(&self.db_con)
             .await

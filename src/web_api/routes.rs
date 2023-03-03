@@ -4,7 +4,7 @@ use actix_multipart::form::MultipartForm;
 use actix_web::{
     cookie::Cookie,
     http::{header, StatusCode},
-    web, HttpRequest, HttpResponse, Responder, ResponseError,
+    web, HttpRequest, HttpResponse, Responder,
 };
 
 use crate::{
@@ -62,25 +62,19 @@ pub async fn add_profile_page(
         .unwrap()
         .unwrap();
 
-    let last_draft_profile_data = db_provider
-        .find_last_user_draft_profile(user.id)
-        .await
-        .unwrap();
-    let draft_profile_photos = last_draft_profile_data
-        .first()
-        .map(|f| f.to_owned().1)
-        .unwrap_or(vec![]);
+    let draft_profile_opt = db_provider.find_user_draft_profile(user.id).await.unwrap();
 
-    // GET - before open check for last draft, if exist fill some fields
-    // POST image add - image when image upload check for last draft, if exist use it, else - create
-    // POST image delete - just delete imagesx, leave empty advert with empty fields
-    // POST - draft when user submits check for last draft, if exists use it (images were added before), else - create
+    let profile_photos = if draft_profile_opt.is_some() {
+        db_provider
+            .find_all_profile_photos_for(draft_profile_opt.unwrap().id)
+            .await
+    } else {
+        Ok(vec![])
+    }
+    .unwrap();
 
-    let context = AddProfilePageContext::new(
-        &config.all_photos_folder_name,
-        user.id,
-        draft_profile_photos,
-    );
+    let context =
+        AddProfilePageContext::new(&config.all_photos_folder_name, user.id, profile_photos);
 
     HtmlPage::add_profile("Add new profile", &user.name, &context)
 }
@@ -98,14 +92,10 @@ pub async fn add_profile_photo_endpoint(
     let user_id = auth_gate.user_id.unwrap();
 
     // Find old or create new draft profile
-    let last_draft_profile_data = db_provider
-        .find_last_user_draft_profile(user_id)
-        .await
-        .unwrap();
-    let last_draft_profile_opt = last_draft_profile_data.first();
-    let last_draft_profile_id = if last_draft_profile_opt.is_some() {
+    let draft_profile_opt = db_provider.find_user_draft_profile(user_id).await.unwrap();
+    let draft_profile_id = if draft_profile_opt.is_some() {
         println!("[routes#add_profile_photo_endpoint]: Found draft profile. Re-useing");
-        last_draft_profile_opt.unwrap().0.id
+        draft_profile_opt.unwrap().id
     } else {
         println!("[routes#add_profile_photo_endpoint]: Creating new draft profile");
         db_provider.add_new_draft_profile(user_id).await.unwrap().id
@@ -115,21 +105,21 @@ pub async fn add_profile_photo_endpoint(
     let photo_fs_save_result = PhotoService::save_photo_on_fs(
         &form.0.new_profile_photo,
         &config.all_photos_folder_name,
-        last_draft_profile_id,
+        draft_profile_id,
     )
     .unwrap();
     println!("[routes#add_profile_photo_endpoint]: Photo saved into fs");
 
     //Save profile photo db entity
     let profile_photo_db = db_provider
-        .add_new_profile_photo(last_draft_profile_id, &photo_fs_save_result.name.as_str())
+        .add_new_profile_photo(draft_profile_id, &photo_fs_save_result.name.as_str())
         .await
         .unwrap();
     println!("[routes#add_profile_photo_endpoint]: Photo saved into database");
 
     let new_file_response = AddProfilePhotoResponse::new_with_payload(
         &config.all_photos_folder_name,
-        last_draft_profile_id,
+        draft_profile_id,
         vec![profile_photo_db],
     );
     println!("[routes#add_profile_photo_endpoint]: Response is ready");
@@ -175,16 +165,21 @@ pub async fn delete_profile_photo_endpoint(
 
     let request_profile_photo_id: i64 = form.0.key.parse().unwrap();
 
-    let last_draft_profile_with_profile_photos = db_provider
-        .find_last_user_draft_profile(auth_gate.user_id.unwrap())
+    let draft_profile_opt = db_provider
+        .find_user_draft_profile(auth_gate.user_id.unwrap())
         .await
         .unwrap();
 
-    let all_profile_photos = last_draft_profile_with_profile_photos
-        .first()
-        .map(|f| f.to_owned().1)
-        .unwrap_or(vec![]);
-    let draft_profile_photos_ids: Vec<i64> = all_profile_photos.iter().map(|f| f.id).collect();
+    let profile_photos = if draft_profile_opt.is_some() {
+        db_provider
+            .find_all_profile_photos_for(draft_profile_opt.as_ref().unwrap().id)
+            .await
+    } else {
+        Ok(vec![])
+    }
+    .unwrap();
+
+    let draft_profile_photos_ids: Vec<i64> = profile_photos.iter().map(|f| f.id).collect();
     let request_id_is_valid = draft_profile_photos_ids.contains(&request_profile_photo_id);
 
     let response = if request_id_is_valid {
@@ -194,11 +189,10 @@ pub async fn delete_profile_photo_endpoint(
             &request_profile_photo_id
         );
 
-        let profile_id = last_draft_profile_with_profile_photos.first().unwrap().0.id;
         process_deleting(
-            profile_id,
+            draft_profile_opt.as_ref().unwrap().id,
             request_profile_photo_id,
-            all_profile_photos,
+            profile_photos,
             &db_provider,
             &config,
         )
