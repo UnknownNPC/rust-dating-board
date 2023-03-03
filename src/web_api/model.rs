@@ -66,6 +66,20 @@ pub struct DeleteProfilePhotoResponse {
     pub error: Option<String>,
 }
 
+impl<'a> DeleteProfilePhotoResponse {
+    pub fn new_with_error(error: &str) -> Self {
+        DeleteProfilePhotoResponse {
+            error: Some(error.to_string()),
+        }
+    }
+
+    pub fn new() -> Self {
+        DeleteProfilePhotoResponse {
+            error: None,
+        }
+    }
+}
+
 impl<'a> AddProfilePhotoResponse {
     pub fn new_with_error(error: &str) -> Self {
         AddProfilePhotoResponse {

@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 use chrono::Utc;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, QueryFilter, Set};
@@ -86,5 +88,12 @@ impl DbProvider {
             original_file_name: Set(original_file_name.to_string())
         };
         profile_photo.insert(&self.db_con).await
+    }
+
+    pub async fn mark_profile_photo_as_deleted(&self, model: ProfilePhotoModel) ->  Result<ProfilePhotoModel, DbErr> {
+        let mut mutable: profile_photo::ActiveModel = model.into();
+        mutable.status = Set("deleted".to_owned());
+
+        mutable.update(&self.db_con).await
     }
 }

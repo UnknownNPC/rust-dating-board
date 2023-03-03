@@ -4,12 +4,13 @@ use actix_multipart::form::MultipartForm;
 use actix_web::{
     cookie::Cookie,
     http::{header, StatusCode},
-    web, HttpRequest, HttpResponse, Responder,
+    web, HttpRequest, HttpResponse, Responder, ResponseError,
 };
 
 use crate::{
     config::Config,
     db::DbProvider,
+    db::ProfilePhotoModel,
     db::UserModel,
     web_api::photo::PhotoService,
     web_api::{auth::AuthSessionManager, html_page::HtmlPage},
@@ -44,7 +45,6 @@ pub async fn index_page(
 pub async fn add_profile_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
-    query: web::Query<HomeQuery>,
     config: web::Data<Config>,
 ) -> impl Responder {
     println!(
@@ -115,7 +115,7 @@ pub async fn add_profile_photo_endpoint(
     let photo_fs_save_result = PhotoService::save_photo_on_fs(
         &form.0.new_profile_photo,
         &config.all_photos_folder_name,
-        last_draft_profile_id.to_string().as_str(),
+        last_draft_profile_id,
     )
     .unwrap();
     println!("[routes#add_profile_photo_endpoint]: Photo saved into fs");
@@ -141,7 +141,32 @@ pub async fn delete_profile_photo_endpoint(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     form: web::Form<DeleteProfilePhotoMultipart>,
+    config: web::Data<Config>,
 ) -> impl Responder {
+    async fn process_deleting(
+        profile_id: i64,
+        profile_photo_id: i64,
+        profile_photos: Vec<ProfilePhotoModel>,
+        db_provider: &web::Data<DbProvider>,
+        config: &web::Data<Config>,
+    ) -> Result<(), Box<dyn Error>> {
+        let target_profile_photo = profile_photos
+            .iter()
+            .find(|element| element.id == profile_photo_id)
+            .unwrap()
+            .to_owned();
+        let target_profile_photo_original_name = target_profile_photo.original_file_name.clone();
+        db_provider
+            .mark_profile_photo_as_deleted(target_profile_photo)
+            .await?;
+
+        PhotoService::delete_photo_from_fs(
+            &config.all_photos_folder_name,
+            profile_id,
+            &target_profile_photo_original_name,
+        )
+    }
+
     if !auth_gate.is_authorized {
         return web::Json(DeleteProfilePhotoResponse {
             error: Some("resrited_area".to_owned()),
@@ -155,32 +180,50 @@ pub async fn delete_profile_photo_endpoint(
         .await
         .unwrap();
 
-    let last_draft_profile_photos = last_draft_profile_with_profile_photos
+    let all_profile_photos = last_draft_profile_with_profile_photos
         .first()
         .map(|f| f.to_owned().1)
         .unwrap_or(vec![]);
-    let draft_profile_photos_ids: Vec<i64> = last_draft_profile_photos.iter().map(|f| f.id).collect();
+    let draft_profile_photos_ids: Vec<i64> = all_profile_photos.iter().map(|f| f.id).collect();
     let request_id_is_valid = draft_profile_photos_ids.contains(&request_profile_photo_id);
 
-    if request_id_is_valid {
+    let response = if request_id_is_valid {
         println!(
             "[route#delete_profile_photo_endpoint] User {} requested profile photo {1} delete. OK",
             &auth_gate.user_id.unwrap(),
             &request_profile_photo_id
         );
-        println!("TODO DELETING!")
+
+        let profile_id = last_draft_profile_with_profile_photos.first().unwrap().0.id;
+        process_deleting(
+            profile_id,
+            request_profile_photo_id,
+            all_profile_photos,
+            &db_provider,
+            &config,
+        )
+        .await
+        .map(|_| {
+            println!("[route#delete_profile_photo_endpoint] IO actions were done. Deleted: OK!");
+            web::Json(DeleteProfilePhotoResponse::new())
+        })
+        .map_err(|error| {
+            println!(
+                "[route#delete_profile_photo_endpoint] IO processing exception. Return Error: {}",
+                error
+            );
+            web::Json(DeleteProfilePhotoResponse::new_with_error("process_error"))
+        })
+        .unwrap()
     } else {
         println!(
             "[route#delete_profile_photo_endpoint] User {} tries DELETE SOMEONE'S PHOTO {1}. HACCKKKER :3",
             &auth_gate.user_id.unwrap(), &request_profile_photo_id
         );
-        return web::Json(DeleteProfilePhotoResponse {
-            error: Some("bad_hacker".to_owned()),
-        });
-    }
+        web::Json(DeleteProfilePhotoResponse::new_with_error("bad_hacker"))
+    };
 
-    let delete_profile_photo_response = DeleteProfilePhotoResponse { error: None };
-    web::Json(delete_profile_photo_response)
+    response
 }
 
 pub async fn sign_out_endpoint(auth_gate: AuthenticationGate) -> impl Responder {
