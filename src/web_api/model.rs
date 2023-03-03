@@ -48,12 +48,22 @@ pub struct AddProfilePhotoMultipart {
     pub new_profile_photo: TempFile,
 }
 
+#[derive(Deserialize)]
+pub struct DeleteProfilePhotoMultipart {
+    pub key: String,
+}
+
 #[derive(Serialize, Debug)]
 pub struct AddProfilePhotoResponse {
     pub error: Option<String>,
     pub initialPreview: Vec<String>,
     pub initialPreviewConfig: Vec<ProfilePhotoPreviewConfigResponse>,
     pub append: bool,
+}
+
+#[derive(Serialize, Debug)]
+pub struct DeleteProfilePhotoResponse {
+    pub error: Option<String>,
 }
 
 impl<'a> AddProfilePhotoResponse {
@@ -84,10 +94,10 @@ impl<'a> AddProfilePhotoResponse {
 
         let photo_confings = db_photos
             .iter()
-            .map(|db_photo| 
-                ProfilePhotoPreviewConfigResponse::new(db_photo.id, 
-                    &db_photo.original_file_name, 0)
-            ).collect();
+            .map(|db_photo| {
+                ProfilePhotoPreviewConfigResponse::new(db_photo.id, &db_photo.original_file_name, 0)
+            })
+            .collect();
 
         AddProfilePhotoResponse {
             error: None,
@@ -102,8 +112,6 @@ impl<'a> AddProfilePhotoResponse {
 pub struct ProfilePhotoPreviewConfigResponse {
     // photo name
     pub caption: String,
-    // placeholder
-    pub description: String,
     pub size: i64,
     // delete url
     pub url: String,
@@ -113,13 +121,10 @@ pub struct ProfilePhotoPreviewConfigResponse {
 
 impl<'a> ProfilePhotoPreviewConfigResponse {
     pub fn new(profile_photo_id: i64, os_photo_filename: &'a str, os_file_size: i64) -> Self {
-        let description = format!("profile_photo_{}", profile_photo_id);
-        let delete_photo_url = format!("/profile_photo/upload/{}", profile_photo_id);
         ProfilePhotoPreviewConfigResponse {
             caption: os_photo_filename.to_string(),
-            description: description,
             size: os_file_size,
-            url: delete_photo_url,
+            url: String::from("/profile_photo/delete"),
             key: profile_photo_id,
         }
     }

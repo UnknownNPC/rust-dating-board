@@ -11,3 +11,4 @@ pub use routes::google_sign_in_endpoint;
 pub use routes::sign_out_endpoint;
 pub use routes::add_profile_page;
 pub use routes::add_profile_photo_endpoint;
+pub use routes::delete_profile_photo_endpoint;
