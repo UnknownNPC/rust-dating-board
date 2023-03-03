@@ -150,16 +150,16 @@ pub async fn delete_profile_photo_endpoint(
 
     let request_profile_photo_id: i64 = form.0.key.parse().unwrap();
 
-    let last_draft_profile_photos = db_provider
+    let last_draft_profile_with_profile_photos = db_provider
         .find_last_user_draft_profile(auth_gate.user_id.unwrap())
         .await
         .unwrap();
 
-    let draft_profile_photos = last_draft_profile_photos
+    let last_draft_profile_photos = last_draft_profile_with_profile_photos
         .first()
         .map(|f| f.to_owned().1)
         .unwrap_or(vec![]);
-    let draft_profile_photos_ids: Vec<i64> = draft_profile_photos.iter().map(|f| f.id).collect();
+    let draft_profile_photos_ids: Vec<i64> = last_draft_profile_photos.iter().map(|f| f.id).collect();
     let request_id_is_valid = draft_profile_photos_ids.contains(&request_profile_photo_id);
 
     if request_id_is_valid {

@@ -55,6 +55,7 @@ impl DbProvider {
             .filter(profile::Column::UserId.eq(user_id))
             .filter(profile::Column::Status.eq("draft"))
             .find_with_related(profile_photo::Entity)
+            .filter(profile_photo::Column::Status.eq("active"))
             .all(&self.db_con)
             .await
     }
