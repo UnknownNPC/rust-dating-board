@@ -6,6 +6,7 @@ use actix_web::{
     http::{header, StatusCode},
     web, HttpRequest, HttpResponse, Responder,
 };
+use futures::future::OptionFuture;
 
 use crate::{
     config::Config,
@@ -64,13 +65,13 @@ pub async fn add_profile_page(
 
     let draft_profile_opt = db_provider.find_user_draft_profile(user.id).await.unwrap();
 
-    let profile_photos = if draft_profile_opt.is_some() {
-        db_provider
-            .find_all_profile_photos_for(draft_profile_opt.unwrap().id)
-            .await
-    } else {
-        Ok(vec![])
-    }
+    let profile_photos = OptionFuture::from(
+        draft_profile_opt
+            .as_ref()
+            .map(|profile| db_provider.find_all_profile_photos_for(profile.id)),
+    )
+    .await
+    .unwrap_or(Ok(vec![]))
     .unwrap();
 
     let context =
@@ -170,13 +171,13 @@ pub async fn delete_profile_photo_endpoint(
         .await
         .unwrap();
 
-    let profile_photos = if draft_profile_opt.is_some() {
-        db_provider
-            .find_all_profile_photos_for(draft_profile_opt.as_ref().unwrap().id)
-            .await
-    } else {
-        Ok(vec![])
-    }
+    let profile_photos = OptionFuture::from(
+        draft_profile_opt
+            .as_ref()
+            .map(|profile| db_provider.find_all_profile_photos_for(profile.id)),
+    )
+    .await
+    .unwrap_or(Ok(vec![]))
     .unwrap();
 
     let draft_profile_photos_ids: Vec<i64> = profile_photos.iter().map(|f| f.id).collect();
@@ -247,12 +248,12 @@ pub async fn google_sign_in_endpoint(
         let oauth_user = get_google_user(&callback_payload.credential, &config).await?;
         let db_user_opt = db_provider.find_user_by_email(&oauth_user.email).await?;
 
-        let user = if db_user_opt.is_some() {
+        let user = if let Some(db_user) = db_user_opt {
             println!(
                 "[route#google_sign_in_endpoint] email {} exists. Just reusing",
                 &oauth_user.email
             );
-            db_user_opt.unwrap()
+            db_user
         } else {
             println!(
                 "[route#google_sign_in_endpoint] email {} is new. Creating new user",

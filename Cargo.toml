@@ -17,6 +17,7 @@ jsonwebtoken="8.2.0"
 serde = { version = "1.0.152", features = ["derive"] }
 chrono = "0.4.23"
 actix-multipart = "0.6.0"
+futures = "0.3.26"
 
 [dependencies.sea-orm]
 version = "0.11.0"
