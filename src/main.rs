@@ -34,6 +34,7 @@ async fn main() {
             .app_data(web::Data::new(conf.clone()))
             .route("/", web::get().to(web_api::index_page))
             .route("/add_profile", web::get().to(web_api::add_profile_page))
+            .route("/add_profile", web::post().to(web_api::add_profile_post))
             .service(
                 web::resource("/profile_photo/upload")
                     .route(web::post().to(web_api::add_profile_photo_endpoint)),

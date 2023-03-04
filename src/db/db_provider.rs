@@ -113,6 +113,24 @@ impl DbProvider {
         mutable.update(&self.db_con).await
     }
 
+    pub async fn publish_profie(
+        &self,
+        model: ProfileModel,
+        name: &str, 
+        height: i16, 
+        city: &str, 
+        description: &str
+    ) -> Result<ProfileModel, DbErr> {
+        let mut mutable: profile::ActiveModel = model.into();
+        mutable.name = Set(name.to_owned());
+        mutable.height = Set(height);
+        mutable.city = Set(city.to_owned());
+        mutable.description = Set(description.to_owned());
+        mutable.status = Set("active".to_owned());
+
+        mutable.update(&self.db_con).await
+    }
+
     pub async fn find_cities_on(&self) -> Result<Vec<CityModel>, DbErr> {
         city::Entity::find().filter(city::Column::Status.eq("on")).all(&self.db_con).await
     }

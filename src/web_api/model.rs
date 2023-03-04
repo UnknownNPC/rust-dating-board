@@ -52,6 +52,14 @@ pub struct AddProfilePhotoMultipart {
 }
 
 #[derive(Deserialize)]
+pub struct AddProfileForm {
+    pub name: String,
+    pub height: String,
+    pub city: String,
+    pub description: String,
+}
+
+#[derive(Deserialize)]
 pub struct DeleteProfilePhotoMultipart {
     pub key: String,
 }

@@ -6,7 +6,7 @@ use actix_web::{
     http::{header, StatusCode},
     web, HttpRequest, HttpResponse, Responder,
 };
-use futures::future::OptionFuture;
+use futures::{future::OptionFuture, FutureExt};
 
 use crate::{
     config::Config,
@@ -85,6 +85,47 @@ pub async fn add_profile_page(
     );
 
     HtmlPage::add_profile("Add new profile", &user.name, &context)
+}
+
+pub async fn add_profile_post(
+    db_provider: web::Data<DbProvider>,
+    auth_gate: AuthenticationGate,
+    form: web::Form<AddProfileForm>,
+) -> impl Responder {
+    println!(
+        "[route#add_profile_post] Inside the add_profile post. User auth status {}",
+        auth_gate.is_authorized
+    );
+
+    if let Err(response) = redirect_to_home_if_not_authorized(&auth_gate) {
+        return response;
+    }
+
+    let user_id = auth_gate.user_id.unwrap();
+
+    let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await.unwrap();
+    let draft_profile =
+        draft_profile_opt.unwrap_or(db_provider.add_draft_profile_for(user_id).await.unwrap());
+
+    let height = form.height.parse::<i16>().unwrap();
+    db_provider
+        .publish_profie(
+            draft_profile,
+            &form.name,
+            height,
+            &form.city,
+            &form.description,
+        )
+        .await
+        .map(|_| {
+            println!("[route#add_profile_post] Advert was updated and published");
+            redirect_to_home_page(None, None, Some("profile_added"))
+        })
+        .map_err(|_| {
+            println!("[route#add_profile_post] Error. Advert wasn't published");
+            redirect_to_home_page(None, Some("server_error"), None)
+        })
+        .unwrap()
 }
 
 pub async fn add_profile_photo_endpoint(
@@ -239,9 +280,9 @@ pub async fn sign_out_endpoint(auth_gate: AuthenticationGate) -> impl Responder 
             "[route#sign_out_endpoint] auth user {} is loging out",
             auth_gate.user_id.unwrap()
         );
-        redirect_to_home_page(Some(empty_cookie), None)
+        redirect_to_home_page(Some(empty_cookie), None, None)
     } else {
-        redirect_to_home_page(None, None)
+        redirect_to_home_page(None, None, None)
     }
 }
 
@@ -280,10 +321,10 @@ pub async fn google_sign_in_endpoint(
     }
 
     if callback_payload.credential.is_empty() {
-        return redirect_to_home_page(None, Some("lost_credential"));
+        return redirect_to_home_page(None, Some("lost_credential"), None);
     }
     if callback_payload.g_csrf_token.is_empty() {
-        return redirect_to_home_page(None, Some("lost_g_csrf_token"));
+        return redirect_to_home_page(None, Some("lost_g_csrf_token"), None);
     }
 
     if Some(callback_payload.g_csrf_token.clone())
@@ -291,7 +332,7 @@ pub async fn google_sign_in_endpoint(
             .cookie("g_csrf_token")
             .map(|f| f.value().to_string())
     {
-        return redirect_to_home_page(None, Some("invalid_g_csrf_token"));
+        return redirect_to_home_page(None, Some("invalid_g_csrf_token"), None);
     }
 
     let user_res = fetch_and_save_user(&db_provider, &callback_payload, &config).await;
@@ -300,14 +341,14 @@ pub async fn google_sign_in_endpoint(
         Ok(user) => {
             let session_manager = AuthSessionManager::new(&config);
             let jwt_cookie = session_manager.get_valid_jwt_token(user.id).await;
-            redirect_to_home_page(Some(jwt_cookie), None)
+            redirect_to_home_page(Some(jwt_cookie), None, None)
         }
         Err(err) => {
             println!(
                 "[route#google_sign_in_endpoint] error happened during user fetch: {}",
                 err
             );
-            redirect_to_home_page(None, Some("invalid_user"))
+            redirect_to_home_page(None, Some("invalid_user"), None)
         }
     }
 }
@@ -318,7 +359,7 @@ fn redirect_to_home_if_not_authorized(auth_gate: &AuthenticationGate) -> Result<
             "[route#...] endpoint for authorized only. Auth status {}. Redirection!",
             auth_gate.is_authorized
         );
-        Result::Err(redirect_to_home_page(None, Some("restricted_area")))
+        Result::Err(redirect_to_home_page(None, Some("restricted_area"), None))
     } else {
         println!(
             "[route#...] endpoint for authorized only. Auth status {}. OK!",
@@ -328,11 +369,17 @@ fn redirect_to_home_if_not_authorized(auth_gate: &AuthenticationGate) -> Result<
     }
 }
 
-fn redirect_to_home_page(jwt_cookie: Option<Cookie>, error: Option<&str>) -> HttpResponse {
+fn redirect_to_home_page(
+    jwt_cookie: Option<Cookie>,
+    error: Option<&str>,
+    msg: Option<&str>,
+) -> HttpResponse {
     let mut response_builder = HttpResponse::build(StatusCode::FOUND);
 
     if error.is_some() {
         response_builder.append_header((header::LOCATION, format!("/?error={}", error.unwrap())))
+    } else if msg.is_some() {
+        response_builder.append_header((header::LOCATION, format!("/?msg={}", msg.unwrap())))
     } else {
         response_builder.append_header((header::LOCATION, "/"))
     };
