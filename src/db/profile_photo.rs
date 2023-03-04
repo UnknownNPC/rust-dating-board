@@ -9,8 +9,9 @@ pub struct Model {
     pub id: i64,
     pub created_at: DateTime,
     pub status: String,
-    pub original_file_name: String,
+    pub file_name: String,
     pub profile_id: i64,
+    pub size: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

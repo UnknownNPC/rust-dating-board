@@ -63,7 +63,7 @@ pub async fn add_profile_page(
         .unwrap()
         .unwrap();
 
-    let draft_profile_opt = db_provider.find_user_draft_profile(user.id).await.unwrap();
+    let draft_profile_opt = db_provider.find_draft_profile_for(user.id).await.unwrap();
 
     let profile_photos = OptionFuture::from(
         draft_profile_opt
@@ -93,13 +93,13 @@ pub async fn add_profile_photo_endpoint(
     let user_id = auth_gate.user_id.unwrap();
 
     // Find old or create new draft profile
-    let draft_profile_opt = db_provider.find_user_draft_profile(user_id).await.unwrap();
+    let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await.unwrap();
     let draft_profile_id = if draft_profile_opt.is_some() {
         println!("[routes#add_profile_photo_endpoint]: Found draft profile. Re-useing");
         draft_profile_opt.unwrap().id
     } else {
         println!("[routes#add_profile_photo_endpoint]: Creating new draft profile");
-        db_provider.add_new_draft_profile(user_id).await.unwrap().id
+        db_provider.add_draft_profile_for(user_id).await.unwrap().id
     };
 
     //Save photo to FS for this profile
@@ -113,7 +113,11 @@ pub async fn add_profile_photo_endpoint(
 
     //Save profile photo db entity
     let profile_photo_db = db_provider
-        .add_new_profile_photo(draft_profile_id, &photo_fs_save_result.name.as_str())
+        .add_profile_photo(
+            draft_profile_id,
+            &photo_fs_save_result.name.as_str(),
+            photo_fs_save_result.size,
+        )
         .await
         .unwrap();
     println!("[routes#add_profile_photo_endpoint]: Photo saved into database");
@@ -146,15 +150,15 @@ pub async fn delete_profile_photo_endpoint(
             .find(|element| element.id == profile_photo_id)
             .unwrap()
             .to_owned();
-        let target_profile_photo_original_name = target_profile_photo.original_file_name.clone();
+        let target_profile_photo_name = target_profile_photo.file_name.clone();
         db_provider
-            .mark_profile_photo_as_deleted(target_profile_photo)
+            .update_profile_photo_with_delete_status(target_profile_photo)
             .await?;
 
         PhotoService::delete_photo_from_fs(
             &config.all_photos_folder_name,
             profile_id,
-            &target_profile_photo_original_name,
+            &target_profile_photo_name,
         )
     }
 
@@ -167,7 +171,7 @@ pub async fn delete_profile_photo_endpoint(
     let request_profile_photo_id: i64 = form.0.key.parse().unwrap();
 
     let draft_profile_opt = db_provider
-        .find_user_draft_profile(auth_gate.user_id.unwrap())
+        .find_draft_profile_for(auth_gate.user_id.unwrap())
         .await
         .unwrap();
 

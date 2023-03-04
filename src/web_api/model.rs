@@ -74,9 +74,7 @@ impl<'a> DeleteProfilePhotoResponse {
     }
 
     pub fn new() -> Self {
-        DeleteProfilePhotoResponse {
-            error: None,
-        }
+        DeleteProfilePhotoResponse { error: None }
     }
 }
 
@@ -102,14 +100,14 @@ impl<'a> AddProfilePhotoResponse {
                     + "/"
                     + &profile_id.to_string()
                     + "/"
-                    + &db_photo.original_file_name
+                    + &db_photo.file_name
             })
             .collect();
 
         let photo_confings = db_photos
             .iter()
             .map(|db_photo| {
-                ProfilePhotoPreviewConfigResponse::new(db_photo.id, &db_photo.original_file_name, 0)
+                ProfilePhotoPreviewConfigResponse::new(db_photo.id, &db_photo.file_name, db_photo.size)
             })
             .collect();
 

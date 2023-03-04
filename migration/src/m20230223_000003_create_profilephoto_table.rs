@@ -1,5 +1,5 @@
-use sea_orm_migration::prelude::*;
 use super::m20230223_000002_create_profile_table::Profile;
+use sea_orm_migration::prelude::*;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -25,17 +25,18 @@ impl MigrationTrait for Migration {
                             .not_null(),
                     )
                     .col(ColumnDef::new(ProfilePhoto::Status).string().not_null())
-                    .col(ColumnDef::new(ProfilePhoto::OriginalFileName).string().not_null())
+                    .col(ColumnDef::new(ProfilePhoto::FileName).string().not_null())
                     .col(
                         ColumnDef::new(ProfilePhoto::ProfileId)
                             .big_integer()
                             .not_null(),
                     )
+                    .col(ColumnDef::new(ProfilePhoto::Size).big_integer().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-profilephoto-profile_id")
                             .from(ProfilePhoto::Table, ProfilePhoto::ProfileId)
-                            .to(Profile::Table, Profile::Id)
+                            .to(Profile::Table, Profile::Id),
                     )
                     .to_owned(),
             )
@@ -55,6 +56,7 @@ enum ProfilePhoto {
     Id,
     CreatedAt,
     Status,
-    OriginalFileName,
+    FileName,
+    Size,
     ProfileId,
 }
