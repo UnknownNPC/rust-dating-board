@@ -20,6 +20,7 @@ pub struct AddProfilePageContext {
     pub phone_number: String,
     pub city: String,
     pub init_photos: AddProfilePhotoResponse,
+    pub all_cities: Vec<String>
 }
 
 impl<'a> AddProfilePageContext {
@@ -27,6 +28,7 @@ impl<'a> AddProfilePageContext {
         all_photos_folder: &str,
         profile_id: i64,
         db_photos: Vec<ProfilePhotoModel>,
+        all_cities: Vec<String>
     ) -> Self {
         let profile_photo_response =
             AddProfilePhotoResponse::new_with_payload(all_photos_folder, profile_id, db_photos);
@@ -37,6 +39,7 @@ impl<'a> AddProfilePageContext {
             phone_number: String::from(""),
             city: String::from(""),
             init_photos: profile_photo_response,
+            all_cities
         }
     }
 }

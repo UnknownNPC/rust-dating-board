@@ -29,10 +29,12 @@
                     </div>
                     <div class="form-group col-md-4">
                         <select class="custom-select" id="inlineFormCustomSelectPref">
-                            <option selected>Місто</option>
-                            <option value="1">Київ</option>
-                            <option value="2">Харків</option>
-                            <option value="3">Одеса</option>
+                            <% if profile_context.city.is_empty() { %>
+                                <option selected>Виберіть місто</option>
+                            <% } %>
+                            <% for city in &profile_context.all_cities { %>
+                            <option value="<%= city %>"><%= city %></option>
+                            <% } %>
                         </select>
                     </div>
                 </div>

@@ -6,6 +6,7 @@ use sea_orm::{DbConn, EntityTrait};
 use super::profile::{self, Model as ProfileModel};
 use super::profile_photo::{self, Model as ProfilePhotoModel};
 use super::user::{self, Model as UserModel};
+use super::city::{self, Model as CityModel};
 
 #[derive(Clone)]
 pub struct DbProvider {
@@ -111,4 +112,9 @@ impl DbProvider {
 
         mutable.update(&self.db_con).await
     }
+
+    pub async fn find_cities_on(&self) -> Result<Vec<CityModel>, DbErr> {
+        city::Entity::find().filter(city::Column::Status.eq("on")).all(&self.db_con).await
+    }
+
 }

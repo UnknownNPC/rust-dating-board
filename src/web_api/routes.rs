@@ -74,8 +74,15 @@ pub async fn add_profile_page(
     .unwrap_or(Ok(vec![]))
     .unwrap();
 
-    let context =
-        AddProfilePageContext::new(&config.all_photos_folder_name, user.id, profile_photos);
+    let cities_models = db_provider.find_cities_on().await.unwrap();
+    let cities_names = cities_models.iter().map(|city| city.name.clone()).collect();
+
+    let context = AddProfilePageContext::new(
+        &config.all_photos_folder_name,
+        user.id,
+        profile_photos,
+        cities_names,
+    );
 
     HtmlPage::add_profile("Add new profile", &user.name, &context)
 }
