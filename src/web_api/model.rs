@@ -56,6 +56,7 @@ pub struct AddProfileForm {
     pub name: String,
     pub height: String,
     pub city: String,
+    pub phone_number: String,
     pub description: String,
 }
 

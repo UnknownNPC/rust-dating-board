@@ -119,13 +119,15 @@ impl DbProvider {
         name: &str, 
         height: i16, 
         city: &str, 
-        description: &str
+        description: &str,
+        phone_number: &str
     ) -> Result<ProfileModel, DbErr> {
         let mut mutable: profile::ActiveModel = model.into();
         mutable.name = Set(name.to_owned());
         mutable.height = Set(height);
         mutable.city = Set(city.to_owned());
         mutable.description = Set(description.to_owned());
+        mutable.phone_number = Set(phone_number.to_owned());
         mutable.status = Set("active".to_owned());
 
         mutable.update(&self.db_con).await

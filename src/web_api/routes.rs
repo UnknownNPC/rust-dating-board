@@ -104,8 +104,16 @@ pub async fn add_profile_post(
     let user_id = auth_gate.user_id.unwrap();
 
     let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await.unwrap();
-    let draft_profile =
-        draft_profile_opt.unwrap_or(db_provider.add_draft_profile_for(user_id).await.unwrap());
+    let draft_profile = match draft_profile_opt {
+        Some(profile_model) => {
+            println!("[route#add_profile_post] Draft exists. Re-using");
+            profile_model
+        }
+        None => {
+            println!("[route#add_profile_post] Draft profile wasn't find. Creating new");
+            db_provider.add_draft_profile_for(user_id).await.unwrap()
+        }
+    };
 
     let height = form.height.parse::<i16>().unwrap();
     db_provider
@@ -115,6 +123,7 @@ pub async fn add_profile_post(
             height,
             &form.city,
             &form.description,
+            &form.phone_number,
         )
         .await
         .map(|_| {
