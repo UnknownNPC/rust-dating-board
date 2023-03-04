@@ -13,7 +13,7 @@
       <p class="h1">h1. Bootstrap heading</p>
 
       <div class="row">
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
               <div class="card-deck">
                   <div class="card">
                       <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
@@ -25,7 +25,7 @@
                   </div>
               </div>
           </div>
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
               <div class="card-deck">
                   <div class="card">
                       <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
@@ -37,7 +37,7 @@
                   </div>
               </div>
           </div>
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
               <div class="card-deck">
                   <div class="card">
                       <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
@@ -50,7 +50,7 @@
               </div>
           </div>
       
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
               <div class="card-deck">
                   <div class="card">
                       <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
@@ -62,7 +62,7 @@
                   </div>
               </div>
           </div>
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
               <div class="card-deck">
                   <div class="card">
                       <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
@@ -74,7 +74,7 @@
                   </div>
               </div>
           </div>
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12">
+          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
               <div class="card-deck">
                   <div class="card">
                       <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">

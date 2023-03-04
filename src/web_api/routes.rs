@@ -63,6 +63,7 @@ pub async fn add_profile_page(
         .unwrap()
         .unwrap();
 
+    //do not want create draft profile on page opening
     let draft_profile_opt = db_provider.find_draft_profile_for(user.id).await.unwrap();
 
     let profile_photos = OptionFuture::from(
@@ -77,9 +78,11 @@ pub async fn add_profile_page(
     let cities_models = db_provider.find_cities_on().await.unwrap();
     let cities_names = cities_models.iter().map(|city| city.name.clone()).collect();
 
+    let profile_id = draft_profile_opt.map(|draft_profile| draft_profile.id).unwrap_or(-1);
+
     let context = AddProfilePageContext::new(
         &config.all_photos_folder_name,
-        user.id,
+        profile_id,
         profile_photos,
         cities_names,
     );
