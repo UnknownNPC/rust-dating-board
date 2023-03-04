@@ -19,8 +19,13 @@
                             placeholder="Ім'я">
                     </div>
                     <div class="form-group col-md-4">
-                        <input type="number" class="form-control" id="height_id" value="<%= profile_context.height %>"
-                            placeholder="Зріст">
+                    <input type="number" class="form-control" id="height_id" 
+                        <% if profile_context.height == 0 { %>
+                            value=""
+                        <% } else { %>
+                            value="<%= profile_context.height %>"
+                        <% } %>
+                    placeholder="Зріст">
                     </div>
                     <div class="form-group col-md-4">
                         <select class="custom-select" id="inlineFormCustomSelectPref">
@@ -78,7 +83,8 @@
                         caption: '<%= init_photo.caption %>',
                         width: '120px',
                         url: '<%= init_photo.url %>',
-                        key: <%= init_photo.key %>
+                        key: <%= init_photo.key %>,
+                        size: <%= init_photo.size %>
                     },
                 <% } %>
                 ],
