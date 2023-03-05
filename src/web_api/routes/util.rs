@@ -3,6 +3,27 @@ use actix_web::http::header;
 use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
 
+//common models
+pub struct NavContext<'a> {
+    pub name: &'a str,
+}
+
+impl<'a> NavContext<'a> {
+    pub fn new(name: &'a str) -> Self {
+        NavContext { name }
+    }
+}
+
+pub struct ActionContext<'a> {
+    pub error_msg: &'a str,
+}
+
+impl<'a> ActionContext<'a> {
+    pub fn new(error_msg: &'a str) -> Self {
+        ActionContext { error_msg }
+    }
+}
+
 // commmon functions
 pub fn redirect_to_home_if_not_authorized(is_authorized: bool) -> Result<(), HttpResponse> {
     if !is_authorized {

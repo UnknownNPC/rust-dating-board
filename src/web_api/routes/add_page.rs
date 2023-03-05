@@ -12,7 +12,10 @@ use crate::{
     web_api::photo::PhotoService,
     web_api::{
         auth::AuthenticationGate,
-        routes::{html_render::HtmlPage, util::{redirect_to_home_if_not_authorized, redirect_to_home_page}},
+        routes::{
+            html_render::HtmlPage,
+            util::{redirect_to_home_if_not_authorized, redirect_to_home_page, NavContext},
+        },
     },
 };
 
@@ -56,14 +59,16 @@ pub async fn add_profile_page(
         .map(|draft_profile| draft_profile.id)
         .unwrap_or(-1);
 
-    let context = AddProfilePageContext::new(
+    let data_contex = AddProfilePageDataContext::new(
         &config.all_photos_folder_name,
         profile_id,
         profile_photos,
         cities_names,
     );
 
-    HtmlPage::add_profile(&user.name, &context)
+    let nav_context = NavContext::new(&user.name);
+
+    HtmlPage::add_profile(&nav_context, &data_contex)
 }
 
 pub async fn add_profile_post(
@@ -265,7 +270,7 @@ pub async fn delete_profile_photo_endpoint(
     response
 }
 
-pub struct AddProfilePageContext {
+pub struct AddProfilePageDataContext {
     pub name: String,
     pub height: i16,
     pub description: String,
@@ -275,7 +280,7 @@ pub struct AddProfilePageContext {
     pub all_cities: Vec<String>,
 }
 
-impl<'a> AddProfilePageContext {
+impl<'a> AddProfilePageDataContext {
     pub fn new(
         all_photos_folder: &str,
         profile_id: i64,
@@ -284,7 +289,7 @@ impl<'a> AddProfilePageContext {
     ) -> Self {
         let profile_photo_response =
             AddProfilePhotoJsonResponse::new_with_payload(all_photos_folder, profile_id, db_photos);
-        AddProfilePageContext {
+        AddProfilePageDataContext {
             name: String::from(""),
             height: 0,
             description: String::from(""),

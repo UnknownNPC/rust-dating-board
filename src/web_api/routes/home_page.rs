@@ -1,10 +1,17 @@
 use actix_web::{web, Responder};
 use futures::future::OptionFuture;
+use sea_orm::ColIdx;
 use serde::Deserialize;
 
 use crate::{
     db::DbProvider,
-    web_api::{auth::AuthenticationGate, routes::html_render::HtmlPage},
+    web_api::{
+        auth::AuthenticationGate,
+        routes::{
+            html_render::HtmlPage,
+            util::{ActionContext, NavContext},
+        },
+    },
 };
 
 pub async fn index_page(
@@ -22,9 +29,15 @@ pub async fn index_page(
         .unwrap_or(Ok(None))
         .unwrap();
 
-    let user_name = user_opt.map(|f| f.name);
+    let user_name_opt = user_opt.map(|f| f.name);
+    let nav_context = NavContext::new(user_name_opt.as_deref().unwrap_or(""));
 
-    HtmlPage::homepage(query.error.as_deref(), user_name.as_deref())
+    //todo err code 2 msg
+    let action_context = ActionContext::new(query.error.as_deref().unwrap_or(""));
+
+    let data_context = HomePageDataContext { profiles: vec![] };
+
+    HtmlPage::homepage(&nav_context, &action_context, &data_context)
 }
 
 #[derive(Deserialize)]
@@ -37,4 +50,12 @@ pub enum HomeFilterRequest {
 pub struct HomeQueryRequest {
     pub error: Option<String>,
     pub filter: Option<HomeFilterRequest>,
+}
+
+pub struct HomePageDataContext<'a> {
+    profiles: Vec<HomePageProfileDataContext<'a>>,
+}
+
+pub struct HomePageProfileDataContext<'a> {
+    name: &'a str,
 }

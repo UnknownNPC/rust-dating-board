@@ -3,9 +3,9 @@
 
 <head>
     <% let head_title="Dodaty" ; %>
-    <% include!("./includes/head_body.stpl"); %>
-        <link rel="stylesheet" href="static/css/bootstrap-icons.min.css" crossorigin="anonymous">
-        <link href="static/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
+        <% include!("./includes/head_body.stpl"); %>
+            <link rel="stylesheet" href="static/css/bootstrap-icons.min.css" crossorigin="anonymous">
+            <link href="static/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
@@ -17,14 +17,14 @@
                 <div class="form-row">
                     <div class="form-group col-md-4">
                         <input type="text" class="form-control" name="name" id="name_id"
-                            value="<%= profile_context.name %>" placeholder="Ім'я">
+                            value="<%= data_context.name %>" placeholder="Ім'я">
                     </div>
                     <div class="form-group col-md-4">
                         <input type="number" class="form-control" name="height" id="height_id" <% if
-                            profile_context.height==0 { %>
+                            data_context.height==0 { %>
                         value=""
                         <% } else { %>
-                            value="<%= profile_context.height %>"
+                            value="<%= data_context.height %>"
                                 <% } %>
                                     placeholder="Зріст">
                     </div>
@@ -36,14 +36,14 @@
                             <span class="input-group-text" id="phone_prefix">+380</span>
                         </div>
                         <input type="text" class="form-control" aria-describedby="phone_prefix" name="phone_number"
-                            id="phone_number_id" value="<%= profile_context.phone_number %>" placeholder="Телефон">
+                            id="phone_number_id" value="<%= data_context.phone_number %>" placeholder="Телефон">
                     </div>
                     <div class="form-group col-md-4">
                         <select class="custom-select" name="city" id="city_id">
-                            <% if profile_context.city.is_empty() { %>
+                            <% if data_context.city.is_empty() { %>
                                 <option selected>Виберіть місто</option>
                                 <% } %>
-                                    <% for city in &profile_context.all_cities { %>
+                                    <% for city in &data_context.all_cities { %>
                                         <option value="<%= city %>">
                                             <% if city=="harkiv" { %>
                                                 Харків
@@ -62,7 +62,7 @@
                 <div class="form-row">
                     <div class="form-group col-md-12">
                         <textarea class="form-control" name="description" id="description_id"
-                            value="<%= profile_context.description %>" rows="4" placeholder="Опис"></textarea>
+                            value="<%= data_context.description %>" rows="4" placeholder="Опис"></textarea>
                     </div>
                 </div>
                 <div class="form-row">
@@ -101,12 +101,12 @@
                 overwriteInitial: false,
 
                 initialPreview: [
-                <% for photo_url in & profile_context.init_photos.initialPreview { %>
+                <% for photo_url in & data_context.init_photos.initialPreview { %>
             "<%= photo_url %>",
                 <% } %>
                 ],
             initialPreviewConfig: [
-                <% for init_photo in & profile_context.init_photos.initialPreviewConfig { %>
+                <% for init_photo in & data_context.init_photos.initialPreviewConfig { %>
         {
             caption: '<%= init_photo.caption %>',
             width: '120px',
