@@ -1,0 +1,1 @@
+pub const PROFILES_ON_PAGE: &'static i64 = 10;

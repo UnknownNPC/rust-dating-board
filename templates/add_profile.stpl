@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <% let head_title="Dodaty" ; %>
     <% include!("./includes/head_body.stpl"); %>
         <link rel="stylesheet" href="static/css/bootstrap-icons.min.css" crossorigin="anonymous">
         <link href="static/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />

@@ -9,11 +9,7 @@ mod config;
 mod db;
 mod web_api;
 
-// use std::sync::Mutex;
-
 use crate::{config::Config, db::DbProvider};
-
-// use crate::db::db_provider::{self, Service};
 
 async fn establish_connection(conf: &Config) -> Result<DbConn, DbErr> {
     Database::connect(&conf.database_url).await

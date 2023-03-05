@@ -1,44 +1,20 @@
 use std::error::Error;
 
-use actix_multipart::form::MultipartForm;
-use actix_web::{
-    cookie::Cookie,
-    http::{header, StatusCode},
-    web, HttpRequest, HttpResponse, Responder,
-};
+use actix_multipart::form::{tempfile::TempFile, text::Text, MultipartForm};
+use actix_web::{web, Responder};
 use futures::future::OptionFuture;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     config::Config,
     db::DbProvider,
     db::ProfilePhotoModel,
-    db::UserModel,
     web_api::photo::PhotoService,
-    web_api::{auth::AuthSessionManager, html_page::HtmlPage},
+    web_api::{
+        auth::AuthenticationGate,
+        routes::{html_render::HtmlPage, util::{redirect_to_home_if_not_authorized, redirect_to_home_page}},
+    },
 };
-
-use super::{auth::AuthenticationGate, model::*, sign_in::get_google_user};
-
-pub async fn index_page(
-    db_provider: web::Data<DbProvider>,
-    auth_gate: AuthenticationGate,
-    query: web::Query<HomeQuery>,
-) -> impl Responder {
-    println!(
-        "[route#index_page] Inside the index page. User auth status {}",
-        auth_gate.is_authorized
-    );
-
-
-    let user_opt = OptionFuture::from(auth_gate.user_id.map(|id| {
-        db_provider
-        .find_user_by_id(id)
-    })).await.unwrap_or(Ok(None)).unwrap();
-
-    let user_name = user_opt.map(|f| f.name);
-
-    HtmlPage::homepage(query.error.as_deref(), user_name.as_deref())
-}
 
 pub async fn add_profile_page(
     db_provider: web::Data<DbProvider>,
@@ -50,7 +26,7 @@ pub async fn add_profile_page(
         auth_gate.is_authorized
     );
 
-    if let Err(response) = redirect_to_home_if_not_authorized(&auth_gate) {
+    if let Err(response) = redirect_to_home_if_not_authorized(auth_gate.is_authorized) {
         return response;
     }
 
@@ -87,20 +63,20 @@ pub async fn add_profile_page(
         cities_names,
     );
 
-    HtmlPage::add_profile("Add new profile", &user.name, &context)
+    HtmlPage::add_profile(&user.name, &context)
 }
 
 pub async fn add_profile_post(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
-    form: web::Form<AddProfileForm>,
+    form: web::Form<AddProfileFormRequest>,
 ) -> impl Responder {
     println!(
         "[route#add_profile_post] Inside the add_profile post. User auth status {}",
         auth_gate.is_authorized
     );
 
-    if let Err(response) = redirect_to_home_if_not_authorized(&auth_gate) {
+    if let Err(response) = redirect_to_home_if_not_authorized(auth_gate.is_authorized) {
         return response;
     }
 
@@ -144,10 +120,12 @@ pub async fn add_profile_photo_endpoint(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     config: web::Data<Config>,
-    form: MultipartForm<AddProfilePhotoMultipart>,
+    form: MultipartForm<AddProfilePhotoMultipartRequest>,
 ) -> impl Responder {
     if !auth_gate.is_authorized {
-        return web::Json(AddProfilePhotoResponse::new_with_error("resticted_area"));
+        return web::Json(AddProfilePhotoJsonResponse::new_with_error(
+            "resticted_area",
+        ));
     }
 
     let user_id = auth_gate.user_id.unwrap();
@@ -182,7 +160,7 @@ pub async fn add_profile_photo_endpoint(
         .unwrap();
     println!("[routes#add_profile_photo_endpoint]: Photo saved into database");
 
-    let new_file_response = AddProfilePhotoResponse::new_with_payload(
+    let new_file_response = AddProfilePhotoJsonResponse::new_with_payload(
         &config.all_photos_folder_name,
         draft_profile_id,
         vec![profile_photo_db],
@@ -195,7 +173,7 @@ pub async fn add_profile_photo_endpoint(
 pub async fn delete_profile_photo_endpoint(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
-    form: web::Form<DeleteProfilePhotoMultipart>,
+    form: web::Form<DeleteProfilePhotoMultipartRequest>,
     config: web::Data<Config>,
 ) -> impl Responder {
     async fn process_deleting(
@@ -223,7 +201,7 @@ pub async fn delete_profile_photo_endpoint(
     }
 
     if !auth_gate.is_authorized {
-        return web::Json(DeleteProfilePhotoResponse {
+        return web::Json(DeleteProfilePhotoJsonResponse {
             error: Some("resrited_area".to_owned()),
         });
     }
@@ -264,14 +242,16 @@ pub async fn delete_profile_photo_endpoint(
         .await
         .map(|_| {
             println!("[route#delete_profile_photo_endpoint] IO actions were done. Deleted: OK!");
-            web::Json(DeleteProfilePhotoResponse::new())
+            web::Json(DeleteProfilePhotoJsonResponse::new())
         })
         .map_err(|error| {
             println!(
                 "[route#delete_profile_photo_endpoint] IO processing exception. Return Error: {}",
                 error
             );
-            web::Json(DeleteProfilePhotoResponse::new_with_error("process_error"))
+            web::Json(DeleteProfilePhotoJsonResponse::new_with_error(
+                "process_error",
+            ))
         })
         .unwrap()
     } else {
@@ -279,124 +259,153 @@ pub async fn delete_profile_photo_endpoint(
             "[route#delete_profile_photo_endpoint] User {} tries DELETE SOMEONE'S PHOTO {1}. HACCKKKER :3",
             &auth_gate.user_id.unwrap(), &request_profile_photo_id
         );
-        web::Json(DeleteProfilePhotoResponse::new_with_error("bad_hacker"))
+        web::Json(DeleteProfilePhotoJsonResponse::new_with_error("bad_hacker"))
     };
 
     response
 }
 
-pub async fn sign_out_endpoint(auth_gate: AuthenticationGate) -> impl Responder {
-    let empty_cookie = AuthSessionManager::get_empty_jwt_token();
-    if auth_gate.is_authorized {
-        println!(
-            "[route#sign_out_endpoint] auth user {} is loging out",
-            auth_gate.user_id.unwrap()
-        );
-        redirect_to_home_page(Some(empty_cookie), None, None)
-    } else {
-        redirect_to_home_page(None, None, None)
-    }
+pub struct AddProfilePageContext {
+    pub name: String,
+    pub height: i16,
+    pub description: String,
+    pub phone_number: String,
+    pub city: String,
+    pub init_photos: AddProfilePhotoJsonResponse,
+    pub all_cities: Vec<String>,
 }
 
-pub async fn google_sign_in_endpoint(
-    db_provider: web::Data<DbProvider>,
-    config: web::Data<Config>,
-    callback_payload: web::Form<GoogleSignInPost>,
-    request: HttpRequest,
-) -> impl Responder {
-    async fn fetch_and_save_user(
-        db_provider: &web::Data<DbProvider>,
-        callback_payload: &web::Form<GoogleSignInPost>,
-        config: &web::Data<Config>,
-    ) -> Result<UserModel, Box<dyn Error>> {
-        let oauth_user = get_google_user(&callback_payload.credential, &config).await?;
-        let db_user_opt = db_provider.find_user_by_email(&oauth_user.email).await?;
-
-        let user = if let Some(db_user) = db_user_opt {
-            println!(
-                "[route#google_sign_in_endpoint] email {} exists. Just reusing",
-                &oauth_user.email
-            );
-            db_user
-        } else {
-            println!(
-                "[route#google_sign_in_endpoint] email {} is new. Creating new user",
-                &oauth_user.email
-            );
-            let new_user_model = db_provider
-                .add_user(None, &oauth_user.name, &oauth_user.email, Some("Google"))
-                .await?;
-            new_user_model
-        };
-
-        Ok(user)
-    }
-
-    if callback_payload.credential.is_empty() {
-        return redirect_to_home_page(None, Some("lost_credential"), None);
-    }
-    if callback_payload.g_csrf_token.is_empty() {
-        return redirect_to_home_page(None, Some("lost_g_csrf_token"), None);
-    }
-
-    if Some(callback_payload.g_csrf_token.clone())
-        != request
-            .cookie("g_csrf_token")
-            .map(|f| f.value().to_string())
-    {
-        return redirect_to_home_page(None, Some("invalid_g_csrf_token"), None);
-    }
-
-    let user_res = fetch_and_save_user(&db_provider, &callback_payload, &config).await;
-
-    match user_res {
-        Ok(user) => {
-            let session_manager = AuthSessionManager::new(&config);
-            let jwt_cookie = session_manager.get_valid_jwt_token(user.id).await;
-            redirect_to_home_page(Some(jwt_cookie), None, None)
-        }
-        Err(err) => {
-            println!(
-                "[route#google_sign_in_endpoint] error happened during user fetch: {}",
-                err
-            );
-            redirect_to_home_page(None, Some("invalid_user"), None)
+impl<'a> AddProfilePageContext {
+    pub fn new(
+        all_photos_folder: &str,
+        profile_id: i64,
+        db_photos: Vec<ProfilePhotoModel>,
+        all_cities: Vec<String>,
+    ) -> Self {
+        let profile_photo_response =
+            AddProfilePhotoJsonResponse::new_with_payload(all_photos_folder, profile_id, db_photos);
+        AddProfilePageContext {
+            name: String::from(""),
+            height: 0,
+            description: String::from(""),
+            phone_number: String::from(""),
+            city: String::from(""),
+            init_photos: profile_photo_response,
+            all_cities,
         }
     }
 }
 
-fn redirect_to_home_if_not_authorized(auth_gate: &AuthenticationGate) -> Result<(), HttpResponse> {
-    if !auth_gate.is_authorized {
-        println!(
-            "[route#...] endpoint for authorized only. Auth status {}. Redirection!",
-            auth_gate.is_authorized
-        );
-        Result::Err(redirect_to_home_page(None, Some("restricted_area"), None))
-    } else {
-        println!(
-            "[route#...] endpoint for authorized only. Auth status {}. OK!",
-            auth_gate.is_authorized
-        );
-        Ok(())
+#[derive(MultipartForm)]
+pub struct AddProfilePhotoMultipartRequest {
+    #[multipart(rename = "fileId")]
+    pub file_id: Text<String>,
+    pub new_profile_photo: TempFile,
+}
+
+#[derive(Deserialize)]
+pub struct AddProfileFormRequest {
+    pub name: String,
+    pub height: String,
+    pub city: String,
+    pub phone_number: String,
+    pub description: String,
+}
+
+#[derive(Deserialize)]
+pub struct DeleteProfilePhotoMultipartRequest {
+    pub key: String,
+}
+
+#[derive(Serialize, Debug)]
+pub struct DeleteProfilePhotoJsonResponse {
+    pub error: Option<String>,
+}
+
+impl<'a> DeleteProfilePhotoJsonResponse {
+    pub fn new_with_error(error: &str) -> Self {
+        DeleteProfilePhotoJsonResponse {
+            error: Some(error.to_string()),
+        }
+    }
+
+    pub fn new() -> Self {
+        DeleteProfilePhotoJsonResponse { error: None }
     }
 }
 
-fn redirect_to_home_page(
-    jwt_cookie: Option<Cookie>,
-    error: Option<&str>,
-    msg: Option<&str>,
-) -> HttpResponse {
-    let mut response_builder = HttpResponse::build(StatusCode::FOUND);
+#[derive(Serialize, Debug)]
+pub struct AddProfilePhotoJsonResponse {
+    pub error: Option<String>,
+    pub initialPreview: Vec<String>,
+    pub initialPreviewConfig: Vec<ProfilePhotoPreviewConfigJsonResponse>,
+    pub append: bool,
+}
 
-    if error.is_some() {
-        response_builder.append_header((header::LOCATION, format!("/?error={}", error.unwrap())))
-    } else if msg.is_some() {
-        response_builder.append_header((header::LOCATION, format!("/?msg={}", msg.unwrap())))
-    } else {
-        response_builder.append_header((header::LOCATION, "/"))
-    };
-    if jwt_cookie.is_some() {
-        response_builder.cookie(jwt_cookie.unwrap());
-    };
-    response_builder.finish()
+impl<'a> AddProfilePhotoJsonResponse {
+    pub fn new_with_error(error: &str) -> Self {
+        AddProfilePhotoJsonResponse {
+            error: Some(error.to_string()),
+            initialPreview: vec![],
+            initialPreviewConfig: vec![],
+            append: true,
+        }
+    }
+
+    pub fn new_with_payload(
+        all_photos_folder: &'a str,
+        profile_id: i64,
+        db_photos: Vec<ProfilePhotoModel>,
+    ) -> Self {
+        let photo_urls = db_photos
+            .iter()
+            .map(|db_photo| {
+                all_photos_folder.to_owned()
+                    + "/"
+                    + &profile_id.to_string()
+                    + "/"
+                    + &db_photo.file_name
+            })
+            .collect();
+
+        let photo_confings = db_photos
+            .iter()
+            .map(|db_photo| {
+                ProfilePhotoPreviewConfigJsonResponse::new(
+                    db_photo.id,
+                    &db_photo.file_name,
+                    db_photo.size,
+                )
+            })
+            .collect();
+
+        AddProfilePhotoJsonResponse {
+            error: None,
+            initialPreview: photo_urls,
+            initialPreviewConfig: photo_confings,
+            append: true,
+        }
+    }
+}
+
+#[derive(Serialize, Debug)]
+pub struct ProfilePhotoPreviewConfigJsonResponse {
+    // photo name
+    pub caption: String,
+    pub size: i64,
+    // delete url
+    pub url: String,
+    // profile photo id
+    pub key: i64,
+}
+
+impl<'a> ProfilePhotoPreviewConfigJsonResponse {
+    pub fn new(profile_photo_id: i64, os_photo_filename: &'a str, os_file_size: i64) -> Self {
+        ProfilePhotoPreviewConfigJsonResponse {
+            caption: os_photo_filename.to_string(),
+            size: os_file_size,
+            url: String::from("/profile_photo/delete"),
+            key: profile_photo_id,
+        }
+    }
 }
