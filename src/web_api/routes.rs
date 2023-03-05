@@ -29,16 +29,13 @@ pub async fn index_page(
         auth_gate.is_authorized
     );
 
-    let user = if auth_gate.is_authorized {
-        db_provider
-            .find_user_by_id(auth_gate.user_id.unwrap())
-            .await
-            .unwrap()
-    } else {
-        None
-    };
 
-    let user_name = user.map(|f| f.name);
+    let user_opt = OptionFuture::from(auth_gate.user_id.map(|id| {
+        db_provider
+        .find_user_by_id(id)
+    })).await.unwrap_or(Ok(None)).unwrap();
+
+    let user_name = user_opt.map(|f| f.name);
 
     HtmlPage::homepage(query.error.as_deref(), user_name.as_deref())
 }
