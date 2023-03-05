@@ -10,7 +10,7 @@ use super::util::{ActionContext, NavContext};
 struct Home<'a> {
     nav_context: &'a NavContext<'a>,
     action_context: &'a ActionContext<'a>,
-    data_context: &'a HomePageDataContext<'a>,
+    data_context: &'a HomePageDataContext,
 }
 
 #[derive(TemplateOnce)]

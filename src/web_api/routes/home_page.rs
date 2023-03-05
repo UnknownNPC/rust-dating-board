@@ -88,43 +88,40 @@ pub struct HomeQueryRequest {
     pub filter: Option<HomeFilterRequest>,
 }
 
-pub struct HomePageDataContext<'a> {
-    profiles: Vec<HomePageProfileDataContext<'a>>,
+pub struct HomePageDataContext {
+    profiles: Vec<HomePageProfileDataContext>,
 }
 
-pub struct HomePageProfileDataContext<'a> {
-    name: &'a str,
-    short_description: &'a str,
-    photo_url: &'a str,
-    date_create: &'a str,
+pub struct HomePageProfileDataContext {
+    name: String,
+    short_description: String,
+    photo_url: String,
+    date_create: String,
 }
 
-impl<'a> HomePageProfileDataContext<'a> {
+impl HomePageProfileDataContext {
     fn new(
         profile: &ProfileModel,
         profile_photo_opt: &Option<ProfilePhotoModel>,
         config: &web::Data<Config>,
     ) -> Self {
         let short_description: String = profile.description.chars().take(20).collect();
+
         let photo_url = profile_photo_opt
+            .as_ref()
             .map(|profile_photo| {
-                (config.all_photos_folder_name
+                config.all_photos_folder_name.clone()
                     + "/"
                     + profile.id.to_string().as_str()
                     + "/"
-                    + profile_photo.file_name.as_str())
-                .as_str()
+                    + profile_photo.file_name.as_str()
             })
-            .unwrap_or(DEFAULT_PHOTO_PLACEHOLDER);
+            .unwrap_or(DEFAULT_PHOTO_PLACEHOLDER.to_string());
 
-        let date_create: &str = profile
-            .created_at
-            .format("%Y-%m-%dT%H:%M")
-            .to_string()
-            .as_str();
+        let date_create = profile.created_at.format("%Y-%m-%d %H:%M").to_string();
         HomePageProfileDataContext {
-            name: profile.name.as_str(),
-            short_description: short_description.as_str(),
+            name: profile.name.clone(),
+            short_description: short_description,
             photo_url: photo_url,
             date_create,
         }
