@@ -2,96 +2,112 @@
 <html lang="en">
 
 <head>
-  <% let head_title = "Golovna"; %>
-  <% include!("./includes/head_body.stpl"); %>
+    <% let head_title="Golovna" ; %>
+        <% include!("./includes/head_body.stpl"); %>
 </head>
 
-  <body>
+<body>
     <% include!("./includes/nav.stpl"); %>
 
-    <div class="container">
+        <div class="container">
 
-      <p class="h1">Анкети</p>
+            <p class="h1 pt-2">Анкети</p>
 
-      <div class="row">
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
-              <div class="card-deck">
-                  <div class="card">
-                      <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
-                      <div class="card-body p-2">
-                      <h4 class="card-title mb-0">1 Card title</h4>
-                      <p class="card-text mb-0">This is a longer card with ...</p>
-                      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
-              <div class="card-deck">
-                  <div class="card">
-                      <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
-                      <div class="card-body p-2">
-                      <h4 class="card-title mb-0">1 Card title</h4>
-                      <p class="card-text mb-0">This is a longer card with ...</p>
-                      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
-              <div class="card-deck">
-                  <div class="card">
-                      <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
-                      <div class="card-body p-2">
-                      <h4 class="card-title  mb-0">1 Card title</h4>
-                      <p class="card-text mb-0">This is a longer card with ...</p>
-                      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
-              <div class="card-deck">
-                  <div class="card">
-                      <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
-                      <div class="card-body p-2">
-                      <h4 class="card-title  mb-0">1 Card title</h4>
-                      <p class="card-text mb-0">This is a longer card with ...</p>
-                      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
-              <div class="card-deck">
-                  <div class="card">
-                      <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
-                      <div class="card-body p-2">
-                      <h4 class="card-title  mb-0">1 Card title</h4>
-                      <p class="card-text mb-0">This is a longer card with ...</p>
-                      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-          <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
-              <div class="card-deck">
-                  <div class="card">
-                      <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
-                      <div class="card-body p-2">
-                      <h4 class="card-title  mb-0">1 Card title</h4>
-                      <p class="card-text mb-0">This is a longer card with ...</p>
-                      <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </div>
+            <div class="row">
+                <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
+                    <div class="card-deck">
+                        <div class="card">
+                            <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
+                            <div class="card-body p-2">
+                                <h4 class="card-title mb-0">1 Card title</h4>
+                                <p class="card-text mb-0">This is a longer card with ...</p>
+                                <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
+                    <div class="card-deck">
+                        <div class="card">
+                            <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
+                            <div class="card-body p-2">
+                                <h4 class="card-title mb-0">1 Card title</h4>
+                                <p class="card-text mb-0">This is a longer card with ...</p>
+                                <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
+                    <div class="card-deck">
+                        <div class="card">
+                            <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
+                            <div class="card-body p-2">
+                                <h4 class="card-title  mb-0">1 Card title</h4>
+                                <p class="card-text mb-0">This is a longer card with ...</p>
+                                <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-  </body>
+                <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
+                    <div class="card-deck">
+                        <div class="card">
+                            <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
+                            <div class="card-body p-2">
+                                <h4 class="card-title  mb-0">1 Card title</h4>
+                                <p class="card-text mb-0">This is a longer card with ...</p>
+                                <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
+                    <div class="card-deck">
+                        <div class="card">
+                            <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
+                            <div class="card-body p-2">
+                                <h4 class="card-title  mb-0">1 Card title</h4>
+                                <p class="card-text mb-0">This is a longer card with ...</p>
+                                <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
+                    <div class="card-deck">
+                        <div class="card">
+                            <img class="card-img-top img-fluid" src="//placehold.it/180x240" alt="Card image cap">
+                            <div class="card-body p-2">
+                                <h4 class="card-title  mb-0">1 Card title</h4>
+                                <p class="card-text mb-0">This is a longer card with ...</p>
+                                <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-  <% include!("./includes/extra_scripts.stpl"); %>
+            <nav aria-label="navigation" class="pt-3">
+                <ul class="pagination justify-content-center">
+                    <!-- disabled here -->
+                    <li class="page-item disabled">
+                        <a class="page-link text-dark" href="#" tabindex="-1">Previous</a>
+                    </li>
+                    <li class="page-item"><a class="page-link text-dark" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link text-dark" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link text-dark" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link text-dark" href="#">Next</a>
+                    </li>
+                </ul>
+            </nav>
+
+        </div>
+
+</body>
+
+<% include!("./includes/extra_scripts.stpl"); %>
 
 </html>
