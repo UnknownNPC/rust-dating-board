@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::{
     config::Config,
-    constant::PROFILES_ON_PAGE,
+    constant::{PROFILES_ON_PAGE, PROFILES_PER_ROW},
     db::{DbProvider, ProfileModel, ProfilePhotoModel},
     web_api::{
         auth::AuthenticationGate,
@@ -53,9 +53,12 @@ pub async fn index_page(
             })
             .collect();
 
-        HomePageDataContext {
-            profiles: context_profiles,
-        }
+        let profile_rows = context_profiles
+            .chunks(usize::from(PROFILES_PER_ROW.to_owned()))
+            .map(|s| s.into())
+            .collect();
+
+        HomePageDataContext { profile_rows }
     }
 
     println!(
@@ -89,14 +92,15 @@ pub struct HomeQueryRequest {
 }
 
 pub struct HomePageDataContext {
-    profiles: Vec<HomePageProfileDataContext>,
+    pub profile_rows: Vec<Vec<HomePageProfileDataContext>>,
 }
 
+#[derive(Clone)]
 pub struct HomePageProfileDataContext {
-    name: String,
-    short_description: String,
-    photo_url: String,
-    date_create: String,
+    pub name: String,
+    pub short_description: String,
+    pub photo_url: String,
+    pub date_create: String,
 }
 
 impl HomePageProfileDataContext {
