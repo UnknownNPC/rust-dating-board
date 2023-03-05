@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  <% let head_title = "Golovna"; %>
   <% include!("./includes/head_body.stpl"); %>
 </head>
 
@@ -10,7 +11,7 @@
 
     <div class="container">
 
-      <p class="h1">h1. Bootstrap heading</p>
+      <p class="h1">Анкети</p>
 
       <div class="row">
           <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">

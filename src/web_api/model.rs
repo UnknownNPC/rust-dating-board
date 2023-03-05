@@ -9,8 +9,15 @@ pub struct GoogleSignInPost {
 }
 
 #[derive(Deserialize)]
+pub enum HomeFilter {
+    #[serde(rename = "my-profiles")]
+    MyProfiles
+}
+
+#[derive(Deserialize)]
 pub struct HomeQuery {
     pub error: Option<String>,
+    pub filter: Option<HomeFilter>
 }
 
 pub struct AddProfilePageContext {

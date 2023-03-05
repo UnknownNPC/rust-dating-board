@@ -6,7 +6,7 @@ use actix_web::{
     http::{header, StatusCode},
     web, HttpRequest, HttpResponse, Responder,
 };
-use futures::{future::OptionFuture, FutureExt};
+use futures::future::OptionFuture;
 
 use crate::{
     config::Config,
@@ -40,7 +40,7 @@ pub async fn index_page(
 
     let user_name = user.map(|f| f.name);
 
-    HtmlPage::homepage("Home page", query.error.as_deref(), user_name.as_deref())
+    HtmlPage::homepage(query.error.as_deref(), user_name.as_deref())
 }
 
 pub async fn add_profile_page(
@@ -78,7 +78,10 @@ pub async fn add_profile_page(
     let cities_models = db_provider.find_cities_on().await.unwrap();
     let cities_names = cities_models.iter().map(|city| city.name.clone()).collect();
 
-    let profile_id = draft_profile_opt.map(|draft_profile| draft_profile.id).unwrap_or(-1);
+    // We need profile_id for photos. If photos doesn't exist, we don't need it
+    let profile_id = draft_profile_opt
+        .map(|draft_profile| draft_profile.id)
+        .unwrap_or(-1);
 
     let context = AddProfilePageContext::new(
         &config.all_photos_folder_name,
