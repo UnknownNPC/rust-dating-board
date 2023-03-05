@@ -144,8 +144,12 @@ impl DbProvider {
             .await
     }
 
-    pub async fn find_all_profiles(&self) -> Result<Vec<ProfileModel>, DbErr> {
+    pub async fn find_all_profiles(
+        &self,
+        number_of_entities: u64,
+    ) -> Result<Vec<ProfileModel>, DbErr> {
         profile::Entity::find()
+            .limit(number_of_entities)
             .filter(profile::Column::Status.eq("active"))
             .all(&self.db_con)
             .await

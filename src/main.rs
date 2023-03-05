@@ -8,6 +8,7 @@ use std::fs;
 mod config;
 mod db;
 mod web_api;
+mod constant;
 
 use crate::{config::Config, db::DbProvider};
 
