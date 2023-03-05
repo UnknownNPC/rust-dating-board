@@ -19,6 +19,25 @@ pub async fn index_page(
     auth_gate: AuthenticationGate,
     query: web::Query<HomeQueryRequest>,
 ) -> impl Responder {
+    fn get_nav_context(user_name_opt: &Option<String>) -> NavContext {
+        NavContext::new(user_name_opt.as_deref().unwrap_or(""))
+    }
+
+    fn get_action_context(error: &Option<String>) -> ActionContext {
+        ActionContext::new(error.as_deref().unwrap_or(""))
+    }
+
+    async fn get_data_context(db_provider: &web::Data<DbProvider>) -> HomePageDataContext {
+        let all_profiles = db_provider.find_all_profiles().await.unwrap();
+        let all_profiles_ids = all_profiles.iter().map(|profile| profile.id).collect();
+        let profile_id_and_profile_photo_map = db_provider
+            .find_first_profile_photos_for(&all_profiles_ids)
+            .await
+            .unwrap();
+
+        HomePageDataContext { profiles: vec![] }
+    }
+
     println!(
         "[route#index_page] Inside the index page. User auth status {}",
         auth_gate.is_authorized
@@ -30,12 +49,9 @@ pub async fn index_page(
         .unwrap();
 
     let user_name_opt = user_opt.map(|f| f.name);
-    let nav_context = NavContext::new(user_name_opt.as_deref().unwrap_or(""));
-
-    //todo err code 2 msg
-    let action_context = ActionContext::new(query.error.as_deref().unwrap_or(""));
-
-    let data_context = HomePageDataContext { profiles: vec![] };
+    let nav_context = get_nav_context(&user_name_opt);
+    let action_context = get_action_context(&query.error);
+    let data_context = get_data_context(&db_provider).await;
 
     HtmlPage::homepage(&nav_context, &action_context, &data_context)
 }
@@ -58,4 +74,7 @@ pub struct HomePageDataContext<'a> {
 
 pub struct HomePageProfileDataContext<'a> {
     name: &'a str,
+    short_description: &'a str,
+    photo_url: &'a str,
+    date_create: &'a str,
 }

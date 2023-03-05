@@ -1,12 +1,16 @@
+use std::collections::HashMap;
+
 use chrono::Utc;
 use sea_orm::ActiveValue::NotSet;
-use sea_orm::{ActiveModelTrait, ColumnTrait, DbErr, QueryFilter, Set};
+use sea_orm::{
+    ActiveModelTrait, ColumnTrait, DbBackend, DbErr, QueryFilter, QuerySelect, Set, Statement,
+};
 use sea_orm::{DbConn, EntityTrait};
 
+use super::city::{self, Model as CityModel};
 use super::profile::{self, Model as ProfileModel};
 use super::profile_photo::{self, Model as ProfilePhotoModel};
 use super::user::{self, Model as UserModel};
-use super::city::{self, Model as CityModel};
 
 #[derive(Clone)]
 pub struct DbProvider {
@@ -98,7 +102,7 @@ impl DbProvider {
             status: Set(String::from("active")),
             profile_id: Set(profile_id),
             file_name: Set(file_name.to_string()),
-            size: Set(file_size)
+            size: Set(file_size),
         };
         profile_photo.insert(&self.db_con).await
     }
@@ -116,11 +120,11 @@ impl DbProvider {
     pub async fn publish_profie(
         &self,
         model: ProfileModel,
-        name: &str, 
-        height: i16, 
-        city: &str, 
+        name: &str,
+        height: i16,
+        city: &str,
         description: &str,
-        phone_number: &str
+        phone_number: &str,
     ) -> Result<ProfileModel, DbErr> {
         let mut mutable: profile::ActiveModel = model.into();
         mutable.name = Set(name.to_owned());
@@ -134,7 +138,55 @@ impl DbProvider {
     }
 
     pub async fn find_cities_on(&self) -> Result<Vec<CityModel>, DbErr> {
-        city::Entity::find().filter(city::Column::Status.eq("on")).all(&self.db_con).await
+        city::Entity::find()
+            .filter(city::Column::Status.eq("on"))
+            .all(&self.db_con)
+            .await
     }
 
+    pub async fn find_all_profiles(&self) -> Result<Vec<ProfileModel>, DbErr> {
+        profile::Entity::find()
+            .filter(profile::Column::Status.eq("active"))
+            .all(&self.db_con)
+            .await
+    }
+
+    pub async fn find_first_profile_photos_for(
+        &self,
+        profile_ids: &Vec<i64>,
+    ) -> Result<HashMap<i64, Option<ProfilePhotoModel>>, DbErr> {
+        let profile_photo_str_ids: Vec<String> =
+            profile_ids.clone().iter().map(|f| f.to_string()).collect();
+
+        let query = format!(
+            "SELECT DISTINCT ON (profile_id) * FROM profile_photo WHERE profile_id IN ({})",
+            profile_photo_str_ids.join(",")
+        );
+
+        let profile_photos_res = profile_photo::Entity::find()
+            .from_raw_sql(Statement::from_sql_and_values(
+                DbBackend::Postgres,
+                query.as_str(),
+                [],
+            ))
+            .into_model::<ProfilePhotoModel>()
+            .all(&self.db_con)
+            .await;
+
+        profile_photos_res.map(|profile_photos| {
+            let search = profile_ids
+                .iter()
+                .map(|profile_id_ref| {
+                    let profile_id = profile_id_ref.to_owned();
+                    let profile_photo_opt = profile_photos
+                        .iter()
+                        .find(|photo| photo.profile_id == profile_id)
+                        .map(|f| f.to_owned());
+
+                    (profile_id, profile_photo_opt)
+                })
+                .collect();
+            search
+        })
+    }
 }
