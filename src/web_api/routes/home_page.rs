@@ -117,7 +117,7 @@ impl HomePageProfileDataContext {
                 config.all_photos_folder_name.clone()
                     + "/"
                     + profile.id.to_string().as_str()
-                    + "/"
+                    + "/preview_"
                     + profile_photo.file_name.as_str()
             })
             .unwrap_or(DEFAULT_PHOTO_PLACEHOLDER.to_string());

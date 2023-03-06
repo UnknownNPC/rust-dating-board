@@ -18,7 +18,7 @@
                         <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
                             <div class="card-deck">
                                 <div class="card">
-                                    <img class="card-img-top img-fluid" src="<%= profile.photo_url %>" alt="photo">
+                                    <img style="width: 250px;width: 250px;" class="card-img-top img-fluid" src="<%= profile.photo_url %>" alt="photo">
                                     <div class="card-body p-2">
                                         <h4 class="card-title mb-0"><%= profile.name %></h4>
                                         <p class="card-text mb-0"><%= profile.short_description %>...</p>

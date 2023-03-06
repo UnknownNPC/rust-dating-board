@@ -162,35 +162,39 @@ impl DbProvider {
         let profile_photo_str_ids: Vec<String> =
             profile_ids.clone().iter().map(|f| f.to_string()).collect();
 
-        let query = format!(
-            "SELECT DISTINCT ON (profile_id) * FROM profile_photo WHERE profile_id IN ({})",
-            profile_photo_str_ids.join(",")
-        );
+        if profile_ids.is_empty() {
+            Ok(HashMap::new())
+        } else {
+            let query = format!(
+                "SELECT DISTINCT ON (profile_id) * FROM profile_photo WHERE profile_id IN ({})",
+                profile_photo_str_ids.join(",")
+            );
 
-        let profile_photos_res = profile_photo::Entity::find()
-            .from_raw_sql(Statement::from_sql_and_values(
-                DbBackend::Postgres,
-                query.as_str(),
-                [],
-            ))
-            .into_model::<ProfilePhotoModel>()
-            .all(&self.db_con)
-            .await;
+            let profile_photos_res = profile_photo::Entity::find()
+                .from_raw_sql(Statement::from_sql_and_values(
+                    DbBackend::Postgres,
+                    query.as_str(),
+                    [],
+                ))
+                .into_model::<ProfilePhotoModel>()
+                .all(&self.db_con)
+                .await;
 
-        profile_photos_res.map(|profile_photos| {
-            let search = profile_ids
-                .iter()
-                .map(|profile_id_ref| {
-                    let profile_id = profile_id_ref.to_owned();
-                    let profile_photo_opt = profile_photos
-                        .iter()
-                        .find(|photo| photo.profile_id == profile_id)
-                        .map(|f| f.to_owned());
+            profile_photos_res.map(|profile_photos| {
+                let search = profile_ids
+                    .iter()
+                    .map(|profile_id_ref| {
+                        let profile_id = profile_id_ref.to_owned();
+                        let profile_photo_opt = profile_photos
+                            .iter()
+                            .find(|photo| photo.profile_id == profile_id)
+                            .map(|f| f.to_owned());
 
-                    (profile_id, profile_photo_opt)
-                })
-                .collect();
-            search
-        })
+                        (profile_id, profile_photo_opt)
+                    })
+                    .collect();
+                search
+            })
+        }
     }
 }
