@@ -32,18 +32,20 @@ pub async fn index_page(
     async fn get_data_context(
         db_provider: &web::Data<DbProvider>,
         config: &web::Data<Config>,
+        query: &web::Query<HomeQueryRequest>,
     ) -> HomePageDataContext {
         let all_profiles = db_provider
-            .find_all_profiles(PROFILES_ON_PAGE.to_owned())
+            .profiles_pagination(PROFILES_ON_PAGE.to_owned(), &query.page)
             .await
             .unwrap();
-        let all_profiles_ids = all_profiles.iter().map(|profile| profile.id).collect();
+        let all_profiles_ids = all_profiles.1.iter().map(|profile| profile.id).collect();
         let profile_id_and_profile_photo_map = db_provider
             .find_first_profile_photos_for(&all_profiles_ids)
             .await
             .unwrap();
 
         let context_profiles: Vec<HomePageProfileDataContext> = all_profiles
+            .1
             .iter()
             .map(|profile| {
                 let profile_photo_opt = profile_id_and_profile_photo_map.get(&profile.id).unwrap();
@@ -51,8 +53,19 @@ pub async fn index_page(
             })
             .collect();
 
+        let total_pages = all_profiles.0;
+        let curret_page = query.page.unwrap_or(1);
+        let has_next = curret_page < total_pages;
+        let has_previous = curret_page > 1;
+
         HomePageDataContext {
             profiles: context_profiles,
+            pagination: Pagination {
+                has_next,
+                has_previous,
+                current: curret_page,
+                total: total_pages,
+            },
         }
     }
 
@@ -69,7 +82,7 @@ pub async fn index_page(
     let user_name_opt = user_opt.map(|f| f.name);
     let nav_context = get_nav_context(&user_name_opt);
     let action_context = get_action_context(&query.error);
-    let data_context = get_data_context(&db_provider, &config).await;
+    let data_context = get_data_context(&db_provider, &config, &query).await;
 
     HtmlPage::homepage(&nav_context, &action_context, &data_context)
 }
@@ -84,10 +97,19 @@ pub enum HomeFilterRequest {
 pub struct HomeQueryRequest {
     pub error: Option<String>,
     pub filter: Option<HomeFilterRequest>,
+    pub page: Option<u64>,
+}
+
+pub struct Pagination {
+    pub has_next: bool,
+    pub has_previous: bool,
+    pub current: u64,
+    pub total: u64,
 }
 
 pub struct HomePageDataContext {
     pub profiles: Vec<HomePageProfileDataContext>,
+    pub pagination: Pagination,
 }
 
 #[derive(Clone)]

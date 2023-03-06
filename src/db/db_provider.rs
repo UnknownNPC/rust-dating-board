@@ -3,8 +3,9 @@ use std::collections::HashMap;
 use chrono::Utc;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DbBackend, DbErr, QueryFilter, QuerySelect, Set, Statement, QueryOrder, Order,
+    ActiveModelTrait, ColumnTrait, DbBackend, DbErr, QueryFilter, Set, Statement, QueryOrder, Order, PaginatorTrait,
 };
+use sea_orm::QuerySelect;
 use sea_orm::{DbConn, EntityTrait};
 
 use super::city::{self, Model as CityModel};
@@ -16,6 +17,8 @@ use super::user::{self, Model as UserModel};
 pub struct DbProvider {
     pub db_con: DbConn,
 }
+
+type TotalPages = u64;
 
 impl DbProvider {
     pub fn new(db_con: DbConn) -> Self {
@@ -144,16 +147,29 @@ impl DbProvider {
             .await
     }
 
-    pub async fn find_all_profiles(
+    pub async fn profiles_pagination(
         &self,
         number_of_entities: u64,
-    ) -> Result<Vec<ProfileModel>, DbErr> {
-        profile::Entity::find()
-            .limit(number_of_entities)
+        page_opt: &Option<u64>
+    ) -> Result<(TotalPages, Vec<ProfileModel>), DbErr> {
+        let query = profile::Entity::find()
             .filter(profile::Column::Status.eq("active"))
             .order_by(profile::Column::CreatedAt, Order::Desc)
-            .all(&self.db_con)
-            .await
+            .paginate(&self.db_con, number_of_entities);
+
+        let num_pages = query.num_pages().await.unwrap();
+
+        let query_page = page_opt.map(|f| {
+            if f > 0 {
+                f - 1
+            } else {
+                f
+            }
+        }).unwrap_or(0);
+        println!("db_providing#find_all_profiles fetching page {}. Total num of pages: {}", query_page, num_pages);
+        let profiles = query.fetch_page(query_page).await;
+
+        profiles.map(|data| (num_pages, data))
     }
 
     pub async fn find_first_profile_photos_for(
