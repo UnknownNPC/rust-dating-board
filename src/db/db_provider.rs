@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use chrono::Utc;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DbBackend, DbErr, QueryFilter, QuerySelect, Set, Statement,
+    ActiveModelTrait, ColumnTrait, DbBackend, DbErr, QueryFilter, QuerySelect, Set, Statement, QueryOrder, Order,
 };
 use sea_orm::{DbConn, EntityTrait};
 
@@ -151,6 +151,7 @@ impl DbProvider {
         profile::Entity::find()
             .limit(number_of_entities)
             .filter(profile::Column::Status.eq("active"))
+            .order_by(profile::Column::CreatedAt, Order::Desc)
             .all(&self.db_con)
             .await
     }

@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::{
     config::Config,
-    constant::{PROFILES_ON_PAGE, PROFILES_PER_ROW},
+    constant::PROFILES_ON_PAGE,
     db::{DbProvider, ProfileModel, ProfilePhotoModel},
     web_api::{
         auth::AuthenticationGate,
@@ -14,8 +14,6 @@ use crate::{
         },
     },
 };
-
-use crate::constant::DEFAULT_PHOTO_PLACEHOLDER;
 
 pub async fn index_page(
     db_provider: web::Data<DbProvider>,
@@ -53,12 +51,9 @@ pub async fn index_page(
             })
             .collect();
 
-        let profile_rows = context_profiles
-            .chunks(usize::from(PROFILES_PER_ROW.to_owned()))
-            .map(|s| s.into())
-            .collect();
-
-        HomePageDataContext { profile_rows }
+        HomePageDataContext {
+            profiles: context_profiles,
+        }
     }
 
     println!(
@@ -92,14 +87,14 @@ pub struct HomeQueryRequest {
 }
 
 pub struct HomePageDataContext {
-    pub profile_rows: Vec<Vec<HomePageProfileDataContext>>,
+    pub profiles: Vec<HomePageProfileDataContext>,
 }
 
 #[derive(Clone)]
 pub struct HomePageProfileDataContext {
     pub name: String,
     pub short_description: String,
-    pub photo_url: String,
+    pub photo_url_opt: Option<String>,
     pub date_create: String,
 }
 
@@ -111,22 +106,19 @@ impl HomePageProfileDataContext {
     ) -> Self {
         let short_description: String = profile.description.chars().take(20).collect();
 
-        let photo_url = profile_photo_opt
-            .as_ref()
-            .map(|profile_photo| {
-                config.all_photos_folder_name.clone()
-                    + "/"
-                    + profile.id.to_string().as_str()
-                    + "/preview_"
-                    + profile_photo.file_name.as_str()
-            })
-            .unwrap_or(DEFAULT_PHOTO_PLACEHOLDER.to_string());
+        let photo_url_opt = profile_photo_opt.as_ref().map(|profile_photo| {
+            config.all_photos_folder_name.clone()
+                + "/"
+                + profile.id.to_string().as_str()
+                + "/"
+                + profile_photo.file_name.as_str()
+        });
 
         let date_create = profile.created_at.format("%Y-%m-%d %H:%M").to_string();
         HomePageProfileDataContext {
             name: profile.name.clone(),
             short_description: short_description,
-            photo_url: photo_url,
+            photo_url_opt: photo_url_opt,
             date_create,
         }
     }

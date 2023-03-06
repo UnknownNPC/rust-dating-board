@@ -368,7 +368,7 @@ impl<'a> AddProfilePhotoJsonResponse {
                 all_photos_folder.to_owned()
                     + "/"
                     + &profile_id.to_string()
-                    + "/preview_"
+                    + "/"
                     + &db_photo.file_name
             })
             .collect();

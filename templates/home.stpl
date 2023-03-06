@@ -12,25 +12,21 @@
         <div class="container">
 
             <p class="h1 pt-2">Анкети</p>
-            <% for profile_row in &data_context.profile_rows { %> 
-                <div class="row">
-                    <% for profile in profile_row { %>
-                        <div class="col-lg-2 col-md-3 col-sm-6 col-xs-12 p-1">
-                            <div class="card-deck">
-                                <div class="card">
-                                    <img class="card-img-top img-fluid" src="<%= profile.photo_url %>" alt="photo">
-                                    <div class="card-body p-2">
-                                        <h4 class="card-title mb-0"><%= profile.name %></h4>
-                                        <p class="card-text mb-0"><%= profile.short_description %>...</p>
-                                        <p class="card-text"><small class="text-muted"><%= profile.date_create %></small></p>
-                                    </div>
-                                </div>
-                            </div>
+            <div class="card-columns">
+                <% for profile in &data_context.profiles { %> 
+                    <div class="card">
+                        <% if profile.photo_url_opt.is_some() { %>
+                        <img class="card-img-top" src="<%= profile.photo_url_opt.as_ref().unwrap() %>" alt="photo">
+                        <% } %>
+                        <div class="card-body p-2">
+                            <h4 class="card-title mb-0"><%= profile.name %></h4>
+                            <p class="card-text mb-0"><%= profile.short_description %>...</p>
+                            <p class="card-text"><small class="text-muted"><%= profile.date_create %></small></p>
                         </div>
-                    <% } %>
-
-                </div>
-            <% } %>
+                    </div>
+                        
+                <% } %>
+            </div>
 
             <nav aria-label="navigation" class="pt-3">
                 <ul class="pagination justify-content-center">
