@@ -157,7 +157,7 @@ impl DbProvider {
             .order_by(profile::Column::CreatedAt, Order::Desc)
             .paginate(&self.db_con, number_of_entities);
 
-        let num_pages = query.num_pages().await.unwrap();
+        let total_pages = query.num_pages().await.unwrap();
 
         let query_page = page_opt.map(|f| {
             if f > 0 {
@@ -166,10 +166,10 @@ impl DbProvider {
                 f
             }
         }).unwrap_or(0);
-        println!("db_providing#find_all_profiles fetching page {}. Total num of pages: {}", query_page, num_pages);
+        println!("db_providing#find_all_profiles fetching page {}. Total num of pages: {}", query_page, total_pages);
         let profiles = query.fetch_page(query_page).await;
 
-        profiles.map(|data| (num_pages, data))
+        profiles.map(|data| (total_pages, data))
     }
 
     pub async fn find_first_profile_photos_for(

@@ -32,11 +32,11 @@
                 <ul class="pagination justify-content-center">
                     <% if data_context.pagination.has_previous { %>
                         <li class="page-item">
-                            <a class="page-link text-dark" href="/?page=<%= &data_context.pagination.current - 1 %>" tabindex="-1">Previous</a>
+                            <a class="page-link text-dark" href="/?page=<%= &data_context.pagination.current - 1 %>" tabindex="-1">Попередня</a>
                         </li>
                     <% } else { %>
                         <li class="page-item disabled">
-                            <a class="page-link text-dark" href="#" tabindex="-1">Previous</a>
+                            <a class="page-link text-dark" href="#" tabindex="-1">Попередня</a>
                         </li>
                     <% } %>
                     <% for page_index in 1..data_context.pagination.total + 1 { %>
@@ -53,11 +53,11 @@
                     <!-- disabled here -->
                     <% if data_context.pagination.has_next { %>
                         <li class="page-item">
-                            <a class="page-link text-dark" href="/?page=<%= &data_context.pagination.current + 1 %>" tabindex="-1">Next</a>
+                            <a class="page-link text-dark" href="/?page=<%= &data_context.pagination.current + 1 %>" tabindex="-1">Наступна</a>
                         </li>
                     <% } else { %>
                         <li class="page-item disabled">
-                            <a class="page-link text-dark" href="#" tabindex="-1">Next</a>
+                            <a class="page-link text-dark" href="#" tabindex="-1">Наступна</a>
                         </li>
                     <% } %>
                 </ul>
