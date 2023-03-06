@@ -62,7 +62,8 @@ impl<'a> Service {
         let original_file_extension = Path::new(&original_file_name)
             .extension()
             .and_then(OsStr::to_str)
-            .unwrap_or("jpeg");
+            .map(|f| f.to_lowercase())
+            .unwrap_or(String::from("jpeg"));
 
         let mut profile_photo_folder_path =
             Self::get_path_2_profile_photos(all_photos_folder_name, profile_id);
