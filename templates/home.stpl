@@ -10,8 +10,11 @@
     <% include!("./includes/nav.stpl"); %>
 
         <div class="container">
-
-            <p class="h1 pt-2">Анкети</p>
+            <% if data_context.is_user_profiles { %>
+                <p class="h1 pt-2">Мої анкети</p>
+            <% } else { %>
+                <p class="h1 pt-2">Усі анкети</p>
+            <% } %>    
             <div class="card-columns">
                 <% for profile in &data_context.profiles { %> 
                     <div class="card">
@@ -28,6 +31,7 @@
                 <% } %>
             </div>
 
+            <% if !data_context.is_user_profiles { %>
             <nav aria-label="navigation" class="pt-3">
                 <ul class="pagination justify-content-center">
                     <% if data_context.pagination.has_previous { %>
@@ -62,6 +66,7 @@
                     <% } %>
                 </ul>
             </nav>
+            <% } %>
 
         </div>
 

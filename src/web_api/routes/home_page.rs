@@ -33,11 +33,29 @@ pub async fn index_page(
         db_provider: &web::Data<DbProvider>,
         config: &web::Data<Config>,
         query: &web::Query<HomeQueryRequest>,
+        auth_gate: &AuthenticationGate,
     ) -> HomePageDataContext {
-        let all_profiles = db_provider
-            .profiles_pagination(PROFILES_ON_PAGE.to_owned(), &query.page)
-            .await
-            .unwrap();
+        let show_users_profiles = query
+            .filter_type
+            .as_ref()
+            .map(|f| matches!(f, HomeFilterTypeRequest::My))
+            .unwrap_or(false);
+
+        let can_show_user_profiles = auth_gate.is_authorized && show_users_profiles;
+
+        let all_profiles = if can_show_user_profiles {
+            db_provider
+                .all_user_profiles(auth_gate.user_id.unwrap())
+                .await
+                .map(|res| (0, res))
+                .unwrap()
+        } else {
+            // regular page
+            db_provider
+                .profiles_pagination(PROFILES_ON_PAGE.to_owned(), &query.page)
+                .await
+                .unwrap()
+        };
         let all_profiles_ids = all_profiles.1.iter().map(|profile| profile.id).collect();
         let profile_id_and_profile_photo_map = db_provider
             .find_first_profile_photos_for(&all_profiles_ids)
@@ -66,6 +84,7 @@ pub async fn index_page(
                 current: curret_page,
                 total: total_pages,
             },
+            is_user_profiles: can_show_user_profiles,
         }
     }
 
@@ -82,21 +101,22 @@ pub async fn index_page(
     let user_name_opt = user_opt.map(|f| f.name);
     let nav_context = get_nav_context(&user_name_opt);
     let action_context = get_action_context(&query.error);
-    let data_context = get_data_context(&db_provider, &config, &query).await;
+    let data_context = get_data_context(&db_provider, &config, &query, &auth_gate).await;
 
     HtmlPage::homepage(&nav_context, &action_context, &data_context)
 }
 
 #[derive(Deserialize)]
-pub enum HomeFilterRequest {
-    #[serde(rename = "my-profiles")]
-    MyProfiles,
+pub enum HomeFilterTypeRequest {
+    #[serde(rename = "my")]
+    My,
 }
 
 #[derive(Deserialize)]
 pub struct HomeQueryRequest {
     pub error: Option<String>,
-    pub filter: Option<HomeFilterRequest>,
+    pub filter_type: Option<HomeFilterTypeRequest>,
+    pub filter_city: Option<String>,
     pub page: Option<u64>,
 }
 
@@ -110,6 +130,7 @@ pub struct Pagination {
 pub struct HomePageDataContext {
     pub profiles: Vec<HomePageProfileDataContext>,
     pub pagination: Pagination,
+    pub is_user_profiles: bool,
 }
 
 #[derive(Clone)]

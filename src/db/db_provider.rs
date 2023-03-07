@@ -147,6 +147,14 @@ impl DbProvider {
             .await
     }
 
+    pub async fn all_user_profiles(&self, user_id: i64) -> Result<Vec<ProfileModel>, DbErr> {
+        profile::Entity::find()
+            .filter(profile::Column::Status.eq("active"))
+            .filter(profile::Column::UserId.eq(user_id))
+            .order_by(profile::Column::CreatedAt, Order::Desc)
+            .all(&self.db_con).await
+    }
+
     pub async fn profiles_pagination(
         &self,
         number_of_entities: u64,
