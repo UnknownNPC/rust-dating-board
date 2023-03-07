@@ -32,32 +32,32 @@
                 <ul class="pagination justify-content-center">
                     <% if data_context.pagination.has_previous { %>
                         <li class="page-item">
-                            <a class="page-link text-dark" href="/?page=<%= &data_context.pagination.current - 1 %>" tabindex="-1">Попередня</a>
+                            <a class="page-link" href="/?page=<%= &data_context.pagination.current - 1 %>" tabindex="-1">Попередня</a>
                         </li>
                     <% } else { %>
                         <li class="page-item disabled">
-                            <a class="page-link text-dark" href="#" tabindex="-1">Попередня</a>
+                            <a class="page-link" href="#" tabindex="-1">Попередня</a>
                         </li>
                     <% } %>
                     <% for page_index in 1..data_context.pagination.total + 1 { %>
                             <!-- select <li> -->
                             <% if page_index == data_context.pagination.current { %>
-                                <li class="page-item disabled">
+                                <li class="page-item active">
                             <% } else { %>
                                 <li class="page-item">
                             <% } %>
-                                    <a class="page-link text-dark" href="/?page=<%= page_index %>"><%= page_index %></a>
+                                    <a class="page-link" href="/?page=<%= page_index %>"><%= page_index %></a>
                                 </li>
                     <% } %>
 
                     <!-- disabled here -->
                     <% if data_context.pagination.has_next { %>
                         <li class="page-item">
-                            <a class="page-link text-dark" href="/?page=<%= &data_context.pagination.current + 1 %>" tabindex="-1">Наступна</a>
+                            <a class="page-link" href="/?page=<%= &data_context.pagination.current + 1 %>" tabindex="-1">Наступна</a>
                         </li>
                     <% } else { %>
                         <li class="page-item disabled">
-                            <a class="page-link text-dark" href="#" tabindex="-1">Наступна</a>
+                            <a class="page-link" href="#" tabindex="-1">Наступна</a>
                         </li>
                     <% } %>
                 </ul>
