@@ -42,20 +42,25 @@
                         <select class="custom-select" name="city" id="city_id">
                             <% if data_context.city.is_empty() { %>
                                 <option selected>Виберіть місто</option>
+                            <% } %>
+                            <% fn translate(city: &String) -> String {
+                                if city == "harkiv" {
+                                    String::from("Харків")
+                                } else if city == "kiev" {
+                                    String::from("Київ")
+                                } else if city == "odesa" {
+                                    String::from("Одеса")
+                                } else if city == "lviv" {
+                                    String::from("Львів")
+                                } else {
+                                    String::from("")
+                                }
+                               }
+                               for city in &nav_context.all_cities { %>
+                                    <option value="<%= city %>">
+                                        <%= translate(city) %>
+                                    </option>
                                 <% } %>
-                                    <% for city in &data_context.all_cities { %>
-                                        <option value="<%= city %>">
-                                            <% if city=="harkiv" { %>
-                                                Харків
-                                                <% } else if city=="kiev" { %>
-                                                    Київ
-                                                    <% } else if city=="odesa" { %>
-                                                        Одеса
-                                                        <% } else if city=="lviv" { %>
-                                                            Львів
-                                                            <% } %>
-                                        </option>
-                                        <% } %>
                         </select>
                     </div>
                 </div>

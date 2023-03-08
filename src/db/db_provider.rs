@@ -5,7 +5,6 @@ use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
     ActiveModelTrait, ColumnTrait, DbBackend, DbErr, QueryFilter, Set, Statement, QueryOrder, Order, PaginatorTrait,
 };
-use sea_orm::QuerySelect;
 use sea_orm::{DbConn, EntityTrait};
 
 use super::city::{self, Model as CityModel};

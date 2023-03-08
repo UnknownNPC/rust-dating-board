@@ -13,6 +13,44 @@
             <% } %>
             <li class="nav-item"><a class="nav-link" href="/search">Пошук</a></li>
         </ul>
+
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+                <!-- what user sees -->
+                <a class="nav-link dropdown-toggle" href="#" id="cities_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <% fn translate(city: &String) -> String {
+                    if city == "harkiv" {
+                        String::from("Харків")
+                    } else if city == "kiev" {
+                        String::from("Київ")
+                    } else if city == "odesa" {
+                        String::from("Одеса")
+                    } else if city == "lviv" {
+                        String::from("Львів")
+                    } else {
+                        String::from("Усі міста")
+                    }
+                }%>
+                    
+                   <%= translate(&nav_context.current_city) %> 
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="cities_dropdown">
+                    <% if !nav_context.current_city.is_empty() { %>
+                        <a class="dropdown-item" href="/">
+                            Усі міста
+                        </a>
+                    <% } %>    
+                    <% for city in &nav_context.all_cities { %>
+                        <!-- do not add current city -->
+                        <% if &nav_context.current_city != city { %>
+                            <a class="dropdown-item" href="/?filter_city=<%= city %>">
+                                <%= translate(city) %>
+                            </a>
+                        <% } %>
+                    <% } %>
+                </div>
+            </li>
+        </ul>
         <% if nav_context.name.is_empty() { %>
             <div id="g_id_onload"
                 data-client_id="824603210544-6apptbcmddrbud4njlstqfqavim7fgla.apps.googleusercontent.com"

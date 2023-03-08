@@ -2,15 +2,33 @@ use actix_web::cookie::Cookie;
 use actix_web::http::header;
 use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
+use serde::Deserialize;
 
 //common models
-pub struct NavContext<'a> {
-    pub name: &'a str,
+
+#[derive(Deserialize)]
+pub enum QueryFilterTypeRequest {
+    #[serde(rename = "my")]
+    My,
 }
 
-impl<'a> NavContext<'a> {
-    pub fn new(name: &'a str) -> Self {
-        NavContext { name }
+#[derive(Deserialize)]
+pub struct QueryRequest {
+    pub error: Option<String>,
+    pub filter_type: Option<QueryFilterTypeRequest>,
+    pub filter_city: Option<String>,
+    pub page: Option<u64>,
+}
+
+pub struct NavContext {
+    pub name: String,
+    pub all_cities: Vec<String>,
+    pub current_city: String
+}
+
+impl NavContext {
+    pub fn new(name: String, cities: Vec<String>, current_city: String) -> Self {
+        NavContext { name, all_cities: cities, current_city }
     }
 }
 

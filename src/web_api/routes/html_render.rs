@@ -8,7 +8,7 @@ use super::util::{ActionContext, NavContext};
 #[derive(TemplateOnce)]
 #[template(path = "home.stpl")]
 struct Home<'a> {
-    nav_context: &'a NavContext<'a>,
+    nav_context: &'a NavContext,
     action_context: &'a ActionContext<'a>,
     data_context: &'a HomePageDataContext,
 }
@@ -16,7 +16,7 @@ struct Home<'a> {
 #[derive(TemplateOnce)]
 #[template(path = "add_profile.stpl")]
 struct AddProfile<'a> {
-    nav_context: &'a NavContext<'a>,
+    nav_context: &'a NavContext,
     data_context: &'a AddProfilePageDataContext,
 }
 

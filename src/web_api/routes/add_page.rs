@@ -14,7 +14,7 @@ use crate::{
         auth::AuthenticationGate,
         routes::{
             html_render::HtmlPage,
-            util::{redirect_to_home_if_not_authorized, redirect_to_home_page, NavContext},
+            util::{redirect_to_home_if_not_authorized, redirect_to_home_page, NavContext, QueryRequest},
         },
     },
 };
@@ -23,6 +23,7 @@ pub async fn add_profile_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     config: web::Data<Config>,
+    query: web::Query<QueryRequest>,
 ) -> impl Responder {
     println!(
         "[route#add_profile_page] Inside the add_profile page. User auth status {}",
@@ -62,11 +63,16 @@ pub async fn add_profile_page(
     let data_contex = AddProfilePageDataContext::new(
         &config.all_photos_folder_name,
         profile_id,
-        profile_photos,
-        cities_names,
+        profile_photos
     );
 
-    let nav_context = NavContext::new(&user.name);
+    let current_city: String = query.filter_city
+    .as_ref()
+    .map(|f| f.as_str())
+    .unwrap_or_default()
+    .to_string();
+
+    let nav_context = NavContext::new(user.name, cities_names, current_city);
 
     HtmlPage::add_profile(&nav_context, &data_contex)
 }
@@ -277,7 +283,6 @@ pub struct AddProfilePageDataContext {
     pub phone_number: String,
     pub city: String,
     pub init_photos: AddProfilePhotoJsonResponse,
-    pub all_cities: Vec<String>,
 }
 
 impl<'a> AddProfilePageDataContext {
@@ -285,7 +290,6 @@ impl<'a> AddProfilePageDataContext {
         all_photos_folder: &str,
         profile_id: i64,
         db_photos: Vec<ProfilePhotoModel>,
-        all_cities: Vec<String>,
     ) -> Self {
         let profile_photo_response =
             AddProfilePhotoJsonResponse::new_with_payload(all_photos_folder, profile_id, db_photos);
@@ -296,7 +300,6 @@ impl<'a> AddProfilePageDataContext {
             phone_number: String::from(""),
             city: String::from(""),
             init_photos: profile_photo_response,
-            all_cities,
         }
     }
 }

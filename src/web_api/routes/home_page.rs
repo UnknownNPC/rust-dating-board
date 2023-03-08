@@ -1,6 +1,5 @@
 use actix_web::{web, Responder};
 use futures::future::OptionFuture;
-use serde::Deserialize;
 
 use crate::{
     config::Config,
@@ -10,7 +9,7 @@ use crate::{
         auth::AuthenticationGate,
         routes::{
             html_render::HtmlPage,
-            util::{ActionContext, NavContext},
+            util::{ActionContext, NavContext, QueryRequest, QueryFilterTypeRequest},
         },
     },
 };
@@ -18,11 +17,24 @@ use crate::{
 pub async fn index_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
-    query: web::Query<HomeQueryRequest>,
+    query: web::Query<QueryRequest>,
     config: web::Data<Config>,
 ) -> impl Responder {
-    fn get_nav_context(user_name_opt: &Option<String>) -> NavContext {
-        NavContext::new(user_name_opt.as_deref().unwrap_or(""))
+    async fn get_nav_context(
+        user_name_opt: &Option<String>,
+        db_provider: &web::Data<DbProvider>,
+        current_city_opt: &Option<String>,
+    ) -> NavContext {
+        let cities_models = db_provider.find_cities_on().await.unwrap();
+        let cities_names = cities_models.iter().map(|city| city.name.clone()).collect();
+        let user_name = user_name_opt.as_deref().unwrap_or("").to_string();
+
+        let current_city: String = current_city_opt
+            .as_ref()
+            .map(|f| f.as_str())
+            .unwrap_or_default()
+            .to_string();
+        NavContext::new(user_name, cities_names, current_city)
     }
 
     fn get_action_context(error: &Option<String>) -> ActionContext {
@@ -32,13 +44,13 @@ pub async fn index_page(
     async fn get_data_context(
         db_provider: &web::Data<DbProvider>,
         config: &web::Data<Config>,
-        query: &web::Query<HomeQueryRequest>,
+        query: &web::Query<QueryRequest>,
         auth_gate: &AuthenticationGate,
     ) -> HomePageDataContext {
         let show_users_profiles = query
             .filter_type
             .as_ref()
-            .map(|f| matches!(f, HomeFilterTypeRequest::My))
+            .map(|f| matches!(f, QueryFilterTypeRequest::My))
             .unwrap_or(false);
 
         let can_show_user_profiles = auth_gate.is_authorized && show_users_profiles;
@@ -99,25 +111,11 @@ pub async fn index_page(
         .unwrap();
 
     let user_name_opt = user_opt.map(|f| f.name);
-    let nav_context = get_nav_context(&user_name_opt);
+    let nav_context = get_nav_context(&user_name_opt, &db_provider, &query.filter_city).await;
     let action_context = get_action_context(&query.error);
     let data_context = get_data_context(&db_provider, &config, &query, &auth_gate).await;
 
     HtmlPage::homepage(&nav_context, &action_context, &data_context)
-}
-
-#[derive(Deserialize)]
-pub enum HomeFilterTypeRequest {
-    #[serde(rename = "my")]
-    My,
-}
-
-#[derive(Deserialize)]
-pub struct HomeQueryRequest {
-    pub error: Option<String>,
-    pub filter_type: Option<HomeFilterTypeRequest>,
-    pub filter_city: Option<String>,
-    pub page: Option<u64>,
 }
 
 pub struct Pagination {
