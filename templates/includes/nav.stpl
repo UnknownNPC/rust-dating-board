@@ -14,7 +14,7 @@
             <li class="nav-item"><a class="nav-link" href="/search">Пошук</a></li>
         </ul>
 
-        <ul class="navbar-nav ml-auto">
+        <ul class="navbar-nav ml-auto"></ul>
             <li class="nav-item dropdown">
                 <!-- what user sees -->
                 <a class="nav-link dropdown-toggle" href="#" id="cities_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -30,18 +30,18 @@
                     } else {
                         String::from("Усі міста")
                     }
-                }%>
-                    
+                } %>
                    <%= translate(&nav_context.current_city) %> 
                 </a>
+
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="cities_dropdown">
                     <% if !nav_context.current_city.is_empty() { %>
+                        <!-- add all if city selected -->
                         <a class="dropdown-item" href="/">
                             Усі міста
                         </a>
                     <% } %>    
                     <% for city in &nav_context.all_cities { %>
-                        <!-- do not add current city -->
                         <% if &nav_context.current_city != city { %>
                             <a class="dropdown-item" href="/?filter_city=<%= city %>">
                                 <%= translate(city) %>
@@ -50,7 +50,6 @@
                     <% } %>
                 </div>
             </li>
-        </ul>
         <% if nav_context.name.is_empty() { %>
             <div id="g_id_onload"
                 data-client_id="824603210544-6apptbcmddrbud4njlstqfqavim7fgla.apps.googleusercontent.com"
@@ -62,18 +61,17 @@
                 data-text="signin" data-size="large" data-locale="uk" data-logo_alignment="left">
             </div>
         <% } else { %>
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
                             aria-haspopup="true" aria-expanded="false">
                             <%= nav_context.name %>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
                             <a class="dropdown-item" href="/?filter_type=my">Мої анкети</a>
                             <a class="dropdown-item" href="/sign_out">Вихід</a>
-                        </div>
-                    </li>
-                </ul>
+                </div>
+            </li>
         <% } %>
+        </ul>
     </div>
 </nav>
