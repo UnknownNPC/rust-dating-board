@@ -30,6 +30,7 @@ pub async fn add_profile_page(
         auth_gate.is_authorized
     );
 
+
     if let Err(response) = redirect_to_home_if_not_authorized(auth_gate.is_authorized) {
         return response;
     }

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use chrono::Utc;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DbBackend, DbErr, Order, PaginatorTrait, QueryFilter,
+    query::*, ActiveModelTrait, ColumnTrait, DbBackend, DbErr, Order, PaginatorTrait, QueryFilter,
     QueryOrder, Set, Statement,
 };
 use sea_orm::{DbConn, EntityTrait};
@@ -161,9 +161,13 @@ impl DbProvider {
         &self,
         number_of_entities: u64,
         page_opt: &Option<u64>,
+        city_opt: &Option<String>,
     ) -> Result<(TotalPages, Vec<ProfileModel>), DbErr> {
         let query = profile::Entity::find()
             .filter(profile::Column::Status.eq("active"))
+            .apply_if(city_opt.to_owned(), |mut query, v| {
+                query.filter(profile::Column::City.eq(v))
+            })
             .order_by(profile::Column::CreatedAt, Order::Desc)
             .paginate(&self.db_con, number_of_entities);
 
@@ -171,8 +175,9 @@ impl DbProvider {
 
         let query_page = page_opt.map(|f| if f > 0 { f - 1 } else { f }).unwrap_or(0);
         println!(
-            "[db_providing#find_pagination] fetching page {}. Total num of pages: {}",
+            "[db_providing#find_pagination] Fetching page: {}. City: {}. Total num of pages: {}",
             query_page + 1,
+            city_opt.as_deref().unwrap_or_default(),
             total_pages
         );
         let profiles = query.fetch_page(query_page).await;

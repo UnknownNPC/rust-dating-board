@@ -58,7 +58,7 @@ pub async fn index_page(
         } else {
             // regular page
             db_provider
-                .profiles_pagination(PROFILES_ON_PAGE.to_owned(), &query.page)
+                .profiles_pagination(PROFILES_ON_PAGE.to_owned(), &query.page, &query.filter_city)
                 .await
                 .unwrap()
         };

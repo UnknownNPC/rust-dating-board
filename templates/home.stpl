@@ -47,11 +47,17 @@
             </div>
 
             <% if !nav_context.is_user_profiles { %>
+            <% let city_query_param = if nav_context.current_city.is_empty() { 
+                String::from("")
+               } else { 
+                format!("&filter_city={}", nav_context.current_city)
+               };
+            %>
             <nav aria-label="navigation" class="pt-3">
                 <ul class="pagination justify-content-center">
                     <% if data_context.pagination.has_previous { %>
                         <li class="page-item">
-                            <a class="page-link" href="/?page=<%= &data_context.pagination.current - 1 %>" tabindex="-1">Попередня</a>
+                            <a class="page-link" href="/?page=<%= &data_context.pagination.current - 1 %><%= city_query_param %>" tabindex="-1">Попередня</a>
                         </li>
                     <% } else { %>
                         <li class="page-item disabled">
@@ -65,14 +71,14 @@
                             <% } else { %>
                                 <li class="page-item">
                             <% } %>
-                                    <a class="page-link" href="/?page=<%= page_index %>"><%= page_index %></a>
+                                    <a class="page-link" href="/?page=<%= page_index %><%= city_query_param %>"><%= page_index %></a>
                                 </li>
                     <% } %>
 
                     <!-- disabled here -->
                     <% if data_context.pagination.has_next { %>
                         <li class="page-item">
-                            <a class="page-link" href="/?page=<%= &data_context.pagination.current + 1 %>" tabindex="-1">Наступна</a>
+                            <a class="page-link" href="/?page=<%= &data_context.pagination.current + 1 %><%= city_query_param %>" tabindex="-1">Наступна</a>
                         </li>
                     <% } else { %>
                         <li class="page-item disabled">
