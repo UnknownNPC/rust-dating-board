@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use chrono::Utc;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
-    ActiveModelTrait, ColumnTrait, DbBackend, DbErr, QueryFilter, Set, Statement, QueryOrder, Order, PaginatorTrait,
+    ActiveModelTrait, ColumnTrait, DbBackend, DbErr, Order, PaginatorTrait, QueryFilter,
+    QueryOrder, Set, Statement,
 };
 use sea_orm::{DbConn, EntityTrait};
 
@@ -147,17 +148,19 @@ impl DbProvider {
     }
 
     pub async fn all_user_profiles(&self, user_id: i64) -> Result<Vec<ProfileModel>, DbErr> {
+        println!("[db_provider#all_user_profiles] User fetches all his profiles");
         profile::Entity::find()
             .filter(profile::Column::Status.eq("active"))
             .filter(profile::Column::UserId.eq(user_id))
             .order_by(profile::Column::CreatedAt, Order::Desc)
-            .all(&self.db_con).await
+            .all(&self.db_con)
+            .await
     }
 
     pub async fn profiles_pagination(
         &self,
         number_of_entities: u64,
-        page_opt: &Option<u64>
+        page_opt: &Option<u64>,
     ) -> Result<(TotalPages, Vec<ProfileModel>), DbErr> {
         let query = profile::Entity::find()
             .filter(profile::Column::Status.eq("active"))
@@ -166,14 +169,12 @@ impl DbProvider {
 
         let total_pages = query.num_pages().await.unwrap();
 
-        let query_page = page_opt.map(|f| {
-            if f > 0 {
-                f - 1
-            } else {
-                f
-            }
-        }).unwrap_or(0);
-        println!("db_providing#find_all_profiles fetching page {}. Total num of pages: {}", query_page, total_pages);
+        let query_page = page_opt.map(|f| if f > 0 { f - 1 } else { f }).unwrap_or(0);
+        println!(
+            "[db_providing#find_pagination] fetching page {}. Total num of pages: {}",
+            query_page + 1,
+            total_pages
+        );
         let profiles = query.fetch_page(query_page).await;
 
         profiles.map(|data| (total_pages, data))

@@ -2,18 +2,33 @@
 <html lang="en">
 
 <head>
-    <% let head_title="Golovna" ; %>
-        <% include!("./includes/head_body.stpl"); %>
+    <% let head_title="Голова сторінка" ; %>
+    <% include!("./includes/head_body.stpl"); %>
 </head>
 
 <body>
     <% include!("./includes/nav.stpl"); %>
 
         <div class="container">
-            <% if data_context.is_user_profiles { %>
+            <% if nav_context.is_user_profiles { %>
                 <p class="h1 pt-2">Мої анкети</p>
+            <% } else if !nav_context.current_city.is_empty() { %>
+                <% fn translate(city: &String) -> String {
+                    if city == "harkiv" {
+                        String::from("Харкова")
+                    } else if city == "kiev" {
+                        String::from("Київа")
+                    } else if city == "odesa" {
+                        String::from("Одеси")
+                    } else if city == "lviv" {
+                        String::from("Львова")
+                    } else {
+                        String::from("НЕВІДОМО")
+                    }
+                } %>
+                <p class="h1 pt-2">Анкети міста <%= translate(&nav_context.current_city) %></p>
             <% } else { %>
-                <p class="h1 pt-2">Усі анкети</p>
+                <p class="h1 pt-2">Анкети України</p>
             <% } %>    
             <div class="card-columns">
                 <% for profile in &data_context.profiles { %> 
@@ -31,7 +46,7 @@
                 <% } %>
             </div>
 
-            <% if !data_context.is_user_profiles { %>
+            <% if !nav_context.is_user_profiles { %>
             <nav aria-label="navigation" class="pt-3">
                 <ul class="pagination justify-content-center">
                     <% if data_context.pagination.has_previous { %>

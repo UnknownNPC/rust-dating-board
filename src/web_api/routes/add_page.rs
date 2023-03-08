@@ -72,7 +72,7 @@ pub async fn add_profile_page(
     .unwrap_or_default()
     .to_string();
 
-    let nav_context = NavContext::new(user.name, cities_names, current_city);
+    let nav_context = NavContext::new(user.name, cities_names, current_city, false);
 
     HtmlPage::add_profile(&nav_context, &data_contex)
 }

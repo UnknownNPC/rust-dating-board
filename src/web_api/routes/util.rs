@@ -23,12 +23,13 @@ pub struct QueryRequest {
 pub struct NavContext {
     pub name: String,
     pub all_cities: Vec<String>,
-    pub current_city: String
+    pub current_city: String,
+    pub is_user_profiles: bool,
 }
 
 impl NavContext {
-    pub fn new(name: String, cities: Vec<String>, current_city: String) -> Self {
-        NavContext { name, all_cities: cities, current_city }
+    pub fn new(name: String, cities: Vec<String>, current_city: String, is_user_profiles: bool) -> Self {
+        NavContext { name, all_cities: cities, current_city, is_user_profiles }
     }
 }
 

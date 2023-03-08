@@ -9,7 +9,7 @@ use crate::{
         auth::AuthenticationGate,
         routes::{
             html_render::HtmlPage,
-            util::{ActionContext, NavContext, QueryRequest, QueryFilterTypeRequest},
+            util::{ActionContext, NavContext, QueryFilterTypeRequest, QueryRequest},
         },
     },
 };
@@ -24,6 +24,7 @@ pub async fn index_page(
         user_name_opt: &Option<String>,
         db_provider: &web::Data<DbProvider>,
         current_city_opt: &Option<String>,
+        is_user_profiles_page: bool,
     ) -> NavContext {
         let cities_models = db_provider.find_cities_on().await.unwrap();
         let cities_names = cities_models.iter().map(|city| city.name.clone()).collect();
@@ -34,7 +35,7 @@ pub async fn index_page(
             .map(|f| f.as_str())
             .unwrap_or_default()
             .to_string();
-        NavContext::new(user_name, cities_names, current_city)
+        NavContext::new(user_name, cities_names, current_city, is_user_profiles_page)
     }
 
     fn get_action_context(error: &Option<String>) -> ActionContext {
@@ -46,16 +47,9 @@ pub async fn index_page(
         config: &web::Data<Config>,
         query: &web::Query<QueryRequest>,
         auth_gate: &AuthenticationGate,
+        is_user_profiles_page: bool,
     ) -> HomePageDataContext {
-        let show_users_profiles = query
-            .filter_type
-            .as_ref()
-            .map(|f| matches!(f, QueryFilterTypeRequest::My))
-            .unwrap_or(false);
-
-        let can_show_user_profiles = auth_gate.is_authorized && show_users_profiles;
-
-        let all_profiles = if can_show_user_profiles {
+        let all_profiles = if is_user_profiles_page {
             db_provider
                 .all_user_profiles(auth_gate.user_id.unwrap())
                 .await
@@ -96,7 +90,6 @@ pub async fn index_page(
                 current: curret_page,
                 total: total_pages,
             },
-            is_user_profiles: can_show_user_profiles,
         }
     }
 
@@ -110,10 +103,30 @@ pub async fn index_page(
         .unwrap_or(Ok(None))
         .unwrap();
 
+    let show_users_profiles = query
+        .filter_type
+        .as_ref()
+        .map(|f| matches!(f, QueryFilterTypeRequest::My))
+        .unwrap_or(false);
+    let is_user_profiles_page = auth_gate.is_authorized && show_users_profiles;
+
     let user_name_opt = user_opt.map(|f| f.name);
-    let nav_context = get_nav_context(&user_name_opt, &db_provider, &query.filter_city).await;
+    let nav_context = get_nav_context(
+        &user_name_opt,
+        &db_provider,
+        &query.filter_city,
+        is_user_profiles_page,
+    )
+    .await;
     let action_context = get_action_context(&query.error);
-    let data_context = get_data_context(&db_provider, &config, &query, &auth_gate).await;
+    let data_context = get_data_context(
+        &db_provider,
+        &config,
+        &query,
+        &auth_gate,
+        is_user_profiles_page,
+    )
+    .await;
 
     HtmlPage::homepage(&nav_context, &action_context, &data_context)
 }
@@ -128,7 +141,6 @@ pub struct Pagination {
 pub struct HomePageDataContext {
     pub profiles: Vec<HomePageProfileDataContext>,
     pub pagination: Pagination,
-    pub is_user_profiles: bool,
 }
 
 #[derive(Clone)]
