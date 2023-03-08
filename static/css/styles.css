@@ -1,3 +1,4 @@
+/* enable masonri */
 .card-columns {
     @include media-breakpoint-only(lg) {
         column-count: 4;
@@ -8,6 +9,11 @@
     }
 }
 
+/* remove dropdown rubbish */
 li {
     list-style-type: none;
+}
+
+a:hover {
+    text-decoration: none;
 }

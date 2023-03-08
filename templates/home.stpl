@@ -11,7 +11,7 @@
 
         <div class="container">
             <% if nav_context.is_user_profiles { %>
-                <p class="h1 pt-2">Мої анкети</p>
+                <p class="h1">Мої анкети</p>
             <% } else if !nav_context.current_city.is_empty() { %>
                 <% fn translate(city: &String) -> String {
                     if city == "harkiv" {
@@ -26,20 +26,36 @@
                         String::from("НЕВІДОМО")
                     }
                 } %>
-                <p class="h1 pt-2">Анкети міста <%= translate(&nav_context.current_city) %></p>
+                <p class="h1">Анкети міста <%= translate(&nav_context.current_city) %></p>
             <% } else { %>
-                <p class="h1 pt-2">Анкети України</p>
+                <p class="h1">Анкети України</p>
             <% } %>    
             <div class="card-columns">
                 <% for profile in &data_context.profiles { %> 
-                    <div class="card">
+                    <div class="card" style="background-color: #e3f2fd;">
                         <% if profile.photo_url_opt.is_some() { %>
                         <img class="card-img-top" src="<%= profile.photo_url_opt.as_ref().unwrap() %>" alt="photo">
                         <% } %>
+                        <div class="card-header d-flex p-2">
+                            <b><%= profile.name %></b>
+                            <% if nav_context.is_user_profiles { %>
+                                <span class="ml-auto">
+                                    <a href="#">
+                                        <i class="fas fa-pen fa-md mr-2" href="#" title="Редагувати"></i>
+                                    </a>
+                                    <a href="#">
+                                        <i class="fas fa-trash fa-md" href="#" title="Видалити"></i>
+                                    </a>
+                                </span>
+                            <% } %>
+
+                        </div>
                         <div class="card-body p-2">
-                            <h4 class="card-title mb-0"><%= profile.name %></h4>
-                            <p class="card-text mb-0"><%= profile.short_description %>...</p>
-                            <p class="card-text"><small class="text-muted"><%= profile.date_create %></small></p>
+                            <p class="card-text"><%= profile.short_description %>...</p>
+                        </div>
+                        <div class="card-footer d-flex p-2">
+                            <small class="text-muted"><%= profile.date_create %></small>
+                            <small class="text-muted ml-auto">"МІСТО"</small>
                         </div>
                     </div>
                         

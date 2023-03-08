@@ -175,7 +175,7 @@ impl DbProvider {
 
         let query_page = page_opt.map(|f| if f > 0 { f - 1 } else { f }).unwrap_or(0);
         println!(
-            "[db_providing#find_pagination] Fetching page: {}. City: {}. Total num of pages: {}",
+            "[db_providing#find_pagination] Fetching page: [{}]. City: [{}]. Total num of pages: [{}]",
             query_page + 1,
             city_opt.as_deref().unwrap_or_default(),
             total_pages
