@@ -14,6 +14,8 @@ use crate::{
     },
 };
 
+use super::constants::HOME_DATE_FORMAT;
+
 pub async fn index_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
@@ -168,7 +170,7 @@ impl HomePageProfileDataContext {
                 + profile_photo.file_name.as_str()
         });
 
-        let date_create = profile.created_at.format("%Y-%m-%d %H:%M").to_string();
+        let date_create = profile.created_at.format(HOME_DATE_FORMAT).to_string();
         HomePageProfileDataContext {
             name: profile.name.clone(),
             city: profile.city.clone(),

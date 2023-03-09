@@ -14,7 +14,7 @@ use crate::{
         auth::AuthenticationGate,
         routes::{
             html_render::HtmlPage,
-            util::{redirect_to_home_if_not_authorized, redirect_to_home_page, NavContext, QueryRequest},
+            util::{redirect_to_home_if_not_authorized, redirect_to_home_page, NavContext, QueryRequest}, constants::{PROFILE_ADDED, SERVER_ERROR, RESTRICTED_AREA, PROCESS_ERROR, HACK_DETECTED},
         },
     },
 };
@@ -119,11 +119,11 @@ pub async fn add_profile_post(
         .await
         .map(|_| {
             println!("[route#add_profile_post] Advert was updated and published");
-            redirect_to_home_page(None, None, Some("profile_added"))
+            redirect_to_home_page(None, None, Some(PROFILE_ADDED))
         })
         .map_err(|_| {
             println!("[route#add_profile_post] Error. Advert wasn't published");
-            redirect_to_home_page(None, Some("server_error"), None)
+            redirect_to_home_page(None, Some(SERVER_ERROR), None)
         })
         .unwrap()
 }
@@ -136,7 +136,7 @@ pub async fn add_profile_photo_endpoint(
 ) -> impl Responder {
     if !auth_gate.is_authorized {
         return web::Json(AddProfilePhotoJsonResponse::new_with_error(
-            "resticted_area",
+            RESTRICTED_AREA,
         ));
     }
 
@@ -214,7 +214,7 @@ pub async fn delete_profile_photo_endpoint(
 
     if !auth_gate.is_authorized {
         return web::Json(DeleteProfilePhotoJsonResponse {
-            error: Some("resrited_area".to_owned()),
+            error: Some(RESTRICTED_AREA.to_owned()),
         });
     }
 
@@ -262,7 +262,7 @@ pub async fn delete_profile_photo_endpoint(
                 error
             );
             web::Json(DeleteProfilePhotoJsonResponse::new_with_error(
-                "process_error",
+                PROCESS_ERROR,
             ))
         })
         .unwrap()
@@ -271,7 +271,7 @@ pub async fn delete_profile_photo_endpoint(
             "[route#delete_profile_photo_endpoint] User {} tries DELETE SOMEONE'S PHOTO {1}. HACCKKKER :3",
             &auth_gate.user_id.unwrap(), &request_profile_photo_id
         );
-        web::Json(DeleteProfilePhotoJsonResponse::new_with_error("bad_hacker"))
+        web::Json(DeleteProfilePhotoJsonResponse::new_with_error(HACK_DETECTED))
     };
 
     response

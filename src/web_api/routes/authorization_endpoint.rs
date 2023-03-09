@@ -9,7 +9,10 @@ use crate::{
     db::UserModel,
     web_api::{
         auth::{AuthSessionManager, AuthenticationGate},
-        routes::util::redirect_to_home_page,
+        routes::{
+            constants::{INVALID_G_CSRF, INVALID_USER, LOST_CREDENTIAL, LOST_G_CSRF},
+            util::redirect_to_home_page,
+        },
         sign_in::get_google_user,
     },
 };
@@ -62,10 +65,10 @@ pub async fn google_sign_in_endpoint(
     }
 
     if callback_payload.credential.is_empty() {
-        return redirect_to_home_page(None, Some("lost_credential"), None);
+        return redirect_to_home_page(None, Some(LOST_CREDENTIAL), None);
     }
     if callback_payload.g_csrf_token.is_empty() {
-        return redirect_to_home_page(None, Some("lost_g_csrf_token"), None);
+        return redirect_to_home_page(None, Some(LOST_G_CSRF), None);
     }
 
     if Some(callback_payload.g_csrf_token.clone())
@@ -73,7 +76,7 @@ pub async fn google_sign_in_endpoint(
             .cookie("g_csrf_token")
             .map(|f| f.value().to_string())
     {
-        return redirect_to_home_page(None, Some("invalid_g_csrf_token"), None);
+        return redirect_to_home_page(None, Some(INVALID_G_CSRF), None);
     }
 
     let user_res = fetch_and_save_user(&db_provider, &callback_payload, &config).await;
@@ -89,7 +92,7 @@ pub async fn google_sign_in_endpoint(
                 "[route#google_sign_in_endpoint] error happened during user fetch: {}",
                 err
             );
-            redirect_to_home_page(None, Some("invalid_user"), None)
+            redirect_to_home_page(None, Some(INVALID_USER), None)
         }
     }
 }

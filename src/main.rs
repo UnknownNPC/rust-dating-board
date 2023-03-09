@@ -45,6 +45,7 @@ async fn main() {
                     .route(web::post().to(web_api::google_sign_in_endpoint)),
             )
             .service(web::resource("/sign_out").route(web::get().to(web_api::sign_out_endpoint)))
+            .service(web::resource("/profile/delete").route(web::delete().to(web_api::delete_user_profile)))
             // static services
             .service(Files::new("/static", "static").show_files_listing())
             .service(Files::new("/photos", &all_photos_os_folder).show_files_listing())

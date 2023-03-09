@@ -165,7 +165,7 @@ impl DbProvider {
     ) -> Result<(TotalPages, Vec<ProfileModel>), DbErr> {
         let query = profile::Entity::find()
             .filter(profile::Column::Status.eq("active"))
-            .apply_if(city_opt.to_owned(), |mut query, v| {
+            .apply_if(city_opt.to_owned(), |query, v| {
                 query.filter(profile::Column::City.eq(v))
             })
             .order_by(profile::Column::CreatedAt, Order::Desc)
@@ -226,5 +226,12 @@ impl DbProvider {
                 search
             })
         }
+    }
+
+    pub async fn delete_profile(&self, profile_id: i64) -> Result<(), DbErr> {
+        profile::Entity::delete_by_id(profile_id)
+            .exec(&self.db_con)
+            .await
+            .map(|_| ())
     }
 }
