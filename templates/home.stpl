@@ -54,7 +54,7 @@
                             <b><%= profile.name %></b>
                             <% if nav_context.is_user_profiles { %>
                                 <span class="ml-auto">
-                                    <a href="#">
+                                    <a href="/edit_profile?id=<%= profile.id %>">
                                         <i class="fas fa-pen fa-md mr-2" title="Редагувати"></i>
                                     </a>
                                     <a class="delete_profile_link" data-toggle="modal" data-id="<%= profile.id %>" href="#">

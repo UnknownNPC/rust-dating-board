@@ -2,7 +2,7 @@ mod add_profile_page;
 mod authorization_endpoint;
 mod home_page;
 mod html_render;
-mod util;
+mod common;
 mod manage_profile_service;
 mod constants;
 
@@ -15,3 +15,4 @@ pub use authorization_endpoint::google_sign_in_endpoint;
 pub use authorization_endpoint::sign_out_endpoint;
 pub use home_page::index_page;
 pub use manage_profile_service::delete_user_profile;
+pub use manage_profile_service::edit_profile_page;

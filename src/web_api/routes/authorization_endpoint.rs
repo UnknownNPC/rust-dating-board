@@ -11,7 +11,7 @@ use crate::{
         auth::{AuthSessionManager, AuthenticationGate},
         routes::{
             constants::{INVALID_G_CSRF, INVALID_USER, LOST_CREDENTIAL, LOST_G_CSRF},
-            util::redirect_to_home_page,
+            common::redirect_to_home_page,
         },
         sign_in::get_google_user,
     },

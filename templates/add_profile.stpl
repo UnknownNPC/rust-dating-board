@@ -57,7 +57,14 @@
                                 }
                                }
                                for city in &nav_context.all_cities { %>
-                                    <option value="<%= city %>">
+                                    <option 
+                                    
+                                    <% if &data_context.city == city { %>
+                                        selected
+                                    <% } %>
+                                    
+                                    
+                                    value="<%= city %>">
                                         <%= translate(city) %>
                                     </option>
                                 <% } %>

@@ -9,7 +9,7 @@ use crate::{
         auth::AuthenticationGate,
         routes::{
             html_render::HtmlPage,
-            util::{ActionContext, NavContext, QueryFilterTypeRequest, QueryRequest},
+            common::{ActionContext, NavContext, QueryFilterTypeRequest, QueryRequest},
         },
     },
 };

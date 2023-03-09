@@ -32,6 +32,7 @@ async fn main() {
             .route("/", web::get().to(web_api::index_page))
             .route("/add_profile", web::get().to(web_api::add_profile_page))
             .route("/add_profile", web::post().to(web_api::add_profile_post))
+            .route("/edit_profile", web::get().to(web_api::edit_profile_page))
             .service(
                 web::resource("/profile/delete")
                     .route(web::post().to(web_api::delete_user_profile)),

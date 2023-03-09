@@ -13,13 +13,14 @@ use crate::{
     web_api::{
         auth::AuthenticationGate,
         routes::{
+            common::{
+                redirect_to_home_if_not_authorized, redirect_to_home_page, AddProfilePhotoContext,
+                NavContext, ProfilePageDataContext,
+            },
             constants::{
                 HACK_DETECTED, PROCESS_ERROR, PROFILE_ADDED, RESTRICTED_AREA, SERVER_ERROR,
             },
             html_render::HtmlPage,
-            util::{
-                redirect_to_home_if_not_authorized, redirect_to_home_page, NavContext, QueryRequest,
-            },
         },
     },
 };
@@ -28,7 +29,6 @@ pub async fn add_profile_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     config: web::Data<Config>,
-    query: web::Query<QueryRequest>,
 ) -> impl Responder {
     println!(
         "[route#add_profile_page] Inside the add_profile page. User auth status {}",
@@ -60,22 +60,13 @@ pub async fn add_profile_page(
     let cities_models = db_provider.find_cities_on().await.unwrap();
     let cities_names = cities_models.iter().map(|city| city.name.clone()).collect();
 
-    // We need profile_id for photos. If photos doesn't exist, we don't need it
-    let profile_id = draft_profile_opt
-        .map(|draft_profile| draft_profile.id)
-        .unwrap_or(-1);
+    let data_contex = ProfilePageDataContext::new(
+        &config.all_photos_folder_name,
+        &draft_profile_opt,
+        profile_photos,
+    );
 
-    let data_contex =
-        AddProfilePageDataContext::new(&config.all_photos_folder_name, profile_id, profile_photos);
-
-    let current_city: String = query
-        .filter_city
-        .as_ref()
-        .map(|f| f.as_str())
-        .unwrap_or_default()
-        .to_string();
-
-    let nav_context = NavContext::new(user.name, cities_names, current_city, false);
+    let nav_context = NavContext::new(user.name, cities_names, String::from(""), false);
 
     HtmlPage::add_profile(&nav_context, &data_contex)
 }
@@ -137,7 +128,7 @@ pub async fn add_profile_photo_endpoint(
     form: MultipartForm<AddProfilePhotoMultipartRequest>,
 ) -> impl Responder {
     if !auth_gate.is_authorized {
-        return web::Json(AddProfilePhotoJsonResponse::new_with_error(RESTRICTED_AREA));
+        return web::Json(AddProfilePhotoContext::new_with_error(RESTRICTED_AREA));
     }
 
     let user_id = auth_gate.user_id.unwrap();
@@ -172,9 +163,8 @@ pub async fn add_profile_photo_endpoint(
         .unwrap();
     println!("[routes#add_profile_photo_endpoint]: Photo saved into database");
 
-    let new_file_response = AddProfilePhotoJsonResponse::new_with_payload(
+    let new_file_response = AddProfilePhotoContext::new_with_payload(
         &config.all_photos_folder_name,
-        draft_profile_id,
         vec![profile_photo_db],
     );
     println!("[routes#add_profile_photo_endpoint]: Response is ready");
@@ -279,34 +269,6 @@ pub async fn delete_profile_photo_endpoint(
     response
 }
 
-pub struct AddProfilePageDataContext {
-    pub name: String,
-    pub height: i16,
-    pub description: String,
-    pub phone_number: String,
-    pub city: String,
-    pub init_photos: AddProfilePhotoJsonResponse,
-}
-
-impl<'a> AddProfilePageDataContext {
-    pub fn new(
-        all_photos_folder: &str,
-        profile_id: i64,
-        db_photos: Vec<ProfilePhotoModel>,
-    ) -> Self {
-        let profile_photo_response =
-            AddProfilePhotoJsonResponse::new_with_payload(all_photos_folder, profile_id, db_photos);
-        AddProfilePageDataContext {
-            name: String::from(""),
-            height: 0,
-            description: String::from(""),
-            phone_number: String::from(""),
-            city: String::from(""),
-            init_photos: profile_photo_response,
-        }
-    }
-}
-
 #[derive(MultipartForm)]
 pub struct AddProfilePhotoMultipartRequest {
     #[multipart(rename = "fileId")]
@@ -342,83 +304,5 @@ impl<'a> DeleteProfilePhotoJsonResponse {
 
     pub fn new() -> Self {
         DeleteProfilePhotoJsonResponse { error: None }
-    }
-}
-
-#[derive(Serialize, Debug)]
-pub struct AddProfilePhotoJsonResponse {
-    pub error: Option<String>,
-    #[serde(rename = "initialPreview")]
-    pub initial_preview: Vec<String>,
-    #[serde(rename = "initialPreviewConfig")]
-    pub initial_preview_config: Vec<ProfilePhotoPreviewConfigJsonResponse>,
-    pub append: bool,
-}
-
-impl<'a> AddProfilePhotoJsonResponse {
-    pub fn new_with_error(error: &str) -> Self {
-        AddProfilePhotoJsonResponse {
-            error: Some(error.to_string()),
-            initial_preview: vec![],
-            initial_preview_config: vec![],
-            append: true,
-        }
-    }
-
-    pub fn new_with_payload(
-        all_photos_folder: &'a str,
-        profile_id: i64,
-        db_photos: Vec<ProfilePhotoModel>,
-    ) -> Self {
-        let photo_urls = db_photos
-            .iter()
-            .map(|db_photo| {
-                all_photos_folder.to_owned()
-                    + "/"
-                    + &profile_id.to_string()
-                    + "/"
-                    + &db_photo.file_name
-            })
-            .collect();
-
-        let photo_confings = db_photos
-            .iter()
-            .map(|db_photo| {
-                ProfilePhotoPreviewConfigJsonResponse::new(
-                    db_photo.id,
-                    &db_photo.file_name,
-                    db_photo.size,
-                )
-            })
-            .collect();
-
-        AddProfilePhotoJsonResponse {
-            error: None,
-            initial_preview: photo_urls,
-            initial_preview_config: photo_confings,
-            append: true,
-        }
-    }
-}
-
-#[derive(Serialize, Debug)]
-pub struct ProfilePhotoPreviewConfigJsonResponse {
-    // photo name
-    pub caption: String,
-    pub size: i64,
-    // delete url
-    pub url: String,
-    // profile photo id
-    pub key: i64,
-}
-
-impl<'a> ProfilePhotoPreviewConfigJsonResponse {
-    pub fn new(profile_photo_id: i64, os_photo_filename: &'a str, os_file_size: i64) -> Self {
-        ProfilePhotoPreviewConfigJsonResponse {
-            caption: os_photo_filename.to_string(),
-            size: os_file_size,
-            url: String::from("/profile_photo/delete"),
-            key: profile_photo_id,
-        }
     }
 }
