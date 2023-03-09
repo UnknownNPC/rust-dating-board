@@ -147,6 +147,7 @@ pub struct HomePageDataContext {
 
 #[derive(Clone)]
 pub struct HomePageProfileDataContext {
+    pub id: i64,
     pub name: String,
     pub city: String,
     pub short_description: String,
@@ -160,7 +161,7 @@ impl HomePageProfileDataContext {
         profile_photo_opt: &Option<ProfilePhotoModel>,
         config: &web::Data<Config>,
     ) -> Self {
-        let short_description: String = profile.description.chars().take(20).collect();
+        let short_description: String = profile.description.chars().take(50).collect();
 
         let photo_url_opt = profile_photo_opt.as_ref().map(|profile_photo| {
             config.all_photos_folder_name.clone()
@@ -172,6 +173,7 @@ impl HomePageProfileDataContext {
 
         let date_create = profile.created_at.format(HOME_DATE_FORMAT).to_string();
         HomePageProfileDataContext {
+            id: profile.id,
             name: profile.name.clone(),
             city: profile.city.clone(),
             short_description: short_description,

@@ -24,9 +24,9 @@ pub async fn sign_out_endpoint(auth_gate: AuthenticationGate) -> impl Responder 
             "[route#sign_out_endpoint] auth user {} is loging out",
             auth_gate.user_id.unwrap()
         );
-        redirect_to_home_page(Some(empty_cookie), None, None)
+        redirect_to_home_page(Some(empty_cookie), None, None, false)
     } else {
-        redirect_to_home_page(None, None, None)
+        redirect_to_home_page(None, None, None, false)
     }
 }
 
@@ -65,10 +65,10 @@ pub async fn google_sign_in_endpoint(
     }
 
     if callback_payload.credential.is_empty() {
-        return redirect_to_home_page(None, Some(LOST_CREDENTIAL), None);
+        return redirect_to_home_page(None, Some(LOST_CREDENTIAL), None, false);
     }
     if callback_payload.g_csrf_token.is_empty() {
-        return redirect_to_home_page(None, Some(LOST_G_CSRF), None);
+        return redirect_to_home_page(None, Some(LOST_G_CSRF), None, false);
     }
 
     if Some(callback_payload.g_csrf_token.clone())
@@ -76,7 +76,7 @@ pub async fn google_sign_in_endpoint(
             .cookie("g_csrf_token")
             .map(|f| f.value().to_string())
     {
-        return redirect_to_home_page(None, Some(INVALID_G_CSRF), None);
+        return redirect_to_home_page(None, Some(INVALID_G_CSRF), None, false);
     }
 
     let user_res = fetch_and_save_user(&db_provider, &callback_payload, &config).await;
@@ -85,14 +85,14 @@ pub async fn google_sign_in_endpoint(
         Ok(user) => {
             let session_manager = AuthSessionManager::new(&config);
             let jwt_cookie = session_manager.get_valid_jwt_token(user.id).await;
-            redirect_to_home_page(Some(jwt_cookie), None, None)
+            redirect_to_home_page(Some(jwt_cookie), None, None, false)
         }
         Err(err) => {
             println!(
                 "[route#google_sign_in_endpoint] error happened during user fetch: {}",
                 err
             );
-            redirect_to_home_page(None, Some(INVALID_USER), None)
+            redirect_to_home_page(None, Some(INVALID_USER), None, false)
         }
     }
 }

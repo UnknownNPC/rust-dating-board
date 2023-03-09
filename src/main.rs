@@ -6,9 +6,9 @@ use sea_orm::{Database, DbConn, DbErr};
 use std::fs;
 
 mod config;
+mod constant;
 mod db;
 mod web_api;
-mod constant;
 
 use crate::{config::Config, db::DbProvider};
 
@@ -33,6 +33,10 @@ async fn main() {
             .route("/add_profile", web::get().to(web_api::add_profile_page))
             .route("/add_profile", web::post().to(web_api::add_profile_post))
             .service(
+                web::resource("/profile/delete")
+                    .route(web::post().to(web_api::delete_user_profile)),
+            )
+            .service(
                 web::resource("/profile_photo/upload")
                     .route(web::post().to(web_api::add_profile_photo_endpoint)),
             )
@@ -45,7 +49,6 @@ async fn main() {
                     .route(web::post().to(web_api::google_sign_in_endpoint)),
             )
             .service(web::resource("/sign_out").route(web::get().to(web_api::sign_out_endpoint)))
-            .service(web::resource("/profile/delete").route(web::delete().to(web_api::delete_user_profile)))
             // static services
             .service(Files::new("/static", "static").show_files_listing())
             .service(Files::new("/photos", &all_photos_os_folder).show_files_listing())

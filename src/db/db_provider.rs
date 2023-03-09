@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::Utc;
+use futures::future::{try_join_all};
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
     query::*, ActiveModelTrait, ColumnTrait, DbBackend, DbErr, Order, PaginatorTrait, QueryFilter,
@@ -228,10 +229,22 @@ impl DbProvider {
         }
     }
 
-    pub async fn delete_profile(&self, profile_id: i64) -> Result<(), DbErr> {
-        profile::Entity::delete_by_id(profile_id)
-            .exec(&self.db_con)
-            .await
-            .map(|_| ())
+    pub async fn delete_profile(
+        &self,
+        profile_model: ProfileModel,
+        profole_photos: Vec<ProfilePhotoModel>,
+    ) -> Result<(), DbErr> {
+        let mut mutable_profile: profile::ActiveModel = profile_model.into();
+        mutable_profile.status = Set("deleted".to_owned());
+
+        mutable_profile.update(&self.db_con).await?;
+
+        let update_photos_futs = profole_photos
+            .into_iter()
+            .map(|f| async { self.update_profile_photo_with_delete_status(f).await })
+            .collect::<Vec<_>>();
+        try_join_all(update_photos_futs).await?;
+
+        Ok(())
     }
 }

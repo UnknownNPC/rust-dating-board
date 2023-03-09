@@ -55,10 +55,10 @@
                             <% if nav_context.is_user_profiles { %>
                                 <span class="ml-auto">
                                     <a href="#">
-                                        <i class="fas fa-pen fa-md mr-2" href="#" title="Редагувати"></i>
+                                        <i class="fas fa-pen fa-md mr-2" title="Редагувати"></i>
                                     </a>
-                                    <a href="#">
-                                        <i class="fas fa-trash fa-md" href="#" title="Видалити"></i>
+                                    <a class="delete_profile_link" data-toggle="modal" data-id="<%= profile.id %>" href="#">
+                                        <i class="fas fa-trash fa-md" title="Видалити"></i>
                                     </a>
                                 </span>
                             <% } %>
@@ -119,10 +119,41 @@
             </nav>
             <% } %>
 
+            <!-- delete profile modal -->
+            <div class="modal fade" id="delete_profile_modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="deleteModalLabel">Видалення анкети</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                        Ви впевнені, що хочете видалити анкету?
+                    </div>
+                    <div class="modal-footer">
+                      <form action="/profile/delete" method="post">
+                        <input id="id_input" name="id" type="hidden" value=""/>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Відмінити</button>
+                        <button type="submit" class="btn btn-primary">Видалити</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>    
+
         </div>
 
 </body>
 
 <% include!("./includes/extra_scripts.stpl"); %>
+<script>
+    $(document).on("click", ".delete_profile_link", function () {
+     var delete_profile_id = $(this).data('id');
+     $("#delete_profile_modal #id_input").val(delete_profile_id);
+     $('#delete_profile_modal').modal('show')
+});
+</script>
 
 </html>

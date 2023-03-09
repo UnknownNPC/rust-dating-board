@@ -121,11 +121,11 @@ pub async fn add_profile_post(
         .await
         .map(|_| {
             println!("[route#add_profile_post] Advert was updated and published");
-            redirect_to_home_page(None, None, Some(PROFILE_ADDED))
+            redirect_to_home_page(None, None, Some(PROFILE_ADDED), false)
         })
         .map_err(|_| {
             println!("[route#add_profile_post] Error. Advert wasn't published");
-            redirect_to_home_page(None, Some(SERVER_ERROR), None)
+            redirect_to_home_page(None, Some(SERVER_ERROR), None, false)
         })
         .unwrap()
 }
