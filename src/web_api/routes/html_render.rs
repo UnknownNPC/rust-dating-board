@@ -1,7 +1,7 @@
 use actix_web::HttpResponse;
 use sailfish::TemplateOnce;
 
-use super::add_page::AddProfilePageDataContext;
+use super::add_profile_page::AddProfilePageDataContext;
 use super::home_page::HomePageDataContext;
 use super::util::{ActionContext, NavContext};
 
