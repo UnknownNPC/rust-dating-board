@@ -60,7 +60,7 @@ pub async fn edit_profile_page(
 
         HtmlPage::add_or_edit_profile(&nav_context, &data_contex)
     } else {
-        println!("Hack detected from user [{}]!", auth_gate.user_id.unwrap());
+        println!("Profile id is invalid. Hack detected from user [{}]!", auth_gate.user_id.unwrap());
         redirect_to_home_page(None, Some(HACK_DETECTED), None, false)
     }
 }

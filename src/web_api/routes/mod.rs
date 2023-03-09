@@ -12,9 +12,9 @@ mod profile_endpoints;
 pub use home_page::index_page;
 
 pub use add_profile_page::add_profile_get;
-pub use add_profile_page::add_profile_post;
-
 pub use edit_profile_page::edit_profile_page;
+pub use add_profile_page::add_or_edit_profile_post;
+
 
 pub use profile_endpoints::add_profile_photo_endpoint;
 pub use profile_endpoints::delete_profile_photo_endpoint;

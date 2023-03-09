@@ -32,16 +32,6 @@ impl NavContext {
     }
 }
 
-pub struct ActionContext<'a> {
-    pub error_msg: &'a str,
-}
-
-impl<'a> ActionContext<'a> {
-    pub fn new(error_msg: &'a str) -> Self {
-        ActionContext { error_msg }
-    }
-}
-
 pub struct ProfilePageDataContext {
     pub id: Option<i64>,
     pub name: String,

@@ -65,11 +65,13 @@ pub async fn add_profile_get(
     HtmlPage::add_or_edit_profile(&nav_context, &data_contex)
 }
 
-pub async fn add_profile_post(
+pub async fn add_or_edit_profile_post(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
-    form: web::Form<AddProfileFormRequest>,
+    form: web::Form<AddOrEditProfileFormRequest>,
 ) -> impl Responder {
+
+    //TODO form.profile_id means edititng
     println!(
         "[route#add_profile_post] Inside the add_profile post. User auth status {}",
         auth_gate.is_authorized
@@ -116,10 +118,12 @@ pub async fn add_profile_post(
 }
 
 #[derive(Deserialize)]
-pub struct AddProfileFormRequest {
+pub struct AddOrEditProfileFormRequest {
     pub name: String,
     pub height: String,
     pub city: String,
     pub phone_number: String,
     pub description: String,
+    // edit mode ON
+    pub profile_id: Option<i64>
 }

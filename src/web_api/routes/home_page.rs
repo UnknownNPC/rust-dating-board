@@ -8,10 +8,7 @@ use crate::{
     db::{DbProvider, ProfileModel, ProfilePhotoModel},
     web_api::{
         auth::AuthenticationGate,
-        routes::{
-            html_render::HtmlPage,
-            common::{ActionContext, NavContext},
-        },
+        routes::{common::NavContext, html_render::HtmlPage},
     },
 };
 
@@ -39,10 +36,6 @@ pub async fn index_page(
             .unwrap_or_default()
             .to_string();
         NavContext::new(user_name, cities_names, current_city, is_user_profiles_page)
-    }
-
-    fn get_action_context(error: &Option<String>) -> ActionContext {
-        ActionContext::new(error.as_deref().unwrap_or(""))
     }
 
     async fn get_data_context(
@@ -121,7 +114,6 @@ pub async fn index_page(
         is_user_profiles_page,
     )
     .await;
-    let action_context = get_action_context(&query.error);
     let data_context = get_data_context(
         &db_provider,
         &config,
@@ -131,7 +123,7 @@ pub async fn index_page(
     )
     .await;
 
-    HtmlPage::homepage(&nav_context, &action_context, &data_context)
+    HtmlPage::homepage(&nav_context, &data_context)
 }
 
 pub struct Pagination {

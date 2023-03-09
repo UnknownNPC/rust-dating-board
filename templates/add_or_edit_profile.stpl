@@ -19,7 +19,7 @@
                     Нова анкета
                 <% } %>        
             </p>
-            <form action="/add_profile" method="post">
+            <form action="/add_or_edit_profile" method="post">
                 <div class="form-row">
                     <div class="form-group col-md-4">
                         <input type="text" class="form-control" name="name" id="name_id"
@@ -92,9 +92,18 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-12">
-                        <button type="submit" class="btn btn-primary mx-auto d-block">Опублікувати</button>
+                        <button type="submit" class="btn btn-primary mx-auto d-block">
+                            <% if data_context.is_edit_mode { %>
+                               Оновити  
+                            <% } else { %>
+                               Опублікувати
+                            <% } %>       
+                        </button>
                     </div>
                 </div>
+                <% if data_context.is_edit_mode && data_context.id.is_some() { %>
+                    <input type="hidden" name="profile_id" value="<%= data_context.id.as_ref().unwrap() %>">   
+                <% } %> 
             </form>
         </div>
 

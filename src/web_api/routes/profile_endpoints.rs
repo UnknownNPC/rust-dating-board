@@ -62,7 +62,10 @@ pub async fn delete_profile_endpoint(
             })
             .unwrap()
     } else {
-        println!("Hack detected from user [{}]!", auth_gate.user_id.unwrap());
+        println!(
+            "Profile id is invalid. Hack detected from user [{}]!",
+            auth_gate.user_id.unwrap()
+        );
         redirect_to_home_page(None, Some(HACK_DETECTED), None, false)
     }
 }
@@ -73,40 +76,55 @@ pub async fn add_profile_photo_endpoint(
     config: web::Data<Config>,
     form: MultipartForm<AddProfilePhotoMultipartRequest>,
 ) -> impl Responder {
+    async fn resolve_profile(
+        profile_id: &Option<Text<i64>>,
+        user_id: i64,
+        db_provider: &web::Data<DbProvider>,
+    ) -> Result<ProfileModel, AddProfilePhotoContext> {
+        if profile_id.is_some() {
+            let profile_id = profile_id.as_ref().unwrap().0;
+            let profile_opt = db_provider
+                .find_active_profile_by(profile_id)
+                .await
+                .unwrap();
+            if let Some(profile) = profile_opt {
+                println!("[routes#add_profile_photo_endpoint] Edit profile flow. Found active profile. Re-useing");
+                Ok(profile)
+            } else {
+                println!(
+                    "[routes#add_profile_photo_endpoint] Cant find profile for photo id. Hack! User {}",
+                    user_id
+                );
+                return Err(AddProfilePhotoContext::new_with_error(HACK_DETECTED));
+            }
+        } else {
+            // Find old or create new draft profile
+            let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await.unwrap();
+
+            if let Some(draft_profile) = draft_profile_opt {
+                println!("[routes#add_profile_photo_endpoint] Draft profile flow. Found draft profile. Re-useing");
+                Ok(draft_profile)
+            } else {
+                println!("[routes#add_profile_photo_endpoint] Draft profile flow. Creating new draft profile");
+                db_provider
+                    .add_draft_profile_for(user_id)
+                    .await
+                    .map_err(|_| AddProfilePhotoContext::new_with_error(SERVER_ERROR))
+            }
+        }
+    }
+
     if !auth_gate.is_authorized {
         return web::Json(AddProfilePhotoContext::new_with_error(RESTRICTED_AREA));
     }
 
     let user_id = auth_gate.user_id.unwrap();
 
-    let profile_model: ProfileModel = if form.profile_id.is_some() {
-        let profile_id = form.profile_id.as_ref().unwrap().0;
-        let profile_opt = db_provider
-            .find_active_profile_by(profile_id)
-            .await
-            .unwrap();
-        if let Some(profile) = profile_opt {
-            println!("[routes#add_profile_photo_endpoint] Edit profile flow. Found active profile. Re-useing");
-            profile
-        } else {
-            println!(
-                "[routes#add_profile_photo_endpoint] Cant find profile for photo id. Hack! User {}",
-                user_id
-            );
-            return web::Json(AddProfilePhotoContext::new_with_error(HACK_DETECTED));
-        }
-    } else {
-        // Find old or create new draft profile
-        let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await.unwrap();
+    let profile_model_or_err = resolve_profile(&form.0.profile_id, user_id, &db_provider).await;
 
-        let draft_profile = if let Some(draft_profile) = draft_profile_opt {
-            println!("[routes#add_profile_photo_endpoint] Draft profile flow. Found draft profile. Re-useing");
-            draft_profile
-        } else {
-            println!("[routes#add_profile_photo_endpoint] Draft profile flow. Creating new draft profile");
-            db_provider.add_draft_profile_for(user_id).await.unwrap()
-        };
-        draft_profile
+    let profile_model = match profile_model_or_err {
+        Ok(profile) => profile,
+        Err(response) => return web::Json(response),
     };
 
     if profile_model.user_id != user_id {
