@@ -1,8 +1,10 @@
+use crate::db::DbProvider;
 use crate::db::{ProfileModel, ProfilePhotoModel};
 use actix_web::cookie::Cookie;
 use actix_web::http::header;
 use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
+use actix_web::web;
 use serde::Serialize;
 
 //common models
@@ -41,12 +43,14 @@ impl<'a> ActionContext<'a> {
 }
 
 pub struct ProfilePageDataContext {
+    pub id: Option<i64>,
     pub name: String,
     pub height: i16,
     pub description: String,
     pub phone_number: String,
     pub city: String,
     pub init_photos: AddProfilePhotoContext,
+    pub is_edit_mode: bool
 }
 
 impl<'a> ProfilePageDataContext {
@@ -54,10 +58,12 @@ impl<'a> ProfilePageDataContext {
         all_photos_folder: &str,
         profile_opt: &Option<ProfileModel>,
         db_photos: Vec<ProfilePhotoModel>,
+        is_edit_mode: bool
     ) -> Self {
         let profile_photo_response =
             AddProfilePhotoContext::new_with_payload(all_photos_folder, db_photos);
 
+        let id = profile_opt.as_ref().map(|f| f.id);
         let name = profile_opt
             .as_ref()
             .map(|f| f.name.clone())
@@ -76,12 +82,14 @@ impl<'a> ProfilePageDataContext {
             .map(|f| f.city.clone())
             .unwrap_or_default();
         ProfilePageDataContext {
-            name: name,
+            id,
+            name,
             height: height.to_owned(),
             description: description,
             phone_number: phone_number,
-            city: city,
+            city,
             init_photos: profile_photo_response,
+            is_edit_mode
         }
     }
 }
@@ -199,4 +207,17 @@ pub fn redirect_to_home_page(
         response_builder.cookie(jwt_cookie.unwrap());
     };
     response_builder.finish()
+}
+
+pub async fn is_user_profile(
+    user_id: i64,
+    profile_id: i64,
+    db_provider: &web::Data<DbProvider>,
+) -> Option<ProfileModel> {
+    let all_user_profiles = db_provider.all_user_profiles(user_id).await.unwrap();
+
+    all_user_profiles
+        .iter()
+        .find(|profile_model| profile_model.id == profile_id)
+        .cloned()
 }

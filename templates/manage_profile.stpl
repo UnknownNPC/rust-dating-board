@@ -12,13 +12,7 @@
     <% include!("./includes/nav.stpl"); %>
 
         <div class="container">
-            <p class="h1">
-                <% if data_context.is_edit_mode { %>
-                    Редагування анкети
-                <% } else { %>
-                    Нова анкета
-                <% } %>        
-            </p>
+            <p class="h1">Нова анкета</p>
             <form action="/add_profile" method="post">
                 <div class="form-row">
                     <div class="form-group col-md-4">
@@ -150,11 +144,11 @@
                 showCaption: false,
                 showRemove: false,
                 showClose: false,
-                <% if data_context.is_edit_mode && data_context.id.is_some() { %>
-                    uploadExtraData:{ 
-                        profile_id: <%= data_context.id.as_ref().unwrap() %>
-                    },        
-                <% } %>    
+                uploadExtraData: {
+                    <% if data_context.id.is_some() { %>
+                        profile_id: <%= data_context.id.as_ref().unwrap()  %>
+                    <% } %>
+                },
                 browseOnZoneClick: true
             }).on('filebatchselected', function (event, previewId, index, fileId) {
                 $el1.fileinput("upload");

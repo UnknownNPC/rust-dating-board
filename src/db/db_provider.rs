@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::Utc;
-use futures::future::{try_join_all};
+use futures::future::try_join_all;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
     query::*, ActiveModelTrait, ColumnTrait, DbBackend, DbErr, Order, PaginatorTrait, QueryFilter,
@@ -55,6 +55,18 @@ impl DbProvider {
         user.insert(&self.db_con).await
     }
 
+    pub async fn find_active_profile_photo_with_profile_by(
+        &self,
+        id: i64,
+    ) -> Result<Option<(ProfilePhotoModel, ProfileModel)>, DbErr> {
+        profile_photo::Entity::find_by_id(id)
+            .filter(profile_photo::Column::Status.eq("active"))
+            .find_also_related(profile::Entity)
+            .one(&self.db_con)
+            .await
+            .map(|res| res.map(|data| (data.0, data.1.unwrap())))
+    }
+
     pub async fn find_draft_profile_for(
         &self,
         user_id: i64,
@@ -62,6 +74,13 @@ impl DbProvider {
         profile::Entity::find()
             .filter(profile::Column::UserId.eq(user_id))
             .filter(profile::Column::Status.eq("draft"))
+            .one(&self.db_con)
+            .await
+    }
+
+    pub async fn find_active_profile_by(&self, id: i64) -> Result<Option<ProfileModel>, DbErr> {
+        profile::Entity::find_by_id(id)
+            .filter(profile::Column::Status.eq("active"))
             .one(&self.db_con)
             .await
     }
@@ -229,7 +248,7 @@ impl DbProvider {
         }
     }
 
-    pub async fn delete_profile(
+    pub async fn delete_profile_and_photos(
         &self,
         profile_model: ProfileModel,
         profole_photos: Vec<ProfilePhotoModel>,
