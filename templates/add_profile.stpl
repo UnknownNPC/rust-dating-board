@@ -106,12 +106,12 @@
                 overwriteInitial: false,
 
                 initialPreview: [
-                    <% for photo_url in & data_context.init_photos.initialPreview { %>
+                    <% for photo_url in & data_context.init_photos.initial_preview { %>
                         "<%= photo_url %>",
                     <% } %>
                 ],
                 initialPreviewConfig: [
-                    <% for init_photo in & data_context.init_photos.initialPreviewConfig { %>
+                    <% for init_photo in & data_context.init_photos.initial_preview_config { %>
                         {
                             caption: '<%= init_photo.caption %>',
                             width: '120px',

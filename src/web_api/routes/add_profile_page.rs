@@ -13,8 +13,13 @@ use crate::{
     web_api::{
         auth::AuthenticationGate,
         routes::{
+            constants::{
+                HACK_DETECTED, PROCESS_ERROR, PROFILE_ADDED, RESTRICTED_AREA, SERVER_ERROR,
+            },
             html_render::HtmlPage,
-            util::{redirect_to_home_if_not_authorized, redirect_to_home_page, NavContext, QueryRequest}, constants::{PROFILE_ADDED, SERVER_ERROR, RESTRICTED_AREA, PROCESS_ERROR, HACK_DETECTED},
+            util::{
+                redirect_to_home_if_not_authorized, redirect_to_home_page, NavContext, QueryRequest,
+            },
         },
     },
 };
@@ -29,7 +34,6 @@ pub async fn add_profile_page(
         "[route#add_profile_page] Inside the add_profile page. User auth status {}",
         auth_gate.is_authorized
     );
-
 
     if let Err(response) = redirect_to_home_if_not_authorized(auth_gate.is_authorized) {
         return response;
@@ -61,17 +65,15 @@ pub async fn add_profile_page(
         .map(|draft_profile| draft_profile.id)
         .unwrap_or(-1);
 
-    let data_contex = AddProfilePageDataContext::new(
-        &config.all_photos_folder_name,
-        profile_id,
-        profile_photos
-    );
+    let data_contex =
+        AddProfilePageDataContext::new(&config.all_photos_folder_name, profile_id, profile_photos);
 
-    let current_city: String = query.filter_city
-    .as_ref()
-    .map(|f| f.as_str())
-    .unwrap_or_default()
-    .to_string();
+    let current_city: String = query
+        .filter_city
+        .as_ref()
+        .map(|f| f.as_str())
+        .unwrap_or_default()
+        .to_string();
 
     let nav_context = NavContext::new(user.name, cities_names, current_city, false);
 
@@ -135,9 +137,7 @@ pub async fn add_profile_photo_endpoint(
     form: MultipartForm<AddProfilePhotoMultipartRequest>,
 ) -> impl Responder {
     if !auth_gate.is_authorized {
-        return web::Json(AddProfilePhotoJsonResponse::new_with_error(
-            RESTRICTED_AREA,
-        ));
+        return web::Json(AddProfilePhotoJsonResponse::new_with_error(RESTRICTED_AREA));
     }
 
     let user_id = auth_gate.user_id.unwrap();
@@ -271,7 +271,9 @@ pub async fn delete_profile_photo_endpoint(
             "[route#delete_profile_photo_endpoint] User {} tries DELETE SOMEONE'S PHOTO {1}. HACCKKKER :3",
             &auth_gate.user_id.unwrap(), &request_profile_photo_id
         );
-        web::Json(DeleteProfilePhotoJsonResponse::new_with_error(HACK_DETECTED))
+        web::Json(DeleteProfilePhotoJsonResponse::new_with_error(
+            HACK_DETECTED,
+        ))
     };
 
     response
@@ -346,8 +348,10 @@ impl<'a> DeleteProfilePhotoJsonResponse {
 #[derive(Serialize, Debug)]
 pub struct AddProfilePhotoJsonResponse {
     pub error: Option<String>,
-    pub initialPreview: Vec<String>,
-    pub initialPreviewConfig: Vec<ProfilePhotoPreviewConfigJsonResponse>,
+    #[serde(rename = "initialPreview")]
+    pub initial_preview: Vec<String>,
+    #[serde(rename = "initialPreviewConfig")]
+    pub initial_preview_config: Vec<ProfilePhotoPreviewConfigJsonResponse>,
     pub append: bool,
 }
 
@@ -355,8 +359,8 @@ impl<'a> AddProfilePhotoJsonResponse {
     pub fn new_with_error(error: &str) -> Self {
         AddProfilePhotoJsonResponse {
             error: Some(error.to_string()),
-            initialPreview: vec![],
-            initialPreviewConfig: vec![],
+            initial_preview: vec![],
+            initial_preview_config: vec![],
             append: true,
         }
     }
@@ -390,8 +394,8 @@ impl<'a> AddProfilePhotoJsonResponse {
 
         AddProfilePhotoJsonResponse {
             error: None,
-            initialPreview: photo_urls,
-            initialPreviewConfig: photo_confings,
+            initial_preview: photo_urls,
+            initial_preview_config: photo_confings,
             append: true,
         }
     }

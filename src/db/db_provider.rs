@@ -196,7 +196,7 @@ impl DbProvider {
             Ok(HashMap::new())
         } else {
             let query = format!(
-                "SELECT DISTINCT ON (profile_id) * FROM profile_photo WHERE profile_id IN ({})",
+                "SELECT DISTINCT ON (profile_id) * FROM profile_photo WHERE status = 'active' and profile_id IN ({})",
                 profile_photo_str_ids.join(",")
             );
 
