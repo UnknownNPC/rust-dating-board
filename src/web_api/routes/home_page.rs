@@ -146,6 +146,7 @@ pub struct HomePageDataContext {
 #[derive(Clone)]
 pub struct HomePageProfileDataContext {
     pub name: String,
+    pub city: String,
     pub short_description: String,
     pub photo_url_opt: Option<String>,
     pub date_create: String,
@@ -170,6 +171,7 @@ impl HomePageProfileDataContext {
         let date_create = profile.created_at.format("%Y-%m-%d %H:%M").to_string();
         HomePageProfileDataContext {
             name: profile.name.clone(),
+            city: profile.city.clone(),
             short_description: short_description,
             photo_url_opt: photo_url_opt,
             date_create,

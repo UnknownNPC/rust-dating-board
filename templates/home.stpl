@@ -31,6 +31,20 @@
                 <p class="h1">Анкети України</p>
             <% } %>    
             <div class="card-columns">
+                <% fn translate(city: &String) -> String {
+                    if city == "harkiv" {
+                        String::from("Харків")
+                    } else if city == "kiev" {
+                        String::from("Київ")
+                    } else if city == "odesa" {
+                        String::from("Одеса")
+                    } else if city == "lviv" {
+                        String::from("Львів")
+                    } else {
+                        String::from("")
+                    }
+                   }
+                %>
                 <% for profile in &data_context.profiles { %> 
                     <div class="card" style="background-color: #e3f2fd;">
                         <% if profile.photo_url_opt.is_some() { %>
@@ -55,7 +69,7 @@
                         </div>
                         <div class="card-footer d-flex p-2">
                             <small class="text-muted"><%= profile.date_create %></small>
-                            <small class="text-muted ml-auto">"МІСТО"</small>
+                            <small class="text-muted ml-auto"><%= translate(&profile.city) %></small>
                         </div>
                     </div>
                         
