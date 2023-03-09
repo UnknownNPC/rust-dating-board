@@ -1,4 +1,5 @@
 pub static PROFILE_ADDED: &'static str = "profile_added";
+pub static PROFILE_UPDATED: &'static str = "profile_updated";
 pub static SERVER_ERROR: &'static str = "server_error";
 pub static RESTRICTED_AREA: &'static str = "resticted_area";
 pub static PROCESS_ERROR: &'static str = "process_error";

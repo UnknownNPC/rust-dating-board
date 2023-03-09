@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::{
     config::Config,
-    db::DbProvider,
+    db::{DbProvider, ProfileModel},
     web_api::{
         auth::AuthenticationGate,
         routes::{
@@ -12,7 +12,7 @@ use crate::{
                 redirect_to_home_if_not_authorized, redirect_to_home_page, NavContext,
                 ProfilePageDataContext,
             },
-            constants::{PROFILE_ADDED, SERVER_ERROR},
+            constants::{HACK_DETECTED, PROFILE_ADDED, SERVER_ERROR, PROFILE_UPDATED},
             html_render::HtmlPage,
         },
     },
@@ -57,7 +57,7 @@ pub async fn add_profile_get(
         &config.all_photos_folder_name,
         &draft_profile_opt,
         profile_photos,
-        false
+        false,
     );
 
     let nav_context = NavContext::new(user.name, cities_names, String::from(""), false);
@@ -70,10 +70,46 @@ pub async fn add_or_edit_profile_post(
     auth_gate: AuthenticationGate,
     form: web::Form<AddOrEditProfileFormRequest>,
 ) -> impl Responder {
+    async fn resolve_profile(
+        profile_id_opt: &Option<i64>,
+        user_id: i64,
+        db_provider: &web::Data<DbProvider>,
+    ) -> Result<ProfileModel, String> {
+        if profile_id_opt.is_some() {
+            let profile_id = profile_id_opt.as_ref().unwrap().to_owned();
+            let profile_opt = db_provider
+                .find_active_profile_by(profile_id)
+                .await
+                .unwrap();
+            if let Some(profile) = profile_opt {
+                println!("[routes#add_or_edit_profile_post] Edit profile flow. Found active profile. Re-useing");
+                Ok(profile)
+            } else {
+                println!(
+                    "[routes#add_or_edit_profile_post] Cant find profile for photo id. Hack! User {}",
+                    user_id
+                );
+                Err(HACK_DETECTED.to_string())
+            }
+        } else {
+            // Find old or create new draft profile
+            let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await.unwrap();
 
-    //TODO form.profile_id means edititng
+            if let Some(draft_profile) = draft_profile_opt {
+                println!("[routes#add_or_edit_profile_post] Draft profile flow. Found draft profile. Re-useing");
+                Ok(draft_profile)
+            } else {
+                println!("[routes#add_or_edit_profile_post] Draft profile flow. Creating new draft profile");
+                db_provider
+                    .add_draft_profile_for(user_id)
+                    .await
+                    .map_err(|_| SERVER_ERROR.to_string())
+            }
+        }
+    }
+
     println!(
-        "[route#add_profile_post] Inside the add_profile post. User auth status {}",
+        "[route#add_or_edit_profile_post] Inside the add_profile post. User auth status {}",
         auth_gate.is_authorized
     );
 
@@ -82,36 +118,31 @@ pub async fn add_or_edit_profile_post(
     }
 
     let user_id = auth_gate.user_id.unwrap();
+    let profile_model_or_err = resolve_profile(&form.profile_id, user_id, &db_provider).await;
 
-    let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await.unwrap();
-    let draft_profile = match draft_profile_opt {
-        Some(profile_model) => {
-            println!("[route#add_profile_post] Draft exists. Re-using");
-            profile_model
-        }
-        None => {
-            println!("[route#add_profile_post] Draft profile wasn't find. Creating new");
-            db_provider.add_draft_profile_for(user_id).await.unwrap()
-        }
+    let profile_model = match profile_model_or_err {
+        Ok(profile) => profile,
+        Err(err) => return redirect_to_home_page(None, Some(err.as_str()), None, false),
     };
+    let is_edit_mode = form.profile_id.is_some();
 
-    let height = form.height.parse::<i16>().unwrap();
     db_provider
         .publish_profie(
-            draft_profile,
+            profile_model,
             &form.name,
-            height,
+            form.height.parse::<i16>().unwrap(),
             &form.city,
             &form.description,
             &form.phone_number,
         )
         .await
         .map(|_| {
-            println!("[route#add_profile_post] Advert was updated and published");
-            redirect_to_home_page(None, None, Some(PROFILE_ADDED), false)
+            println!("[route#add_or_edit_profile_post] Advert was updated and published. Redirect to users profiles: {}", is_edit_mode);
+            let response_code = if is_edit_mode { PROFILE_UPDATED } else { PROFILE_ADDED }; 
+            redirect_to_home_page(None, None, Some(response_code), is_edit_mode)
         })
         .map_err(|_| {
-            println!("[route#add_profile_post] Error. Advert wasn't published");
+            println!("[route#add_or_edit_profile_post] Error. Advert wasn't published");
             redirect_to_home_page(None, Some(SERVER_ERROR), None, false)
         })
         .unwrap()
@@ -125,5 +156,5 @@ pub struct AddOrEditProfileFormRequest {
     pub phone_number: String,
     pub description: String,
     // edit mode ON
-    pub profile_id: Option<i64>
+    pub profile_id: Option<i64>,
 }

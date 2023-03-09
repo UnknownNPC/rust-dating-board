@@ -3,8 +3,8 @@ use crate::db::{ProfileModel, ProfilePhotoModel};
 use actix_web::cookie::Cookie;
 use actix_web::http::header;
 use actix_web::http::StatusCode;
-use actix_web::HttpResponse;
 use actix_web::web;
+use actix_web::HttpResponse;
 use serde::Serialize;
 
 //common models
@@ -40,7 +40,7 @@ pub struct ProfilePageDataContext {
     pub phone_number: String,
     pub city: String,
     pub init_photos: AddProfilePhotoContext,
-    pub is_edit_mode: bool
+    pub is_edit_mode: bool,
 }
 
 impl<'a> ProfilePageDataContext {
@@ -48,7 +48,7 @@ impl<'a> ProfilePageDataContext {
         all_photos_folder: &str,
         profile_opt: &Option<ProfileModel>,
         db_photos: Vec<ProfilePhotoModel>,
-        is_edit_mode: bool
+        is_edit_mode: bool,
     ) -> Self {
         let profile_photo_response =
             AddProfilePhotoContext::new_with_payload(all_photos_folder, db_photos);
@@ -79,7 +79,7 @@ impl<'a> ProfilePageDataContext {
             phone_number: phone_number,
             city,
             init_photos: profile_photo_response,
-            is_edit_mode
+            is_edit_mode,
         }
     }
 }
@@ -177,24 +177,33 @@ pub fn redirect_to_home_if_not_authorized(is_authorized: bool) -> Result<(), Htt
 }
 
 pub fn redirect_to_home_page(
-    jwt_cookie: Option<Cookie>,
-    error: Option<&str>,
-    msg: Option<&str>,
+    jwt_cookie_opt: Option<Cookie>,
+    error_text_opt: Option<&str>,
+    msg_code_opt: Option<&str>,
     to_user_profiles: bool,
 ) -> HttpResponse {
     let mut response_builder = HttpResponse::build(StatusCode::FOUND);
 
-    if error.is_some() {
-        response_builder.append_header((header::LOCATION, format!("/?error={}", error.unwrap())))
-    } else if msg.is_some() {
-        response_builder.append_header((header::LOCATION, format!("/?msg={}", msg.unwrap())))
+    let message_param_opt = msg_code_opt.map(|f| format!("msg={}", f));
+
+    if error_text_opt.is_some() {
+        response_builder.append_header((header::LOCATION, format!("/?error={}", error_text_opt.unwrap())))
     } else if to_user_profiles {
-        response_builder.append_header((header::LOCATION, "/?filter_type=my"))
+        let message_param = message_param_opt
+            .map(|f| format!("&{}", f))
+            .unwrap_or_default();
+        response_builder.append_header((
+            header::LOCATION,
+            format!("/?filter_type=my{}", message_param),
+        ))
     } else {
-        response_builder.append_header((header::LOCATION, "/"))
+        let message_param = message_param_opt
+            .map(|f| format!("?{}", f))
+            .unwrap_or_default();
+        response_builder.append_header((header::LOCATION, format!("/{}", message_param)))
     };
-    if jwt_cookie.is_some() {
-        response_builder.cookie(jwt_cookie.unwrap());
+    if jwt_cookie_opt.is_some() {
+        response_builder.cookie(jwt_cookie_opt.unwrap());
     };
     response_builder.finish()
 }
