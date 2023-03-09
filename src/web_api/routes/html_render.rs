@@ -13,8 +13,8 @@ struct Home<'a> {
 }
 
 #[derive(TemplateOnce)]
-#[template(path = "add_profile.stpl")]
-struct AddProfile<'a> {
+#[template(path = "add_edit_profile.stpl")]
+struct AddOrEditProfile<'a> {
     nav_context: &'a NavContext,
     data_context: &'a ProfilePageDataContext,
 }
@@ -40,12 +40,12 @@ impl HtmlPage {
         html
     }
 
-    pub fn add_profile(
+    pub fn add_or_edit_profile(
         nav_context: &NavContext,
         data_context: &ProfilePageDataContext,
     ) -> HttpResponse {
         HttpResponse::Ok().body(
-            AddProfile {
+            AddOrEditProfile {
                 nav_context,
                 data_context,
             }

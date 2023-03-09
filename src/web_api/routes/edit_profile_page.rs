@@ -58,7 +58,7 @@ pub async fn edit_profile_page(
 
         let nav_context = NavContext::new(user.name, cities_names, String::from(""), false);
 
-        HtmlPage::add_profile(&nav_context, &data_contex)
+        HtmlPage::add_or_edit_profile(&nav_context, &data_contex)
     } else {
         println!("Hack detected from user [{}]!", auth_gate.user_id.unwrap());
         redirect_to_home_page(None, Some(HACK_DETECTED), None, false)

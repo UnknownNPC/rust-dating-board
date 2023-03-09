@@ -62,7 +62,7 @@ pub async fn add_profile_get(
 
     let nav_context = NavContext::new(user.name, cities_names, String::from(""), false);
 
-    HtmlPage::add_profile(&nav_context, &data_contex)
+    HtmlPage::add_or_edit_profile(&nav_context, &data_contex)
 }
 
 pub async fn add_profile_post(
