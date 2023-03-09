@@ -14,5 +14,5 @@ pub use add_profile_page::delete_profile_photo_endpoint;
 pub use authorization_endpoint::google_sign_in_endpoint;
 pub use authorization_endpoint::sign_out_endpoint;
 pub use home_page::index_page;
-pub use manage_profile_service::delete_user_profile;
+pub use manage_profile_service::delete_profile_endpoint;
 pub use manage_profile_service::edit_profile_page;

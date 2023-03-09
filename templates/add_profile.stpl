@@ -74,7 +74,7 @@
                 <div class="form-row">
                     <div class="form-group col-md-12">
                         <textarea class="form-control" name="description" id="description_id"
-                            value="<%= data_context.description %>" rows="4" placeholder="Опис"></textarea>
+                            rows="4" placeholder="Опис"><%= data_context.description %></textarea>
                     </div>
                 </div>
                 <div class="form-row">

@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-pub async fn delete_user_profile(
+pub async fn delete_profile_endpoint(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     form: web::Form<DeleteProfileRequest>,

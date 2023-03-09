@@ -3,23 +3,9 @@ use actix_web::cookie::Cookie;
 use actix_web::http::header;
 use actix_web::http::StatusCode;
 use actix_web::HttpResponse;
-use serde::Deserialize;
 use serde::Serialize;
 
 //common models
-#[derive(Deserialize)]
-pub enum QueryFilterTypeRequest {
-    #[serde(rename = "my")]
-    My,
-}
-
-#[derive(Deserialize)]
-pub struct QueryRequest {
-    pub error: Option<String>,
-    pub filter_type: Option<QueryFilterTypeRequest>,
-    pub filter_city: Option<String>,
-    pub page: Option<u64>,
-}
 
 pub struct NavContext {
     pub name: String,

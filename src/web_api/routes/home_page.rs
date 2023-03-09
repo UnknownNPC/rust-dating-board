@@ -1,5 +1,6 @@
 use actix_web::{web, Responder};
 use futures::future::OptionFuture;
+use serde::Deserialize;
 
 use crate::{
     config::Config,
@@ -9,7 +10,7 @@ use crate::{
         auth::AuthenticationGate,
         routes::{
             html_render::HtmlPage,
-            common::{ActionContext, NavContext, QueryFilterTypeRequest, QueryRequest},
+            common::{ActionContext, NavContext},
         },
     },
 };
@@ -181,4 +182,18 @@ impl HomePageProfileDataContext {
             date_create,
         }
     }
+}
+
+#[derive(Deserialize)]
+pub enum QueryFilterTypeRequest {
+    #[serde(rename = "my")]
+    My,
+}
+
+#[derive(Deserialize)]
+pub struct QueryRequest {
+    pub error: Option<String>,
+    pub filter_type: Option<QueryFilterTypeRequest>,
+    pub filter_city: Option<String>,
+    pub page: Option<u64>,
 }
