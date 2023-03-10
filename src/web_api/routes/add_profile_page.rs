@@ -18,7 +18,7 @@ use crate::{
     },
 };
 
-pub async fn add_profile_get(
+pub async fn add_profile_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     config: web::Data<Config>,

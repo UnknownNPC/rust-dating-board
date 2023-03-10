@@ -53,7 +53,7 @@
                         <div class="card-header d-flex p-2">
                             <b><%= profile.name %></b>
                             <% if nav_context.is_user_profiles { %>
-                                <span class="ml-auto">
+                                <span class="ml-auto card-icons-box">
                                     <a href="/edit_profile?id=<%= profile.id %>">
                                         <i class="fas fa-pen fa-md mr-2" title="Редагувати"></i>
                                     </a>
@@ -66,6 +66,7 @@
                         </div>
                         <div class="card-body p-2">
                             <p class="card-text"><%= profile.short_description %>...</p>
+                            <a href="/view_profile?id=<%= profile.id %>" class="stretched-link"></a>
                         </div>
                         <div class="card-footer d-flex p-2">
                             <small class="text-muted"><%= profile.date_create %></small>

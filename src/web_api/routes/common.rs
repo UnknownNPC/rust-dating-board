@@ -94,6 +94,14 @@ pub struct AddProfilePhotoContext {
     pub append: bool,
 }
 
+pub fn get_photo_url(profile_photo: &ProfilePhotoModel, all_photos_folder: &str) -> String {
+    all_photos_folder.to_owned()
+        + "/"
+        + &profile_photo.profile_id.to_string()
+        + "/"
+        + &profile_photo.file_name
+}
+
 impl<'a> AddProfilePhotoContext {
     pub fn new_with_error(error: &str) -> Self {
         AddProfilePhotoContext {
@@ -107,13 +115,7 @@ impl<'a> AddProfilePhotoContext {
     pub fn new_with_payload(all_photos_folder: &'a str, db_photos: Vec<ProfilePhotoModel>) -> Self {
         let photo_urls = db_photos
             .iter()
-            .map(|db_photo| {
-                all_photos_folder.to_owned()
-                    + "/"
-                    + &db_photo.profile_id.to_string()
-                    + "/"
-                    + &db_photo.file_name
-            })
+            .map(|db_photo| get_photo_url(db_photo, all_photos_folder))
             .collect();
 
         let photo_confings = db_photos
@@ -187,7 +189,10 @@ pub fn redirect_to_home_page(
     let message_param_opt = msg_code_opt.map(|f| format!("msg={}", f));
 
     if error_text_opt.is_some() {
-        response_builder.append_header((header::LOCATION, format!("/?error={}", error_text_opt.unwrap())))
+        response_builder.append_header((
+            header::LOCATION,
+            format!("/?error={}", error_text_opt.unwrap()),
+        ))
     } else if to_user_profiles {
         let message_param = message_param_opt
             .map(|f| format!("&{}", f))

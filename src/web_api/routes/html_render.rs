@@ -1,8 +1,9 @@
 use actix_web::HttpResponse;
 use sailfish::TemplateOnce;
 
-use super::home_page::HomePageDataContext;
 use super::common::{NavContext, ProfilePageDataContext};
+use super::home_page::HomePageDataContext;
+use super::view_profile_page::ViewProfileResponse;
 
 #[derive(TemplateOnce)]
 #[template(path = "home.stpl")]
@@ -18,13 +19,17 @@ struct AddOrEditProfile<'a> {
     data_context: &'a ProfilePageDataContext,
 }
 
+#[derive(TemplateOnce)]
+#[template(path = "view_profile.stpl")]
+struct ViewProfile<'a> {
+    nav_context: &'a NavContext,
+    data_context: &'a ViewProfileResponse,
+}
+
 pub struct HtmlPage;
 
 impl HtmlPage {
-    pub fn homepage(
-        nav_context: &NavContext,
-        data_context: &HomePageDataContext,
-    ) -> HttpResponse {
+    pub fn homepage(nav_context: &NavContext, data_context: &HomePageDataContext) -> HttpResponse {
         let html = HttpResponse::Ok().body(
             Home {
                 nav_context,
@@ -43,6 +48,20 @@ impl HtmlPage {
     ) -> HttpResponse {
         HttpResponse::Ok().body(
             AddOrEditProfile {
+                nav_context,
+                data_context,
+            }
+            .render_once()
+            .unwrap(),
+        )
+    }
+
+    pub fn view_profile(
+        nav_context: &NavContext,
+        data_context: &ViewProfileResponse,
+    ) -> HttpResponse {
+        HttpResponse::Ok().body(
+            ViewProfile {
                 nav_context,
                 data_context,
             }

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% let head_title="Акнкета" ; %>
+        <% include!("./includes/head_body.stpl"); %>
+</head>
+
+<body>
+    <% include!("./includes/nav.stpl"); %>
+
+    <div class="container pt-3">
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div id="profile_photos" class="carousel slide" data-ride="carousel">
+                  <ol class="carousel-indicators">
+                    <% for (i, url) in data_context.photo_urls.iter().enumerate() { %>
+                      <% if i == 0 { %>
+                        <li data-target="#profile_photos" data-slide-to="<%= i %>" class="active"></li>
+                      <% } else { %>
+                        <li data-target="#profile_photos" data-slide-to="<%= i %>"></li>
+                      <% } %>    
+                    <% } %>
+                  </ol>
+
+                  <div class="carousel-inner">
+                    <% for (i, url) in data_context.photo_urls.iter().enumerate() { %>
+                        <% if i == 0 { %>
+                          <div class="carousel-item active">
+                        <% } else { %>
+                          <div class="carousel-item">
+                        <% } %>
+                            <img src="<%= url %>" class="d-block w-100" alt="...">
+                          </div>
+                    <% } %>
+                  </div>
+                  <a class="carousel-control-prev" href="#profile_photos" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Попередня</span>
+                  </a>
+                  <a class="carousel-control-next" href="#profile_photos" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Наступна</span>
+                  </a>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <h2 class="card-title"><%= data_context.name %></h2>
+                <p class="card-text mb-0">Зріст: <%= data_context.height %></p>
+                <p class="card-text mb-0">Телефон: <%= data_context.phone_num %></p>
+                <% fn translate(city: &String) -> String {
+                    if city == "harkiv" {
+                        String::from("Харків")
+                    } else if city == "kiev" {
+                        String::from("Київ")
+                    } else if city == "odesa" {
+                        String::from("Одеса")
+                    } else if city == "lviv" {
+                        String::from("Львів")
+                    } else {
+                        String::from("")
+                    }
+                } %>
+                <p class="card-text mb-0">Місто: <%= translate(&data_context.city) %></p>
+                <p class="card-text mb-0">Опис: <%= data_context.description %></p>
+                <p class="card-text mb-0">Дата: <%= data_context.date_create %></p>
+              </div>
+              <div class="col-md-4">
+                TODO
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+</body>
+    <% include!("./includes/extra_scripts.stpl"); %>
+</html>

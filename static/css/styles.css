@@ -14,6 +14,13 @@ li {
     list-style-type: none;
 }
 
-a:hover {
+/* stretched-link disabling */
+.card .card-icons-box {
+    z-index: 2;
+    position: relative;
+}
+
+/* disable icons glish on main page */
+a :hover {
     text-decoration: none;
 }

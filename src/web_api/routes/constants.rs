@@ -1,3 +1,4 @@
+pub const PROFILES_ON_PAGE: &'static u64 = &8;
 pub static PROFILE_ADDED: &'static str = "profile_added";
 pub static PROFILE_UPDATED: &'static str = "profile_updated";
 pub static SERVER_ERROR: &'static str = "server_error";
@@ -8,4 +9,6 @@ pub static LOST_CREDENTIAL: &'static str = "lost_credentials";
 pub static LOST_G_CSRF: &'static str = "lost_g_csrf_token";
 pub static INVALID_G_CSRF: &'static str = "invalid_g_csrf_token";
 pub static INVALID_USER: &'static str = "invalid_user";
+pub static NOT_FOUND: &'static str = "404";
 pub static HOME_DATE_FORMAT: &'static str = "%Y-%m-%d %H:%M";
+pub static NO_PHOTO_URL: &'static str = "/static/img/no_photo.jpg";

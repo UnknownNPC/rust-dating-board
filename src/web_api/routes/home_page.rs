@@ -4,11 +4,10 @@ use serde::Deserialize;
 
 use crate::{
     config::Config,
-    constant::PROFILES_ON_PAGE,
     db::{DbProvider, ProfileModel, ProfilePhotoModel},
     web_api::{
         auth::AuthenticationGate,
-        routes::{common::NavContext, html_render::HtmlPage},
+        routes::{common::NavContext, html_render::HtmlPage, constants::PROFILES_ON_PAGE},
     },
 };
 

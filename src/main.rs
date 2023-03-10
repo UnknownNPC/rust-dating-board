@@ -6,7 +6,6 @@ use sea_orm::{Database, DbConn, DbErr};
 use std::fs;
 
 mod config;
-mod constant;
 mod db;
 mod web_api;
 
@@ -30,8 +29,9 @@ async fn main() {
             .app_data(web::Data::new(provider.clone()))
             .app_data(web::Data::new(conf.clone()))
             .route("/", web::get().to(web_api::index_page))
-            .route("/add_profile", web::get().to(web_api::add_profile_get))
+            .route("/add_profile", web::get().to(web_api::add_profile_page))
             .route("/edit_profile", web::get().to(web_api::edit_profile_page))
+            .route("/view_profile", web::get().to(web_api::view_profile_page))
             .route("/add_or_edit_profile", web::post().to(web_api::add_or_edit_profile_post))
             .service(
                 web::resource("/profile/delete")
