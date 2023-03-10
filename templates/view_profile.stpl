@@ -14,42 +14,52 @@
           <div class="card-body">
             <div class="row">
               <div class="col-md-4">
-                <div id="profile_photos" class="carousel slide" data-ride="carousel">
-                  <ol class="carousel-indicators">
-                    <% for (i, url) in data_context.photo_urls.iter().enumerate() { %>
-                      <% if i == 0 { %>
-                        <li data-target="#profile_photos" data-slide-to="<%= i %>" class="active"></li>
-                      <% } else { %>
-                        <li data-target="#profile_photos" data-slide-to="<%= i %>"></li>
-                      <% } %>    
-                    <% } %>
-                  </ol>
-
-                  <div class="carousel-inner">
-                    <% for (i, url) in data_context.photo_urls.iter().enumerate() { %>
-                        <% if i == 0 { %>
-                          <div class="carousel-item active">
-                        <% } else { %>
-                          <div class="carousel-item">
+                <div class="card">
+                  <div class="card-body">
+                    <h3 class="card-title">Фотографії</h3>
+                    <div id="profile_photos" class="carousel slide" data-ride="carousel">
+                      <ol class="carousel-indicators">
+                        <% for (i, url) in data_context.photo_urls.iter().enumerate() { %>
+                          <% if i == 0 { %>
+                            <li data-target="#profile_photos" data-slide-to="<%= i %>" class="active"></li>
+                          <% } else { %>
+                            <li data-target="#profile_photos" data-slide-to="<%= i %>"></li>
+                          <% } %>    
                         <% } %>
-                            <img src="<%= url %>" class="d-block w-100" alt="...">
-                          </div>
-                    <% } %>
+                      </ol>
+    
+                      <div class="carousel-inner">
+                        <% for (i, url) in data_context.photo_urls.iter().enumerate() { %>
+                            <% if i == 0 { %>
+                              <div class="carousel-item active">
+                            <% } else { %>
+                              <div class="carousel-item">
+                            <% } %>
+                                <img src="<%= url %>" class="d-block w-100" alt="...">
+                              </div>
+                        <% } %>
+                      </div>
+                      <a class="carousel-control-prev" href="#profile_photos" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Попередня</span>
+                      </a>
+                      <a class="carousel-control-next" href="#profile_photos" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Наступна</span>
+                      </a>
+                    </div>
                   </div>
-                  <a class="carousel-control-prev" href="#profile_photos" role="button" data-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Попередня</span>
-                  </a>
-                  <a class="carousel-control-next" href="#profile_photos" role="button" data-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="sr-only">Наступна</span>
-                  </a>
-                </div>
+                </div>  
+
               </div>
               <div class="col-md-4">
-                <h2 class="card-title"><%= data_context.name %></h2>
-                <p class="card-text mb-0">Зріст: <%= data_context.height %></p>
-                <p class="card-text mb-0">Телефон: <%= data_context.phone_num %></p>
+                <div class="card">
+                  <div class="card-body">
+                    <h3 class="card-title">Інформація</h3>
+                   
+                    <p class="card-text mb-0">Імя: <%= data_context.name %></h2>
+                    <p class="card-text mb-0">Зріст: <%= data_context.height %></p>
+                    <p class="card-text mb-0">Телефон: <%= data_context.phone_num %></p>
                 <% fn translate(city: &String) -> String {
                     if city == "harkiv" {
                         String::from("Харків")
@@ -63,12 +73,76 @@
                         String::from("")
                     }
                 } %>
-                <p class="card-text mb-0">Місто: <%= translate(&data_context.city) %></p>
-                <p class="card-text mb-0">Опис: <%= data_context.description %></p>
-                <p class="card-text mb-0">Дата: <%= data_context.date_create %></p>
+                    <p class="card-text mb-0">Місто: <%= translate(&data_context.city) %></p>
+                    <p class="card-text mb-0">Опис: <%= data_context.description %></p>
+                    <p class="card-text mb-0">Опубліковано: <%= data_context.date_create %></p>
+                  </div>
+                </div>    
               </div>
               <div class="col-md-4">
-                TODO
+                
+                <div class="card">
+                  <div class="card-body">
+                    <h3 class="card-title">Коментарі</h3>
+                    <div class="overflow-auto" style="max-height: 400px;">
+                      <ul class="list-unstyled">
+                        <li class="media">
+                          <div class="media-body">
+                            <h5 class="mt-0 mb-1">Имя автора</h5>
+                            <small class="text-muted">Дата комментария</small>
+                            <p>Текст комментария</p>
+                          </div>
+                        </li>
+                        <li class="media">
+                          <div class="media-body">
+                            <h5 class="mt-0 mb-1">Имя автора</h5>
+                            <small class="text-muted">Дата комментария</small>
+                            <p>Текст комментария</p>
+                          </div>
+                        </li>
+                        <li class="media">
+                          <div class="media-body">
+                            <h5 class="mt-0 mb-1">Имя автора</h5>
+                            <small class="text-muted">Дата комментария</small>
+                            <p>Текст комментария</p>
+                          </div>
+                        </li>
+                        <li class="media">
+                          <div class="media-body">
+                            <h5 class="mt-0 mb-1">Имя автора</h5>
+                            <small class="text-muted">Дата комментария</small>
+                            <p>Текст комментария</p>
+                          </div>
+                        </li>
+                        <li class="media">
+                          <div class="media-body">
+                            <h5 class="mt-0 mb-1">Имя автора</h5>
+                            <small class="text-muted">Дата комментария</small>
+                            <p>Текст комментария</p>
+                          </div>
+                        </li>
+                        <li class="media">
+                          <div class="media-body">
+                            <h5 class="mt-0 mb-1">Имя автора</h5>
+                            <small class="text-muted">Дата комментария</small>
+                            <p>Текст комментария</p>
+                          </div>
+                        </li>
+                        <!-- Добавьте сколько угодно комментариев -->
+                      </ul>
+                    </div>
+                    <form>
+                      <div class="form-group">
+                        <input placeholder="Імя" type="text" class="form-control" id="comment-name">
+                      </div>
+                      <div class="form-group">
+                        <textarea placeholder="Ваш комментар" class="form-control" rows="5" id="comment-text"></textarea>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Відправити</button>
+                    </form>
+                  </div>
+                </div>
+                
               </div>
             </div>
           </div>
