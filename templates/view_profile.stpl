@@ -138,7 +138,7 @@
                       <div class="form-group">
                         <textarea placeholder="Ваш комментар" class="form-control" rows="5" id="comment-text"></textarea>
                       </div>
-                      <button type="submit" class="btn btn-primary">Відправити</button>
+                      <button type="submit" class="btn btn-primary mx-auto d-block">Відправити</button>
                     </form>
                   </div>
                 </div>
