@@ -60,19 +60,19 @@
                     <p class="card-text mb-0">Імя: <%= data_context.name %></h2>
                     <p class="card-text mb-0">Зріст: <%= data_context.height %></p>
                     <p class="card-text mb-0">Телефон: <%= data_context.phone_num %></p>
-                <% fn translate(city: &String) -> String {
-                    if city == "harkiv" {
-                        String::from("Харків")
-                    } else if city == "kiev" {
-                        String::from("Київ")
-                    } else if city == "odesa" {
-                        String::from("Одеса")
-                    } else if city == "lviv" {
-                        String::from("Львів")
-                    } else {
-                        String::from("")
-                    }
-                } %>
+                    <% fn translate(city: &String) -> String {
+                        if city == "harkiv" {
+                            String::from("Харків")
+                        } else if city == "kiev" {
+                            String::from("Київ")
+                        } else if city == "odesa" {
+                            String::from("Одеса")
+                        } else if city == "lviv" {
+                            String::from("Львів")
+                        } else {
+                            String::from("")
+                        }
+                    } %>
                     <p class="card-text mb-0">Місто: <%= translate(&data_context.city) %></p>
                     <p class="card-text mb-0">Опис: <%= data_context.description %></p>
                     <p class="card-text mb-0">Опубліковано: <%= data_context.date_create %></p>
