@@ -177,6 +177,24 @@ impl DbProvider {
             .await
     }
 
+    pub async fn search_profiles(&self, text: &str, limit: i64) -> Result<Vec<ProfileModel>, DbErr> {
+        println!(
+            "[db_provider#search_profiles] User search for profiles: {}",
+            text
+        );
+
+        profile_photo::Entity::find()
+            .from_raw_sql(Statement::from_sql_and_values(
+                DbBackend::Postgres,
+                "SELECT * FROM profile WHERE to_tsvector(phone_number) || to_tsvector(description) || to_tsvector(name) @@ plainto_tsquery($1)
+                 order by created_at limit $2;",
+                [text.into(), limit.into()],
+            ))
+            .into_model::<ProfileModel>()
+            .all(&self.db_con)
+            .await
+    }
+
     pub async fn profiles_pagination(
         &self,
         number_of_entities: u64,

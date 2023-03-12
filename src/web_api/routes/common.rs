@@ -14,6 +14,7 @@ pub struct NavContext {
     pub all_cities: Vec<String>,
     pub current_city: String,
     pub is_user_profiles: bool,
+    pub is_search: bool,
     pub google_captcha_id: String,
 }
 
@@ -23,6 +24,7 @@ impl NavContext {
         cities: Vec<String>,
         current_city: String,
         is_user_profiles: bool,
+        is_search: bool,
         google_captcha_id: String,
     ) -> Self {
         NavContext {
@@ -30,6 +32,7 @@ impl NavContext {
             all_cities: cities,
             current_city,
             is_user_profiles,
+            is_search,
             google_captcha_id
         }
     }
@@ -202,7 +205,7 @@ pub fn redirect_to_home_page(
             .unwrap_or_default();
         response_builder.append_header((
             header::LOCATION,
-            format!("/?filter_type=my{}", message_param),
+            format!("/?show_my=true{}", message_param),
         ))
     } else {
         let message_param = message_param_opt

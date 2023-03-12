@@ -7,7 +7,7 @@ use crate::{
     db::{DbProvider, ProfileModel, ProfilePhotoModel},
     web_api::{
         auth::AuthenticationGate,
-        routes::{common::NavContext, html_render::HtmlPage, constants::PROFILES_ON_PAGE},
+        routes::{common::NavContext, constants::PROFILES_ON_PAGE, html_render::HtmlPage},
     },
 };
 
@@ -24,6 +24,7 @@ pub async fn index_page(
         db_provider: &web::Data<DbProvider>,
         current_city_opt: &Option<String>,
         is_user_profiles_page: bool,
+        is_search: bool,
         google_captcha_id: String,
     ) -> NavContext {
         let cities_models = db_provider.find_cities_on().await.unwrap();
@@ -35,7 +36,14 @@ pub async fn index_page(
             .map(|f| f.as_str())
             .unwrap_or_default()
             .to_string();
-        NavContext::new(user_name, cities_names, current_city, is_user_profiles_page, google_captcha_id)
+        NavContext::new(
+            user_name,
+            cities_names,
+            current_city,
+            is_user_profiles_page,
+            is_search,
+            google_captcha_id,
+        )
     }
 
     async fn get_data_context(
@@ -45,7 +53,15 @@ pub async fn index_page(
         auth_gate: &AuthenticationGate,
         is_user_profiles_page: bool,
     ) -> HomePageDataContext {
-        let all_profiles = if is_user_profiles_page {
+        let is_search = query.search.is_some();
+
+        let all_profiles = if is_search {
+            db_provider
+                .search_profiles(query.search.as_ref().unwrap(), 20)
+                .await
+                .map(|res| (0, res))
+                .unwrap()
+        } else if is_user_profiles_page {
             db_provider
                 .all_user_profiles(auth_gate.user_id.unwrap())
                 .await
@@ -86,6 +102,7 @@ pub async fn index_page(
                 current: curret_page,
                 total: total_pages,
             },
+            search_text: query.search.clone()
         }
     }
 
@@ -99,11 +116,7 @@ pub async fn index_page(
         .unwrap_or(Ok(None))
         .unwrap();
 
-    let show_users_profiles = query
-        .filter_type
-        .as_ref()
-        .map(|f| matches!(f, QueryFilterTypeRequest::My))
-        .unwrap_or(false);
+    let show_users_profiles = query.show_my.unwrap_or_default();
     let is_user_profiles_page = auth_gate.is_authorized && show_users_profiles;
 
     let user_name_opt = user_opt.map(|f| f.name);
@@ -112,7 +125,8 @@ pub async fn index_page(
         &db_provider,
         &query.filter_city,
         is_user_profiles_page,
-        config.captcha_google_id.clone()
+        query.search.is_some(),
+        config.captcha_google_id.clone(),
     )
     .await;
     let data_context = get_data_context(
@@ -135,6 +149,7 @@ pub struct Pagination {
 }
 
 pub struct HomePageDataContext {
+    pub search_text: Option<String>,
     pub profiles: Vec<HomePageProfileDataContext>,
     pub pagination: Pagination,
 }
@@ -178,15 +193,10 @@ impl HomePageProfileDataContext {
 }
 
 #[derive(Deserialize)]
-pub enum QueryFilterTypeRequest {
-    #[serde(rename = "my")]
-    My,
-}
-
-#[derive(Deserialize)]
 pub struct QueryRequest {
     pub error: Option<String>,
-    pub filter_type: Option<QueryFilterTypeRequest>,
+    pub show_my: Option<bool>,
+    pub search: Option<String>,
     pub filter_city: Option<String>,
     pub page: Option<u64>,
 }

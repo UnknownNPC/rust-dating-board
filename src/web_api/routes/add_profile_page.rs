@@ -61,7 +61,7 @@ pub async fn add_profile_page(
     );
 
     let nav_context = NavContext::new(user.name, cities_names, String::from(""), false,
-    config.captcha_google_id.clone());
+    false, config.captcha_google_id.clone());
 
     HtmlPage::add_or_edit_profile(&nav_context, &data_contex)
 }

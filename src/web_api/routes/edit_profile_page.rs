@@ -61,6 +61,7 @@ pub async fn edit_profile_page(
             cities_names,
             String::from(""),
             false,
+            false,
             config.captcha_google_id.clone(),
         );
 

@@ -80,7 +80,7 @@ pub async fn view_profile_page(
 
         let user_name = user_opt.map(|user| user.name).unwrap_or_default();
 
-        NavContext::new(user_name, cities_names, String::from(""), false, google_captcha_id.clone())
+        NavContext::new(user_name, cities_names, String::from(""), false, false, google_captcha_id.clone())
     }
 
     println!("[routes#view_profile_get] User opens profile #{}", query.id);

@@ -67,7 +67,7 @@
                             <%= nav_context.name %>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-                            <a class="dropdown-item" href="/?filter_type=my">Мої анкети</a>
+                            <a class="dropdown-item" href="/?show_my=true">Мої анкети</a>
                             <a class="dropdown-item" href="/sign_out">Вихід</a>
                 </div>
             </li>
