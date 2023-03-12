@@ -37,7 +37,6 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group input-group col-md-4">
-
                         <div class="input-group-prepend">
                             <span class="input-group-text" id="phone_prefix">+380</span>
                         </div>
@@ -173,8 +172,9 @@
     </script>
     <script>
         grecaptcha.enterprise.ready(function() {
-            grecaptcha.enterprise.execute('6LfnsvEkAAAAALx2ZI1eiXPo-wFKaFWV7ceUBcjh', {action: 'add_or_edit_profile'}).then(function(token) {
-                document.getElementById('captcha_token').value = token;
+            grecaptcha.enterprise.execute('6LfnsvEkAAAAALx2ZI1eiXPo-wFKaFWV7ceUBcjh', {action: 'add_or_edit_profile'})
+                .then(function(token) {
+                    document.getElementById('captcha_token').value = token;
             });
         });
     </script>

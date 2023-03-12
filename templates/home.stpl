@@ -36,95 +36,95 @@
             <% if data_context.profiles.is_empty() { %>
                 <h2 class="text-center pt-3">Нажаль нічого не знайдено</h2>
             <% } else { %>
-            <div class="card-columns">
-                <% fn translate(city: &String) -> String {
-                    if city == "harkiv" {
-                        String::from("Харків")
-                    } else if city == "kiev" {
-                        String::from("Київ")
-                    } else if city == "odesa" {
-                        String::from("Одеса")
-                    } else if city == "lviv" {
-                        String::from("Львів")
-                    } else {
-                        String::from("")
+                <div class="card-columns">
+                    <% fn translate(city: &String) -> String {
+                        if city == "harkiv" {
+                            String::from("Харків")
+                        } else if city == "kiev" {
+                            String::from("Київ")
+                        } else if city == "odesa" {
+                            String::from("Одеса")
+                        } else if city == "lviv" {
+                            String::from("Львів")
+                        } else {
+                            String::from("")
+                        }
                     }
-                   }
-                %>
-                <% for profile in &data_context.profiles { %> 
-                    <div class="card" style="background-color: #e3f2fd;">
-                        <% if profile.photo_url_opt.is_some() { %>
-                        <img class="card-img-top" src="<%= profile.photo_url_opt.as_ref().unwrap() %>" alt="photo">
-                        <% } %>
-                        <div class="card-header d-flex p-2">
-                            <b><%= profile.name %></b>
-                            <% if nav_context.is_user_profiles { %>
-                                <span class="ml-auto card-icons-box">
-                                    <a href="/edit_profile?id=<%= profile.id %>">
-                                        <i class="fas fa-pen fa-md mr-2" title="Редагувати"></i>
-                                    </a>
-                                    <a class="delete_profile_link" data-toggle="modal" data-id="<%= profile.id %>" href="#">
-                                        <i class="fas fa-trash fa-md" title="Видалити"></i>
-                                    </a>
-                                </span>
+                    %>
+                    <% for profile in &data_context.profiles { %> 
+                        <div class="card" style="background-color: #e3f2fd;">
+                            <% if profile.photo_url_opt.is_some() { %>
+                            <img class="card-img-top" src="<%= profile.photo_url_opt.as_ref().unwrap() %>" alt="photo">
                             <% } %>
+                            <div class="card-header d-flex p-2">
+                                <b><%= profile.name %></b>
+                                <% if nav_context.is_user_profiles { %>
+                                    <span class="ml-auto card-icons-box">
+                                        <a href="/edit_profile?id=<%= profile.id %>">
+                                            <i class="fas fa-pen fa-md mr-2" title="Редагувати"></i>
+                                        </a>
+                                        <a class="delete_profile_link" data-toggle="modal" data-id="<%= profile.id %>" href="#">
+                                            <i class="fas fa-trash fa-md" title="Видалити"></i>
+                                        </a>
+                                    </span>
+                                <% } %>
 
+                            </div>
+                            <div class="card-body p-2">
+                                <p class="card-text"><%= profile.short_description %>...</p>
+                                <a href="/view_profile?id=<%= profile.id %>" class="stretched-link"></a>
+                            </div>
+                            <div class="card-footer d-flex p-2">
+                                <small class="text-muted"><%= profile.date_create %></small>
+                                <small class="text-muted ml-auto"><%= translate(&profile.city) %></small>
+                            </div>
                         </div>
-                        <div class="card-body p-2">
-                            <p class="card-text"><%= profile.short_description %>...</p>
-                            <a href="/view_profile?id=<%= profile.id %>" class="stretched-link"></a>
-                        </div>
-                        <div class="card-footer d-flex p-2">
-                            <small class="text-muted"><%= profile.date_create %></small>
-                            <small class="text-muted ml-auto"><%= translate(&profile.city) %></small>
-                        </div>
-                    </div>
-                        
-                <% } %>
-            </div>
+                            
+                    <% } %>
+                </div>
             <% } %>
 
             <% if !nav_context.is_user_profiles && !nav_context.is_search { %>
-            <% let city_query_param = if nav_context.current_city.is_empty() { 
-                String::from("")
-               } else { 
-                format!("&filter_city={}", nav_context.current_city)
-               };
-            %>
-            <nav aria-label="navigation" class="pt-3">
-                <ul class="pagination justify-content-center">
-                    <% if data_context.pagination.has_previous { %>
-                        <li class="page-item">
-                            <a class="page-link" href="/?page=<%= &data_context.pagination.current - 1 %><%= city_query_param %>" tabindex="-1">Попередня</a>
-                        </li>
-                    <% } else { %>
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1">Попередня</a>
-                        </li>
-                    <% } %>
-                    <% for page_index in 1..data_context.pagination.total + 1 { %>
-                            <!-- select <li> -->
-                            <% if page_index == data_context.pagination.current { %>
-                                <li class="page-item active">
-                            <% } else { %>
-                                <li class="page-item">
-                            <% } %>
-                                    <a class="page-link" href="/?page=<%= page_index %><%= city_query_param %>"><%= page_index %></a>
-                                </li>
-                    <% } %>
+                <% let city_query_param = if nav_context.current_city.is_empty() { 
+                    String::from("")
+                } else { 
+                    format!("&filter_city={}", nav_context.current_city)
+                };
+                %>
+                <nav aria-label="navigation" class="pt-3">
+                    <ul class="pagination justify-content-center">
+                        <% if data_context.pagination.has_previous { %>
+                            <li class="page-item">
+                                <a class="page-link" href="/?page=<%= &data_context.pagination.current - 1 %><%= city_query_param %>" tabindex="-1">Попередня</a>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Попередня</a>
+                            </li>
+                        <% } %>
+                        <% for page_index in 1..data_context.pagination.total + 1 { %>
+                                <!-- select <li> -->
+                                <% if page_index == data_context.pagination.current { %>
+                                    <li class="page-item active">
+                                <% } else { %>
+                                    <li class="page-item">
+                                <% } %>
+                                        <a class="page-link" href="/?page=<%= page_index %><%= city_query_param %>"><%= page_index %></a>
+                                    </li>
+                        <% } %>
 
-                    <!-- disabled here -->
-                    <% if data_context.pagination.has_next { %>
-                        <li class="page-item">
-                            <a class="page-link" href="/?page=<%= &data_context.pagination.current + 1 %><%= city_query_param %>" tabindex="-1">Наступна</a>
-                        </li>
-                    <% } else { %>
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1">Наступна</a>
-                        </li>
-                    <% } %>
-                </ul>
-            </nav>
+                        <!-- disabled here -->
+                        <% if data_context.pagination.has_next { %>
+                            <li class="page-item">
+                                <a class="page-link" href="/?page=<%= &data_context.pagination.current + 1 %><%= city_query_param %>" tabindex="-1">Наступна</a>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1">Наступна</a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </nav>
             <% } %>
 
             <!-- delete profile modal -->

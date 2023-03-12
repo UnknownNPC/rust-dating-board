@@ -9,7 +9,7 @@
             <li class="nav-item active"><a class="nav-link" href="/">Головна <span class="sr-only">(current)</span></a>
             </li>
             <% if !nav_context.name.is_empty() { %>
-            <li class="nav-item"><a class="nav-link" href="/add_profile">Додати анкету</a></li>
+                <li class="nav-item"><a class="nav-link" href="/add_profile">Додати анкету</a></li>
             <% } %>
         </ul>
 
@@ -41,7 +41,7 @@
                     <% if !nav_context.current_city.is_empty() { %>
                         <!-- add all if city selected -->
                         <a class="dropdown-item" href="/">
-                            Усі міста
+                            Україна
                         </a>
                     <% } %>    
                     <% for city in &nav_context.all_cities { %>
