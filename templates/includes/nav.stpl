@@ -11,10 +11,13 @@
             <% if !nav_context.name.is_empty() { %>
             <li class="nav-item"><a class="nav-link" href="/add_profile">Додати анкету</a></li>
             <% } %>
-            <li class="nav-item"><a class="nav-link" href="/search">Пошук</a></li>
         </ul>
 
         <ul class="navbar-nav ml-auto">
+            <form action="/" class="form-inline">
+                <input class="form-control mr-sm-2" name="search" type="search" placeholder="Телефон чи слово" aria-label="Search">
+                <button class="btn btn-primary my-2 my-sm-0" type="submit">Шукати</button>
+              </form>
             <li class="nav-item dropdown">
                 <!-- what user sees -->
                 <a class="nav-link dropdown-toggle" href="#" id="cities_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

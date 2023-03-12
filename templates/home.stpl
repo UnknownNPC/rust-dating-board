@@ -10,7 +10,7 @@
     <% include!("./includes/nav.stpl"); %>
 
         <div class="container">
-            <% if nav_context.is_search { %>
+            <% if nav_context.is_search && !data_context.profiles.is_empty() { %>
                 <p class="h1">Результати пошуку <%= data_context.search_text.as_ref().unwrap() %></p>
             <% } else if nav_context.is_user_profiles { %>
                 <p class="h1">Мої анкети</p>
@@ -29,9 +29,13 @@
                     }
                 } %>
                 <p class="h1">Анкети міста <%= translate(&nav_context.current_city) %></p>
-            <% } else { %>
+            <% } else if !data_context.profiles.is_empty() { %>
                 <p class="h1">Анкети України</p>
-            <% } %>    
+            <% } %>
+
+            <% if data_context.profiles.is_empty() { %>
+                <h2 class="text-center pt-3">Нажаль нічого не знайдено</h2>
+            <% } else { %>
             <div class="card-columns">
                 <% fn translate(city: &String) -> String {
                     if city == "harkiv" {
@@ -78,8 +82,9 @@
                         
                 <% } %>
             </div>
+            <% } %>
 
-            <% if !nav_context.is_user_profiles && !!nav_context.is_search { %>
+            <% if !nav_context.is_user_profiles && !nav_context.is_search { %>
             <% let city_query_param = if nav_context.current_city.is_empty() { 
                 String::from("")
                } else { 
