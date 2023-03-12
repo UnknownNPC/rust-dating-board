@@ -14,6 +14,7 @@ pub struct Config {
 
     pub captcha_google_id: String,
     pub captcha_google_secret: String,
+    pub captcha_google_score: f64
 }
 
 impl Config {
@@ -34,6 +35,7 @@ impl Config {
 
         let captcha_google_id=std::env::var("CAPTCHA_GOOGLE_ID").expect("CAPTCHA_GOOGLE_ID must be set");
         let captcha_google_secret=std::env::var("CAPTCHA_GOOGLE_SECRET").expect("CAPTCHA_GOOGLE_SECRET must be set");
+        let captcha_google_score=std::env::var("CAPTCHA_GOOGLE_SCORE").expect("CAPTCHA_GOOGLE_SCORE must be set");
 
         Config {
             database_url,
@@ -44,7 +46,8 @@ impl Config {
             oauth_google_redirect_url,
             all_photos_folder_name,
             captcha_google_id,
-            captcha_google_secret
+            captcha_google_secret,
+            captcha_google_score: captcha_google_score.parse::<f64>().unwrap()
         }
     }
 }

@@ -12,9 +12,9 @@ use crate::{
                 redirect_to_home_if_not_authorized, redirect_to_home_page, NavContext,
                 ProfilePageDataContext,
             },
-            constants::{HACK_DETECTED, PROFILE_ADDED, SERVER_ERROR, PROFILE_UPDATED},
+            constants::{HACK_DETECTED, PROFILE_ADDED, SERVER_ERROR, PROFILE_UPDATED, CAPTCHA_CHECK_ERROR},
             html_render::HtmlPage,
-        },
+        }, recaptcha::Recaptcha,
     },
 };
 
@@ -60,7 +60,7 @@ pub async fn add_profile_page(
         false,
     );
 
-    let nav_context = NavContext::new(user.name, cities_names, String::from(""), false, 
+    let nav_context = NavContext::new(user.name, cities_names, String::from(""), false,
     config.captcha_google_id.clone());
 
     HtmlPage::add_or_edit_profile(&nav_context, &data_contex)
@@ -70,6 +70,7 @@ pub async fn add_or_edit_profile_post(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     form: web::Form<AddOrEditProfileFormRequest>,
+    config: web::Data<Config>,
 ) -> impl Responder {
     async fn resolve_profile(
         profile_id_opt: &Option<i64>,
@@ -113,6 +114,18 @@ pub async fn add_or_edit_profile_post(
         "[route#add_or_edit_profile_post] Inside the add_profile post. User auth status {}",
         auth_gate.is_authorized
     );
+
+    let captcha_verify_res = Recaptcha::verify(&config.captcha_google_secret, &form.captcha_token).await;
+    if let Err(response) = captcha_verify_res {
+        println!("[routes#add_or_edit_page] google captcha flow failed [{}]", response);
+        return redirect_to_home_page(None, Some(SERVER_ERROR), None, false)
+    }
+
+    let captcha_score = captcha_verify_res.unwrap();
+    if captcha_score < config.captcha_google_score {
+        println!("[routes#add_or_edit_page] google captcha score is low [{}]", captcha_score );
+        return redirect_to_home_page(None, Some(CAPTCHA_CHECK_ERROR), None, false)
+    }
 
     if let Err(response) = redirect_to_home_if_not_authorized(auth_gate.is_authorized) {
         return response;

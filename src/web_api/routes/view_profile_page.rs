@@ -69,7 +69,7 @@ pub async fn view_profile_page(
         let user_opt = OptionFuture::from(
             auth_gate
                 .user_id
-                .map(|id| db_provider.find_active_profile_by(id)),
+                .map(|id| db_provider.find_user_by_id(id)),
         )
         .await
         .map(|f| f.unwrap())
