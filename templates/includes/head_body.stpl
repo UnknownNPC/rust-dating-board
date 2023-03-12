@@ -9,3 +9,4 @@
 <link rel="stylesheet" href="static/css/fontawesome_all.css">
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.google.com/recaptcha/enterprise.js?render=<%= nav_context.google_captcha_id %>"></script>

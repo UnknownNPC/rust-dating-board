@@ -11,6 +11,9 @@ pub struct Config {
     pub oauth_google_redirect_url: String,
 
     pub all_photos_folder_name: String,
+
+    pub captcha_google_id: String,
+    pub captcha_google_secret: String,
 }
 
 impl Config {
@@ -28,6 +31,10 @@ impl Config {
 
         let all_photos_folder_name=std::env::var("ALL_PHOTOS_FOLDER_NAME").expect("ALL_PHOTOS_FOLDER_NAME must be set");
 
+
+        let captcha_google_id=std::env::var("CAPTCHA_GOOGLE_ID").expect("CAPTCHA_GOOGLE_ID must be set");
+        let captcha_google_secret=std::env::var("CAPTCHA_GOOGLE_SECRET").expect("CAPTCHA_GOOGLE_SECRET must be set");
+
         Config {
             database_url,
             jwt_secret,
@@ -35,7 +42,9 @@ impl Config {
             oauth_google_client_id,
             oauth_google_client_secret,
             oauth_google_redirect_url,
-            all_photos_folder_name
+            all_photos_folder_name,
+            captcha_google_id,
+            captcha_google_secret
         }
     }
 }

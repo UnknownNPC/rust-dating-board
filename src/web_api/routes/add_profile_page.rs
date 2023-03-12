@@ -60,7 +60,8 @@ pub async fn add_profile_page(
         false,
     );
 
-    let nav_context = NavContext::new(user.name, cities_names, String::from(""), false);
+    let nav_context = NavContext::new(user.name, cities_names, String::from(""), false, 
+    config.captcha_google_id.clone());
 
     HtmlPage::add_or_edit_profile(&nav_context, &data_contex)
 }
@@ -157,4 +158,5 @@ pub struct AddOrEditProfileFormRequest {
     pub description: String,
     // edit mode ON
     pub profile_id: Option<i64>,
+    pub captcha_token: String
 }

@@ -19,7 +19,7 @@
                     <h3 class="card-title">Фотографії</h3>
                     <div id="profile_photos" class="carousel slide" data-ride="carousel">
                       <ol class="carousel-indicators">
-                        <% for (i, url) in data_context.photo_urls.iter().enumerate() { %>
+                        <% for (i, _url) in data_context.photo_urls.iter().enumerate() { %>
                           <% if i == 0 { %>
                             <li data-target="#profile_photos" data-slide-to="<%= i %>" class="active"></li>
                           <% } else { %>

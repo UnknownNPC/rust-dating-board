@@ -14,6 +14,7 @@ pub struct NavContext {
     pub all_cities: Vec<String>,
     pub current_city: String,
     pub is_user_profiles: bool,
+    pub google_captcha_id: String,
 }
 
 impl NavContext {
@@ -22,12 +23,14 @@ impl NavContext {
         cities: Vec<String>,
         current_city: String,
         is_user_profiles: bool,
+        google_captcha_id: String,
     ) -> Self {
         NavContext {
             name,
             all_cities: cities,
             current_city,
             is_user_profiles,
+            google_captcha_id
         }
     }
 }

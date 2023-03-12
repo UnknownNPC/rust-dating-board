@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 use crate::{
     config::Config,
-    db::{DbProvider},
+    db::DbProvider,
     web_api::{
         auth::AuthenticationGate,
         routes::{
@@ -47,7 +47,7 @@ pub async fn edit_profile_page(
             &config.all_photos_folder_name,
             &target_profile_model_opt,
             target_profile_photos,
-            true
+            true,
         );
 
         let user = db_provider
@@ -56,11 +56,20 @@ pub async fn edit_profile_page(
             .unwrap()
             .unwrap();
 
-        let nav_context = NavContext::new(user.name, cities_names, String::from(""), false);
+        let nav_context = NavContext::new(
+            user.name,
+            cities_names,
+            String::from(""),
+            false,
+            config.captcha_google_id.clone(),
+        );
 
         HtmlPage::add_or_edit_profile(&nav_context, &data_contex)
     } else {
-        println!("Profile id is invalid. Hack detected from user [{}]!", auth_gate.user_id.unwrap());
+        println!(
+            "Profile id is invalid. Hack detected from user [{}]!",
+            auth_gate.user_id.unwrap()
+        );
         redirect_to_home_page(None, Some(HACK_DETECTED), None, false)
     }
 }

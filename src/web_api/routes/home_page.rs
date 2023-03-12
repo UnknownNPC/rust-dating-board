@@ -24,6 +24,7 @@ pub async fn index_page(
         db_provider: &web::Data<DbProvider>,
         current_city_opt: &Option<String>,
         is_user_profiles_page: bool,
+        google_captcha_id: String,
     ) -> NavContext {
         let cities_models = db_provider.find_cities_on().await.unwrap();
         let cities_names = cities_models.iter().map(|city| city.name.clone()).collect();
@@ -34,7 +35,7 @@ pub async fn index_page(
             .map(|f| f.as_str())
             .unwrap_or_default()
             .to_string();
-        NavContext::new(user_name, cities_names, current_city, is_user_profiles_page)
+        NavContext::new(user_name, cities_names, current_city, is_user_profiles_page, google_captcha_id)
     }
 
     async fn get_data_context(
@@ -111,6 +112,7 @@ pub async fn index_page(
         &db_provider,
         &query.filter_city,
         is_user_profiles_page,
+        config.captcha_google_id.clone()
     )
     .await;
     let data_context = get_data_context(

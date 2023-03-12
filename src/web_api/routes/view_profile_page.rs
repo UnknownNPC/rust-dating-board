@@ -64,6 +64,7 @@ pub async fn view_profile_page(
     async fn resolve_nav_context(
         db_provider: &web::Data<DbProvider>,
         auth_gate: &AuthenticationGate,
+        google_captcha_id: &String
     ) -> NavContext {
         let user_opt = OptionFuture::from(
             auth_gate
@@ -79,12 +80,12 @@ pub async fn view_profile_page(
 
         let user_name = user_opt.map(|user| user.name).unwrap_or_default();
 
-        NavContext::new(user_name, cities_names, String::from(""), false)
+        NavContext::new(user_name, cities_names, String::from(""), false, google_captcha_id.clone())
     }
 
     println!("[routes#view_profile_get] User opens profile #{}", query.id);
 
-    let nav_context = resolve_nav_context(&db_provider, &auth_gate).await;
+    let nav_context = resolve_nav_context(&db_provider, &auth_gate, &config.oauth_google_client_id).await;
     let data_context_opt = resolve_view_profile(query.id, &db_provider, &config).await;
 
     match data_context_opt {

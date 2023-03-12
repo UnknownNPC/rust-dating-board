@@ -104,6 +104,7 @@
                 <% if data_context.is_edit_mode && data_context.id.is_some() { %>
                     <input type="hidden" name="profile_id" value="<%= data_context.id.as_ref().unwrap() %>">   
                 <% } %> 
+                <input type="hidden" name="captcha_token" id="captcha_token" />
             </form>
         </div>
 
@@ -167,6 +168,13 @@
                 browseOnZoneClick: true
             }).on('filebatchselected', function (event, previewId, index, fileId) {
                 $el1.fileinput("upload");
+            });
+        });
+    </script>
+    <script>
+        grecaptcha.enterprise.ready(function() {
+            grecaptcha.enterprise.execute('6LfnsvEkAAAAALx2ZI1eiXPo-wFKaFWV7ceUBcjh', {action: 'add_or_edit_profile'}).then(function(token) {
+                document.getElementById('captcha_token').value = token;
             });
         });
     </script>
