@@ -41,7 +41,7 @@ pub async fn delete_profile_endpoint(
         .await?;
 
     Ok(HttpResponse::build(StatusCode::FOUND)
-        .append_header((LOCATION, "/show_my=true"))
+        .append_header((LOCATION, "/?show_my=true"))
         .finish())
 }
 
