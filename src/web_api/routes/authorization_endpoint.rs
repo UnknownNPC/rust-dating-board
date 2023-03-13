@@ -16,7 +16,8 @@ use crate::{
     },
 };
 
-use super::error::WebApiError;
+use super::error::HtmlError;
+
 
 pub async fn sign_out_endpoint(auth_gate: AuthenticationGate) -> impl Responder {
     let empty_cookie = AuthSessionManager::get_empty_jwt_token();
@@ -40,12 +41,12 @@ pub async fn google_sign_in_endpoint(
     config: web::Data<Config>,
     callback_payload: web::Form<GoogleSignInFormRequest>,
     request: HttpRequest,
-) -> Result<impl Responder, WebApiError> {
+) -> Result<impl Responder, HtmlError> {
     async fn fetch_and_save_user(
         oauth_google_client_id: &str,
         jwt_credentials: &str,
         db_provider: &web::Data<DbProvider>,
-    ) -> Result<UserModel, WebApiError> {
+    ) -> Result<UserModel, HtmlError> {
         let oauth_user = get_google_user(jwt_credentials, oauth_google_client_id).await?;
         let db_user_opt = db_provider.find_user_by_email(&oauth_user.email).await?;
         match db_user_opt {
@@ -83,7 +84,7 @@ pub async fn google_sign_in_endpoint(
         println!("[route#google_sign_in_endpoint] sign in error: credential [{}], g_csrf_token [{}], gsrf_token_matches [{}]",
         &callback_payload.credential.is_empty(), &callback_payload.g_csrf_token.is_empty(), is_gsrf_token_matches
     );
-        return Err(WebApiError::BadParams);
+        return Err(HtmlError::BadParams);
     }
 
     let user = fetch_and_save_user(

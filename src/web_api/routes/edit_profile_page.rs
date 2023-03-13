@@ -8,21 +8,21 @@ use crate::{
         auth::AuthenticationGate,
         routes::{
             common::{NavContext, ProfilePageDataContext},
-            error::WebApiError,
             html_render::HtmlPage,
         },
     },
 };
+
+use super::error::HtmlError;
 
 pub async fn edit_profile_page(
     auth_gate: AuthenticationGate,
     db_provider: web::Data<DbProvider>,
     query: web::Query<EditProfileRequest>,
     config: web::Data<Config>,
-) -> Result<impl Responder, WebApiError> {
-
+) -> Result<impl Responder, HtmlError> {
     if !auth_gate.is_authorized {
-        return Err(WebApiError::NotAuthorized);
+        return Err(HtmlError::NotAuthorized);
     }
 
     println!(
@@ -36,11 +36,9 @@ pub async fn edit_profile_page(
     let profile_opt = db_provider
         .find_active_profile_by_id_and_user_id(taget_profile_id, auth_gate.user_id.unwrap())
         .await?;
-    let profile = profile_opt.ok_or(WebApiError::BadParams)?;
+    let profile = profile_opt.ok_or(HtmlError::NotFound)?;
 
-    let profile_photos = db_provider
-        .find_all_profile_photos_for(profile.id)
-        .await?;
+    let profile_photos = db_provider.find_all_profile_photos_for(profile.id).await?;
 
     let cities_names = db_provider.find_city_names().await?;
 

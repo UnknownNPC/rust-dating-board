@@ -10,20 +10,20 @@ use crate::{
     },
 };
 
-use super::{constant::HOME_DATE_FORMAT, error::WebApiError, common::get_photo_url};
+use super::{constant::HOME_DATE_FORMAT, common::get_photo_url, error::HtmlError};
 
 pub async fn index_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     query: web::Query<QueryRequest>,
     config: web::Data<Config>,
-) -> Result<impl Responder, WebApiError> {
+) -> Result<impl Responder, HtmlError> {
     async fn get_nav_context(
         auth_gate: &AuthenticationGate,
         query: &web::Query<QueryRequest>,
         config: &web::Data<Config>,
         db_provider: &web::Data<DbProvider>,
-    ) -> Result<NavContext, WebApiError> {
+    ) -> Result<NavContext, HtmlError> {
         let city_names = db_provider.find_city_names().await?;
         let user_name = auth_gate
             .user_name
@@ -54,7 +54,7 @@ pub async fn index_page(
         config: &web::Data<Config>,
         query: &web::Query<QueryRequest>,
         auth_gate: &AuthenticationGate,
-    ) -> Result<HomePageDataContext, WebApiError> {
+    ) -> Result<HomePageDataContext, HtmlError> {
         let is_user_profiles = auth_gate.is_authorized && query.show_my.unwrap_or_default();
         let is_search = query.search.is_some();
         let search_result = 20;

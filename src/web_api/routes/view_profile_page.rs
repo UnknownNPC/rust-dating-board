@@ -14,21 +14,21 @@ use crate::{
     },
 };
 
-use super::{edit_profile_page::EditProfileRequest, error::WebApiError};
+use super::{edit_profile_page::EditProfileRequest, error::HtmlError};
 
 pub async fn view_profile_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     config: web::Data<Config>,
     query: web::Query<EditProfileRequest>,
-) -> Result<impl Responder, WebApiError> {
+) -> Result<impl Responder, HtmlError> {
     async fn resolve_view_profile(
         profile_id: i64,
         db_provider: &web::Data<DbProvider>,
         config: &web::Data<Config>,
-    ) -> Result<ViewProfileResponse, WebApiError> {
+    ) -> Result<ViewProfileResponse, HtmlError> {
         let profile_opt = db_provider.find_active_profile_by(profile_id).await?;
-        let profile = profile_opt.ok_or(WebApiError::BadParams)?;
+        let profile = profile_opt.ok_or(HtmlError::NotFound)?;
         let profile_photos = db_provider.find_all_profile_photos_for(profile_id).await?;
 
         let photo_urls: Vec<String> = profile_photos
@@ -58,7 +58,7 @@ pub async fn view_profile_page(
         db_provider: &web::Data<DbProvider>,
         auth_gate: &AuthenticationGate,
         config: &web::Data<Config>,
-    ) -> Result<NavContext, WebApiError> {
+    ) -> Result<NavContext, HtmlError> {
         let name = auth_gate
             .user_name
             .as_ref()

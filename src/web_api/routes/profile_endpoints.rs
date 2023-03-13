@@ -1,5 +1,6 @@
 use crate::web_api::photo::PhotoService;
-use crate::web_api::routes::error::WebApiError;
+use crate::web_api::routes::error::HtmlError;
+use crate::web_api::routes::error::JsonError;
 use crate::{
     config::Config,
     db::{DbProvider, ProfileModel, ProfilePhotoModel},
@@ -17,9 +18,9 @@ pub async fn delete_profile_endpoint(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     form: web::Form<DeleteProfileRequest>,
-) -> Result<impl Responder, WebApiError> {
+) -> Result<impl Responder, HtmlError> {
     if !auth_gate.is_authorized {
-        return Err(WebApiError::NotAuthorized);
+        return Err(HtmlError::NotAuthorized);
     }
 
     println!(
@@ -32,7 +33,7 @@ pub async fn delete_profile_endpoint(
     let profile_opt = db_provider
         .find_active_profile_by_id_and_user_id(profile_id, auth_gate.user_id.unwrap())
         .await?;
-    let profile = profile_opt.ok_or(WebApiError::BadParams)?;
+    let profile = profile_opt.ok_or(HtmlError::BadParams)?;
     let profile_photos = db_provider.find_all_profile_photos_for(profile.id).await?;
 
     db_provider
@@ -49,19 +50,19 @@ pub async fn add_profile_photo_endpoint(
     auth_gate: AuthenticationGate,
     config: web::Data<Config>,
     form: MultipartForm<AddProfilePhotoMultipartRequest>,
-) -> Result<impl Responder, WebApiError> {
+) -> Result<impl Responder, JsonError> {
     async fn resolve_profile(
         user_id: i64,
         profile_id_opt: &Option<i64>,
         db_provider: &web::Data<DbProvider>,
-    ) -> Result<ProfileModel, WebApiError> {
+    ) -> Result<ProfileModel, JsonError> {
         if profile_id_opt.is_some() {
             println!("[routes#add_profile_photo_endpoint] Edit flow. Searching active profile");
             let profile_id = profile_id_opt.unwrap_or_default();
             db_provider
                 .find_active_profile_by_id_and_user_id(profile_id, user_id)
                 .await?
-                .ok_or(WebApiError::BadParams)
+                .ok_or(JsonError::BadParams)
         } else {
             let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await?;
             match draft_profile_opt {
@@ -81,7 +82,7 @@ pub async fn add_profile_photo_endpoint(
     }
 
     if !auth_gate.is_authorized {
-        return Err(WebApiError::NotAuthorized);
+        return Err(JsonError::NotAuthorized);
     }
 
     println!(
@@ -130,13 +131,13 @@ pub async fn delete_profile_photo_endpoint(
     auth_gate: AuthenticationGate,
     form: web::Form<DeleteProfilePhotoFormRequest>,
     config: web::Data<Config>,
-) -> Result<impl Responder, WebApiError> {
+) -> Result<impl Responder, JsonError> {
     async fn process_deleting(
         profile_id: i64,
         profile_photo: &ProfilePhotoModel,
         db_provider: &web::Data<DbProvider>,
         config: &web::Data<Config>,
-    ) -> Result<(), WebApiError> {
+    ) -> Result<(), JsonError> {
         db_provider
             .update_profile_photo_with_delete_status(profile_photo)
             .await?;
@@ -146,11 +147,11 @@ pub async fn delete_profile_photo_endpoint(
             profile_id,
             &profile_photo.file_name,
         )
-        .map_err(|_| WebApiError::BadParams)
+        .map_err(|_| JsonError::BadParams)
     }
 
     if !auth_gate.is_authorized {
-        return Err(WebApiError::NotAuthorized);
+        return Err(JsonError::NotAuthorized);
     }
 
     println!(
@@ -165,7 +166,7 @@ pub async fn delete_profile_photo_endpoint(
     let profile_photo_profile_opt = db_provider
         .find_active_profile_photo_with_profile_by_id_and_user_id(profile_photo_id, user_id)
         .await?;
-    let (profile_photo, profile) = profile_photo_profile_opt.ok_or(WebApiError::BadParams)?;
+    let (profile_photo, profile) = profile_photo_profile_opt.ok_or(JsonError::BadParams)?;
 
     process_deleting(profile.id, &profile_photo, &db_provider, &config)
         .await

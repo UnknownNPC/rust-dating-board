@@ -6,6 +6,7 @@ use actix_web::{
 use futures::future::OptionFuture;
 use serde::Deserialize;
 
+use crate::web_api::routes::error::HtmlError;
 use crate::{
     config::Config,
     db::{DbProvider, ProfileModel},
@@ -20,15 +21,13 @@ use crate::{
     },
 };
 
-use super::error::WebApiError;
-
 pub async fn add_profile_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     config: web::Data<Config>,
-) -> Result<impl Responder, WebApiError> {
+) -> Result<impl Responder, HtmlError> {
     if !auth_gate.is_authorized {
-        return Err(WebApiError::NotAuthorized);
+        return Err(HtmlError::NotAuthorized);
     }
 
     println!(
@@ -75,18 +74,18 @@ pub async fn add_or_edit_profile_post(
     auth_gate: AuthenticationGate,
     form: web::Form<AddOrEditProfileFormRequest>,
     config: web::Data<Config>,
-) -> Result<impl Responder, WebApiError> {
+) -> Result<impl Responder, HtmlError> {
     async fn resolve_profile(
         user_id: i64,
         profile_id_opt: &Option<i64>,
         db_provider: &web::Data<DbProvider>,
-    ) -> Result<ProfileModel, WebApiError> {
+    ) -> Result<ProfileModel, HtmlError> {
         if profile_id_opt.is_some() {
             let profile_id = profile_id_opt.unwrap_or_default();
             db_provider
                 .find_active_profile_by_id_and_user_id(profile_id, user_id)
                 .await?
-                .ok_or(WebApiError::BadParams)
+                .ok_or(HtmlError::BadParams)
         } else {
             let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await?;
             match draft_profile_opt {
@@ -112,7 +111,7 @@ pub async fn add_or_edit_profile_post(
     );
 
     if !auth_gate.is_authorized {
-        return Err(WebApiError::NotAuthorized);
+        return Err(HtmlError::NotAuthorized);
     }
 
     let captcha_score =
@@ -123,7 +122,7 @@ pub async fn add_or_edit_profile_post(
             "[routes#add_or_edit_profile_post] google captcha score is low [{}]",
             captcha_score
         );
-        return Err(WebApiError::BotDetection);
+        return Err(HtmlError::BotDetection);
     }
 
     let user_id = auth_gate.user_id.unwrap();
