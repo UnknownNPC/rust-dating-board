@@ -33,7 +33,7 @@ pub async fn delete_profile_endpoint(
     let profile_opt = db_provider
         .find_active_profile_by_id_and_user_id(profile_id, auth_gate.user_id.unwrap())
         .await?;
-    let profile = profile_opt.ok_or(HtmlError::BadParams)?;
+    let profile = profile_opt.ok_or(HtmlError::NotFound)?;
     let profile_photos = db_provider.find_all_profile_photos_for(profile.id).await?;
 
     db_provider

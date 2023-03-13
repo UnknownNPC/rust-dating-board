@@ -1,7 +1,7 @@
 use actix_web::web;
 use actix_web::{
-    http::{header::LOCATION, StatusCode},
-    HttpResponse, Responder,
+    HttpResponse,
+    http::{header::LOCATION}, Responder,
 };
 use futures::future::OptionFuture;
 use serde::Deserialize;
@@ -150,7 +150,7 @@ pub async fn add_or_edit_profile_post(
             } else {
                 format!("/?message={}", MSG_PROFILE_ADDED_CODE)
             };
-            HttpResponse::PermanentRedirect()
+            HttpResponse::Found()
                 .append_header((LOCATION, path))
                 .finish()
         })

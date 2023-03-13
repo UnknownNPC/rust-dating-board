@@ -88,13 +88,13 @@ impl error::ResponseError for HtmlError {
 
 pub fn homepage(message: &str) -> HttpResponse {
     let path = format!("/?message={}", message);
-    HttpResponse::PermanentRedirect()
+    HttpResponse::Found()
         .insert_header((LOCATION, path))
         .finish()
 }
 
 pub fn page_404() -> HttpResponse {
-    HttpResponse::PermanentRedirect()
+    HttpResponse::Found()
         .insert_header((LOCATION, "/404"))
         .finish()
 }
