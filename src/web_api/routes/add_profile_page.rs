@@ -145,12 +145,11 @@ pub async fn add_or_edit_profile_post(
                 "[route#add_or_edit_profile_post] Profile [{}] was updated and published. Edit mode: {}",
                 profile_model.id, is_edit_mode
             );
-            let response_code = if is_edit_mode {
-                MSG_PROFILE_UPDATED_CODE
+            let path = if is_edit_mode {
+                format!("/?show_my=true&message={}", MSG_PROFILE_UPDATED_CODE)
             } else {
-                MSG_PROFILE_ADDED_CODE
+                format!("/?message={}", MSG_PROFILE_ADDED_CODE)
             };
-            let path = format!("/?message={}", response_code);
             HttpResponse::build(StatusCode::FOUND)
                 .append_header((LOCATION, path))
                 .finish()
