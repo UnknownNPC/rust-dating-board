@@ -1,5 +1,4 @@
 use actix_web::{web, Responder};
-use futures::future::OptionFuture;
 use serde::Deserialize;
 
 use crate::{
@@ -8,35 +7,29 @@ use crate::{
     web_api::{
         auth::AuthenticationGate,
         routes::{
-            common::{get_photo_url, redirect_to_home_page, NavContext},
-            constants::{HOME_DATE_FORMAT, NOT_FOUND, NO_PHOTO_URL},
+            common::{get_photo_url, NavContext},
+            constant::{HOME_DATE_FORMAT, NO_PHOTO_URL},
             html_render::HtmlPage,
         },
     },
 };
 
-use super::edit_profile_page::EditProfileRequest;
+use super::{edit_profile_page::EditProfileRequest, error::WebApiError};
 
 pub async fn view_profile_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     config: web::Data<Config>,
     query: web::Query<EditProfileRequest>,
-) -> impl Responder {
+) -> Result<impl Responder, WebApiError> {
     async fn resolve_view_profile(
         profile_id: i64,
         db_provider: &web::Data<DbProvider>,
         config: &web::Data<Config>,
-    ) -> Option<ViewProfileResponse> {
-        let profile_opt = db_provider
-            .find_active_profile_by(profile_id)
-            .await
-            .unwrap();
-
-        let profile_photos = db_provider
-            .find_all_profile_photos_for(profile_id)
-            .await
-            .unwrap();
+    ) -> Result<ViewProfileResponse, WebApiError> {
+        let profile_opt = db_provider.find_active_profile_by(profile_id).await?;
+        let profile = profile_opt.ok_or(WebApiError::BadParams)?;
+        let profile_photos = db_provider.find_all_profile_photos_for(profile_id).await?;
 
         let photo_urls: Vec<String> = profile_photos
             .iter()
@@ -49,7 +42,7 @@ pub async fn view_profile_page(
             false => photo_urls,
         };
 
-        profile_opt.map(|profile| ViewProfileResponse {
+        Ok(ViewProfileResponse {
             id: profile.id,
             name: profile.name,
             phone_num: profile.phone_number,
@@ -64,34 +57,35 @@ pub async fn view_profile_page(
     async fn resolve_nav_context(
         db_provider: &web::Data<DbProvider>,
         auth_gate: &AuthenticationGate,
-        google_captcha_id: &String
-    ) -> NavContext {
-        let user_opt = OptionFuture::from(
-            auth_gate
-                .user_id
-                .map(|id| db_provider.find_user_by_id(id)),
-        )
-        .await
-        .map(|f| f.unwrap())
-        .flatten();
+        config: &web::Data<Config>,
+    ) -> Result<NavContext, WebApiError> {
+        let name = auth_gate
+            .user_name
+            .as_ref()
+            .map(|f| f.as_str())
+            .unwrap_or_default();
+        let cities_names = db_provider.find_city_names().await?;
 
-        let cities_models = db_provider.find_cities_on().await.unwrap();
-        let cities_names = cities_models.iter().map(|city| city.name.clone()).collect();
-
-        let user_name = user_opt.map(|user| user.name).unwrap_or_default();
-
-        NavContext::new(user_name, cities_names, String::from(""), false, false, google_captcha_id.clone())
+        Ok(NavContext::new(
+            name,
+            "",
+            &config.captcha_google_id,
+            false,
+            false,
+            &cities_names,
+        ))
     }
 
-    println!("[routes#view_profile_get] User opens profile #{}", query.id);
+    println!(
+        "[route#view_profile_page] User auth status: [{}]. User ID: [{}]",
+        auth_gate.is_authorized,
+        auth_gate.user_id.unwrap_or_default()
+    );
 
-    let nav_context = resolve_nav_context(&db_provider, &auth_gate, &config.oauth_google_client_id).await;
-    let data_context_opt = resolve_view_profile(query.id, &db_provider, &config).await;
+    let nav_context = resolve_nav_context(&db_provider, &auth_gate, &config).await?;
+    let data_context = resolve_view_profile(query.id, &db_provider, &config).await?;
 
-    match data_context_opt {
-        Some(data_context) => HtmlPage::view_profile(&nav_context, &data_context),
-        None => redirect_to_home_page(None, Some(NOT_FOUND), None, false),
-    }
+    Ok(HtmlPage::view_profile(&nav_context, &data_context))
 }
 
 #[derive(Deserialize)]

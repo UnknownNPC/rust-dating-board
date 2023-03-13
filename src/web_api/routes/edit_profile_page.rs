@@ -7,72 +7,60 @@ use crate::{
     web_api::{
         auth::AuthenticationGate,
         routes::{
-            common::{is_user_profile, redirect_to_home_page, NavContext, ProfilePageDataContext},
-            constants::{HACK_DETECTED, RESTRICTED_AREA},
+            common::{NavContext, ProfilePageDataContext},
+            error::WebApiError,
             html_render::HtmlPage,
         },
     },
 };
 
 pub async fn edit_profile_page(
-    db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
+    db_provider: web::Data<DbProvider>,
     query: web::Query<EditProfileRequest>,
     config: web::Data<Config>,
-) -> impl Responder {
-    println!(
-        "[route#edit_user_profile] Inside the edit profile endpoint. User auth status {}",
-        auth_gate.is_authorized
-    );
+) -> Result<impl Responder, WebApiError> {
 
     if !auth_gate.is_authorized {
-        return redirect_to_home_page(None, Some(RESTRICTED_AREA), None, false);
+        return Err(WebApiError::NotAuthorized);
     }
+
+    println!(
+        "[route#add_or_edit_profile_post] User auth status: [{}]. User ID: [{}]",
+        auth_gate.is_authorized,
+        auth_gate.user_id.unwrap_or_default()
+    );
 
     let taget_profile_id = query.id;
 
-    let target_profile_model_opt =
-        is_user_profile(auth_gate.user_id.unwrap(), taget_profile_id, &db_provider).await;
+    let profile_opt = db_provider
+        .find_active_profile_by_id_and_user_id(taget_profile_id, auth_gate.user_id.unwrap())
+        .await?;
+    let profile = profile_opt.ok_or(WebApiError::BadParams)?;
 
-    if target_profile_model_opt.is_some() {
-        let target_profile_photos = db_provider
-            .find_all_profile_photos_for(taget_profile_id)
-            .await
-            .unwrap();
+    let profile_photos = db_provider
+        .find_all_profile_photos_for(profile.id)
+        .await?;
 
-        let cities_models = db_provider.find_cities_on().await.unwrap();
-        let cities_names = cities_models.iter().map(|city| city.name.clone()).collect();
+    let cities_names = db_provider.find_city_names().await?;
 
-        let data_contex = ProfilePageDataContext::new(
-            &config.all_photos_folder_name,
-            &target_profile_model_opt,
-            target_profile_photos,
-            true,
-        );
+    let data_contex = ProfilePageDataContext::new(
+        &config.all_photos_folder_name,
+        &Some(profile),
+        &profile_photos,
+        true,
+    );
 
-        let user = db_provider
-            .find_user_by_id(auth_gate.user_id.unwrap())
-            .await
-            .unwrap()
-            .unwrap();
+    let nav_context = NavContext::new(
+        &auth_gate.user_name.unwrap(),
+        "",
+        &config.captcha_google_id,
+        false,
+        false,
+        &cities_names,
+    );
 
-        let nav_context = NavContext::new(
-            user.name,
-            cities_names,
-            String::from(""),
-            false,
-            false,
-            config.captcha_google_id.clone(),
-        );
-
-        HtmlPage::add_or_edit_profile(&nav_context, &data_contex)
-    } else {
-        println!(
-            "Profile id is invalid. Hack detected from user [{}]!",
-            auth_gate.user_id.unwrap()
-        );
-        redirect_to_home_page(None, Some(HACK_DETECTED), None, false)
-    }
+    Ok(HtmlPage::add_or_edit_profile(&nav_context, &data_contex))
 }
 
 #[derive(Deserialize)]

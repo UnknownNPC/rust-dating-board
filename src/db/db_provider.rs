@@ -5,11 +5,11 @@ use futures::future::try_join_all;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
     query::*, ActiveModelTrait, ColumnTrait, DbBackend, DbErr, Order, PaginatorTrait, QueryFilter,
-    QueryOrder, Set, Statement,
+    QueryOrder, Set, Statement, FromQueryResult,
 };
 use sea_orm::{DbConn, EntityTrait};
 
-use super::city::{self, Model as CityModel};
+use super::city::{self};
 use super::profile::{self, Model as ProfileModel};
 use super::profile_photo::{self, Model as ProfilePhotoModel};
 use super::user::{self, Model as UserModel};
@@ -24,10 +24,6 @@ type TotalPages = u64;
 impl DbProvider {
     pub fn new(db_con: DbConn) -> Self {
         DbProvider { db_con }
-    }
-
-    pub async fn find_user_by_id(&self, id: i64) -> Result<Option<UserModel>, DbErr> {
-        user::Entity::find_by_id(id).one(&self.db_con).await
     }
 
     pub async fn find_user_by_email(&self, email: &str) -> Result<Option<UserModel>, DbErr> {
@@ -55,13 +51,15 @@ impl DbProvider {
         user.insert(&self.db_con).await
     }
 
-    pub async fn find_active_profile_photo_with_profile_by(
+    pub async fn find_active_profile_photo_with_profile_by_id_and_user_id(
         &self,
         id: i64,
+        user_id: i64,
     ) -> Result<Option<(ProfilePhotoModel, ProfileModel)>, DbErr> {
         profile_photo::Entity::find_by_id(id)
             .filter(profile_photo::Column::Status.eq("active"))
             .find_also_related(profile::Entity)
+            .filter(profile::Column::UserId.eq(user_id))
             .one(&self.db_con)
             .await
             .map(|res| res.map(|data| (data.0, data.1.unwrap())))
@@ -81,6 +79,17 @@ impl DbProvider {
     pub async fn find_active_profile_by(&self, id: i64) -> Result<Option<ProfileModel>, DbErr> {
         profile::Entity::find_by_id(id)
             .filter(profile::Column::Status.eq("active"))
+            .one(&self.db_con)
+            .await
+    }
+    pub async fn find_active_profile_by_id_and_user_id(
+        &self,
+        id: i64,
+        user_id: i64,
+    ) -> Result<Option<ProfileModel>, DbErr> {
+        profile::Entity::find_by_id(id)
+            .filter(profile::Column::Status.eq("active"))
+            .filter(profile::Column::UserId.eq(user_id))
             .one(&self.db_con)
             .await
     }
@@ -132,9 +141,9 @@ impl DbProvider {
 
     pub async fn update_profile_photo_with_delete_status(
         &self,
-        model: ProfilePhotoModel,
+        model: &ProfilePhotoModel,
     ) -> Result<ProfilePhotoModel, DbErr> {
-        let mut mutable: profile_photo::ActiveModel = model.into();
+        let mut mutable: profile_photo::ActiveModel = model.to_owned().into();
         mutable.status = Set("deleted".to_owned());
 
         mutable.update(&self.db_con).await
@@ -142,14 +151,14 @@ impl DbProvider {
 
     pub async fn publish_profie(
         &self,
-        model: ProfileModel,
+        model: &ProfileModel,
         name: &str,
         height: i16,
         city: &str,
         description: &str,
         phone_number: &str,
     ) -> Result<ProfileModel, DbErr> {
-        let mut mutable: profile::ActiveModel = model.into();
+        let mut mutable: profile::ActiveModel = model.to_owned().into();
         mutable.name = Set(name.to_owned());
         mutable.height = Set(height);
         mutable.city = Set(city.to_owned());
@@ -160,11 +169,16 @@ impl DbProvider {
         mutable.update(&self.db_con).await
     }
 
-    pub async fn find_cities_on(&self) -> Result<Vec<CityModel>, DbErr> {
-        city::Entity::find()
+    pub async fn find_city_names(&self) -> Result<Vec<String>, DbErr> {
+        let query_result = city::Entity::find()
+            .select_only()
+            .column(city::Column::Name)
             .filter(city::Column::Status.eq("on"))
+            .into_model::<NameResult>()
             .all(&self.db_con)
-            .await
+            .await?;
+
+        Ok(query_result.iter().map(|row| row.name.to_owned()).collect())
     }
 
     pub async fn all_user_profiles(&self, user_id: i64) -> Result<Vec<ProfileModel>, DbErr> {
@@ -177,7 +191,11 @@ impl DbProvider {
             .await
     }
 
-    pub async fn search_profiles(&self, text: &str, limit: i64) -> Result<Vec<ProfileModel>, DbErr> {
+    pub async fn search_profiles(
+        &self,
+        text: &str,
+        limit: i64,
+    ) -> Result<Vec<ProfileModel>, DbErr> {
         println!(
             "[db_provider#search_profiles] User search for profiles: {}",
             text
@@ -268,10 +286,10 @@ impl DbProvider {
 
     pub async fn delete_profile_and_photos(
         &self,
-        profile_model: ProfileModel,
-        profole_photos: Vec<ProfilePhotoModel>,
+        profile_model: &ProfileModel,
+        profole_photos: &Vec<ProfilePhotoModel>,
     ) -> Result<(), DbErr> {
-        let mut mutable_profile: profile::ActiveModel = profile_model.into();
+        let mut mutable_profile: profile::ActiveModel = profile_model.to_owned().into();
         mutable_profile.status = Set("deleted".to_owned());
 
         mutable_profile.update(&self.db_con).await?;
@@ -284,4 +302,9 @@ impl DbProvider {
 
         Ok(())
     }
+}
+
+#[derive(Debug, FromQueryResult)]
+struct NameResult {
+    name: String,
 }

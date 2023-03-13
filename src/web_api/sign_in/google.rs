@@ -1,9 +1,5 @@
-use std::error::Error;
-
-use jsonwebtoken_google::Parser;
+use jsonwebtoken_google::{Parser, ParserError};
 use serde::{Deserialize, Serialize};
-
-use crate::config::Config;
 
 use super::OAuthUser;
 
@@ -15,9 +11,9 @@ pub struct TokenClaims {
 
 pub async fn get_google_user(
     raw_jwt_credentail: &str,
-    config: &Config,
-) -> Result<OAuthUser, Box<dyn Error>> {
-    let parser = Parser::new(&config.oauth_google_client_id);
+    oauth_google_client_id: &str,
+) -> Result<OAuthUser, ParserError> {
+    let parser = Parser::new(oauth_google_client_id);
     let claims = parser.parse::<TokenClaims>(raw_jwt_credentail).await?;
 
     Ok(OAuthUser {

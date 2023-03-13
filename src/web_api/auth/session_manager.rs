@@ -9,6 +9,8 @@ use crate::config::Config;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenClaims {
     pub sub: String,
+    pub name: String,
+    pub email: String,
     pub iat: usize,
     pub exp: usize,
 }
@@ -31,13 +33,15 @@ impl<'cfg> SessionManager<'cfg> {
             .finish()
     }
 
-    pub async fn get_valid_jwt_token(&self, user_id: i64) -> Cookie {
+    pub async fn get_valid_jwt_token(&self, user_id: i64, name: &str, email: &str) -> Cookie {
         let jwt_secret = &self.config.jwt_secret;
         let now = Utc::now();
         let iat = now.timestamp() as usize;
         let exp = (now + Duration::minutes(self.config.jwt_max_age)).timestamp() as usize;
         let claims: TokenClaims = TokenClaims {
             sub: user_id.to_string(),
+            name: name.to_string(),
+            email: email.to_string(),
             exp,
             iat,
         };

@@ -6,7 +6,8 @@ mod profile_endpoints;
 mod home_page;
 mod html_render;
 mod common;
-mod constants;
+mod constant;
+mod error;
 
 pub use home_page::index_page;
 

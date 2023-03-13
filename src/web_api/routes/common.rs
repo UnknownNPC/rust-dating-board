@@ -1,10 +1,4 @@
-use crate::db::DbProvider;
 use crate::db::{ProfileModel, ProfilePhotoModel};
-use actix_web::cookie::Cookie;
-use actix_web::http::header;
-use actix_web::http::StatusCode;
-use actix_web::web;
-use actix_web::HttpResponse;
 use serde::Serialize;
 
 //common models
@@ -20,20 +14,20 @@ pub struct NavContext {
 
 impl NavContext {
     pub fn new(
-        name: String,
-        cities: Vec<String>,
-        current_city: String,
+        name: &str,
+        current_city: &str,
+        google_captcha_id: &str,
         is_user_profiles: bool,
         is_search: bool,
-        google_captcha_id: String,
+        cities: &Vec<String>,
     ) -> Self {
         NavContext {
-            name,
-            all_cities: cities,
-            current_city,
+            name: name.to_owned(),
+            all_cities: cities.to_owned(),
+            current_city: current_city.to_owned(),
             is_user_profiles,
             is_search,
-            google_captcha_id
+            google_captcha_id: google_captcha_id.to_owned(),
         }
     }
 }
@@ -53,7 +47,7 @@ impl<'a> ProfilePageDataContext {
     pub fn new(
         all_photos_folder: &str,
         profile_opt: &Option<ProfileModel>,
-        db_photos: Vec<ProfilePhotoModel>,
+        db_photos: &Vec<ProfilePhotoModel>,
         is_edit_mode: bool,
     ) -> Self {
         let profile_photo_response =
@@ -109,16 +103,10 @@ pub fn get_photo_url(profile_photo: &ProfilePhotoModel, all_photos_folder: &str)
 }
 
 impl<'a> AddProfilePhotoContext {
-    pub fn new_with_error(error: &str) -> Self {
-        AddProfilePhotoContext {
-            error: Some(error.to_string()),
-            initial_preview: vec![],
-            initial_preview_config: vec![],
-            append: true,
-        }
-    }
-
-    pub fn new_with_payload(all_photos_folder: &'a str, db_photos: Vec<ProfilePhotoModel>) -> Self {
+    pub fn new_with_payload(
+        all_photos_folder: &'a str,
+        db_photos: &Vec<ProfilePhotoModel>,
+    ) -> Self {
         let photo_urls = db_photos
             .iter()
             .map(|db_photo| get_photo_url(db_photo, all_photos_folder))
@@ -160,74 +148,4 @@ impl<'a> ProfilePhotoPreviewContext {
             key: profile_photo_id,
         }
     }
-}
-
-// commmon functions
-pub fn redirect_to_home_if_not_authorized(is_authorized: bool) -> Result<(), HttpResponse> {
-    if !is_authorized {
-        println!(
-            "[route#...] endpoint for authorized only. Auth status {}. Redirection!",
-            is_authorized
-        );
-        Result::Err(redirect_to_home_page(
-            None,
-            Some("restricted_area"),
-            None,
-            false,
-        ))
-    } else {
-        println!(
-            "[route#...] endpoint for authorized only. Auth status {}. OK!",
-            is_authorized
-        );
-        Ok(())
-    }
-}
-
-pub fn redirect_to_home_page(
-    jwt_cookie_opt: Option<Cookie>,
-    error_text_opt: Option<&str>,
-    msg_code_opt: Option<&str>,
-    to_user_profiles: bool,
-) -> HttpResponse {
-    let mut response_builder = HttpResponse::build(StatusCode::FOUND);
-
-    let message_param_opt = msg_code_opt.map(|f| format!("msg={}", f));
-
-    if error_text_opt.is_some() {
-        response_builder.append_header((
-            header::LOCATION,
-            format!("/?error={}", error_text_opt.unwrap()),
-        ))
-    } else if to_user_profiles {
-        let message_param = message_param_opt
-            .map(|f| format!("&{}", f))
-            .unwrap_or_default();
-        response_builder.append_header((
-            header::LOCATION,
-            format!("/?show_my=true{}", message_param),
-        ))
-    } else {
-        let message_param = message_param_opt
-            .map(|f| format!("?{}", f))
-            .unwrap_or_default();
-        response_builder.append_header((header::LOCATION, format!("/{}", message_param)))
-    };
-    if jwt_cookie_opt.is_some() {
-        response_builder.cookie(jwt_cookie_opt.unwrap());
-    };
-    response_builder.finish()
-}
-
-pub async fn is_user_profile(
-    user_id: i64,
-    profile_id: i64,
-    db_provider: &web::Data<DbProvider>,
-) -> Option<ProfileModel> {
-    let all_user_profiles = db_provider.all_user_profiles(user_id).await.unwrap();
-
-    all_user_profiles
-        .iter()
-        .find(|profile_model| profile_model.id == profile_id)
-        .cloned()
 }

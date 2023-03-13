@@ -1,5 +1,4 @@
 use actix_web::{web, Responder};
-use futures::future::OptionFuture;
 use serde::Deserialize;
 
 use crate::{
@@ -7,43 +6,47 @@ use crate::{
     db::{DbProvider, ProfileModel, ProfilePhotoModel},
     web_api::{
         auth::AuthenticationGate,
-        routes::{common::NavContext, constants::PROFILES_ON_PAGE, html_render::HtmlPage},
+        routes::{common::NavContext, constant::PROFILES_ON_PAGE, html_render::HtmlPage},
     },
 };
 
-use super::constants::HOME_DATE_FORMAT;
+use super::{constant::HOME_DATE_FORMAT, error::WebApiError, common::get_photo_url};
 
 pub async fn index_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     query: web::Query<QueryRequest>,
     config: web::Data<Config>,
-) -> impl Responder {
+) -> Result<impl Responder, WebApiError> {
     async fn get_nav_context(
-        user_name_opt: &Option<String>,
+        auth_gate: &AuthenticationGate,
+        query: &web::Query<QueryRequest>,
+        config: &web::Data<Config>,
         db_provider: &web::Data<DbProvider>,
-        current_city_opt: &Option<String>,
-        is_user_profiles_page: bool,
-        is_search: bool,
-        google_captcha_id: String,
-    ) -> NavContext {
-        let cities_models = db_provider.find_cities_on().await.unwrap();
-        let cities_names = cities_models.iter().map(|city| city.name.clone()).collect();
-        let user_name = user_name_opt.as_deref().unwrap_or("").to_string();
-
-        let current_city: String = current_city_opt
+    ) -> Result<NavContext, WebApiError> {
+        let city_names = db_provider.find_city_names().await?;
+        let user_name = auth_gate
+            .user_name
             .as_ref()
-            .map(|f| f.as_str())
-            .unwrap_or_default()
-            .to_string();
-        NavContext::new(
+            .map(|s| s.as_str())
+            .unwrap_or_default();
+        let current_city = query
+            .filter_city
+            .as_ref()
+            .map(|s| s.as_str())
+            .unwrap_or_default();
+
+        let is_user_profiles = auth_gate.is_authorized && query.show_my.unwrap_or_default();
+        let is_search = query.search.is_some();
+
+        Ok(NavContext::new(
             user_name,
-            cities_names,
             current_city,
-            is_user_profiles_page,
+            &config.captcha_google_id,
+            is_user_profiles,
             is_search,
-            google_captcha_id,
-        )
+            &city_names,
+        ))
     }
 
     async fn get_data_context(
@@ -51,28 +54,26 @@ pub async fn index_page(
         config: &web::Data<Config>,
         query: &web::Query<QueryRequest>,
         auth_gate: &AuthenticationGate,
-        is_user_profiles_page: bool,
-    ) -> HomePageDataContext {
+    ) -> Result<HomePageDataContext, WebApiError> {
+        let is_user_profiles = auth_gate.is_authorized && query.show_my.unwrap_or_default();
         let is_search = query.search.is_some();
+        let search_result = 20;
 
         let all_profiles = if is_search {
-            db_provider
-                .search_profiles(query.search.as_ref().unwrap(), 20)
-                .await
-                .map(|res| (0, res))
-                .unwrap()
-        } else if is_user_profiles_page {
-            db_provider
+            let profiles = db_provider
+                .search_profiles(query.search.as_ref().unwrap(), search_result)
+                .await?;
+            (0, profiles)
+        } else if is_user_profiles {
+            let profiles = db_provider
                 .all_user_profiles(auth_gate.user_id.unwrap())
-                .await
-                .map(|res| (0, res))
-                .unwrap()
+                .await?;
+            (0, profiles)
         } else {
             // regular page
             db_provider
                 .profiles_pagination(PROFILES_ON_PAGE.to_owned(), &query.page, &query.filter_city)
-                .await
-                .unwrap()
+                .await?
         };
         let all_profiles_ids = all_profiles.1.iter().map(|profile| profile.id).collect();
         let profile_id_and_profile_photo_map = db_provider
@@ -94,7 +95,7 @@ pub async fn index_page(
         let has_next = curret_page < total_pages;
         let has_previous = curret_page > 1;
 
-        HomePageDataContext {
+        Ok(HomePageDataContext {
             profiles: context_profiles,
             pagination: Pagination {
                 has_next,
@@ -102,43 +103,19 @@ pub async fn index_page(
                 current: curret_page,
                 total: total_pages,
             },
-            search_text: query.search.clone()
-        }
+            search_text: query.search.clone(),
+        })
     }
 
     println!(
-        "[route#index_page] Inside the index page. User auth status {}",
-        auth_gate.is_authorized
+        "[route#add_profile_page] User auth status: [{}]. Index page",
+        auth_gate.is_authorized,
     );
 
-    let user_opt = OptionFuture::from(auth_gate.user_id.map(|id| db_provider.find_user_by_id(id)))
-        .await
-        .unwrap_or(Ok(None))
-        .unwrap();
+    let nav_context = get_nav_context(&auth_gate, &query, &config, &db_provider).await?;
+    let data_context = get_data_context(&db_provider, &config, &query, &auth_gate).await?;
 
-    let show_users_profiles = query.show_my.unwrap_or_default();
-    let is_user_profiles_page = auth_gate.is_authorized && show_users_profiles;
-
-    let user_name_opt = user_opt.map(|f| f.name);
-    let nav_context = get_nav_context(
-        &user_name_opt,
-        &db_provider,
-        &query.filter_city,
-        is_user_profiles_page,
-        query.search.is_some(),
-        config.captcha_google_id.clone(),
-    )
-    .await;
-    let data_context = get_data_context(
-        &db_provider,
-        &config,
-        &query,
-        &auth_gate,
-        is_user_profiles_page,
-    )
-    .await;
-
-    HtmlPage::homepage(&nav_context, &data_context)
+    Ok(HtmlPage::homepage(&nav_context, &data_context))
 }
 
 pub struct Pagination {
@@ -171,13 +148,8 @@ impl HomePageProfileDataContext {
         config: &web::Data<Config>,
     ) -> Self {
         let short_description: String = profile.description.chars().take(50).collect();
-
         let photo_url_opt = profile_photo_opt.as_ref().map(|profile_photo| {
-            config.all_photos_folder_name.clone()
-                + "/"
-                + profile.id.to_string().as_str()
-                + "/"
-                + profile_photo.file_name.as_str()
+            get_photo_url(profile_photo, &config.all_photos_folder_name)
         });
 
         let date_create = profile.created_at.format(HOME_DATE_FORMAT).to_string();

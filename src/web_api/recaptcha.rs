@@ -6,7 +6,7 @@ use mime::APPLICATION_JSON;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
-struct CaptchaError {
+pub struct CaptchaError {
     message: String,
 }
 
@@ -25,6 +25,7 @@ struct Request {
 }
 
 #[derive(Deserialize, Debug)]
+#[allow(dead_code)]
 struct Response {
     success: bool,
     score: Option<f64>,
@@ -39,7 +40,7 @@ type Score = f64;
 pub struct Recaptcha {}
 
 impl Recaptcha {
-    pub async fn verify(secret: &str, token: &str) -> Result<Score, Box<dyn Error>> {
+    pub async fn verify(secret: &str, token: &str) -> Result<Score, CaptchaError> {
         let http_client = Client::new();
 
         let url = format!(
@@ -51,7 +52,10 @@ impl Recaptcha {
             .post(url)
             .insert_header((header::CONTENT_TYPE, APPLICATION_JSON))
             .send()
-            .await?;
+            .await
+            .map_err(|err| CaptchaError {
+                message: err.to_string()
+            })?;
 
         let response_json_res = raw_response.json::<Response>().await;
 
@@ -61,11 +65,8 @@ impl Recaptcha {
 
                 response.score.unwrap_or_default()
             })
-            .map_err(|err| {
-                Box::new(CaptchaError {
-                    message: err.to_string(),
-                })
-                .into()
+            .map_err(|err| CaptchaError {
+                message: err.to_string(),
             })
     }
 }

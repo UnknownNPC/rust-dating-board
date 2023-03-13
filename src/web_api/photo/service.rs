@@ -1,7 +1,7 @@
 use std::{
     env,
-    error::Error,
     ffi::OsStr,
+    io,
     path::{Path, PathBuf},
 };
 
@@ -22,8 +22,7 @@ impl<'a> Service {
         original_file: &TempFile,
         all_photos_folder_name: &str,
         profile_id: i64,
-    ) -> Result<PhotoOnFS, Box<dyn Error>> {
-
+    ) -> Result<PhotoOnFS, io::Error> {
         let original_file_name = original_file.file_name.as_ref().unwrap();
         let original_file_extension = Path::new(&original_file_name)
             .extension()
@@ -70,7 +69,7 @@ impl<'a> Service {
         all_photos_folder_name: &str,
         profile_id: i64,
         photo_name: &str,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> Result<(), io::Error> {
         let profile_photo_folder_path =
             Self::get_path_2_profile_photos(all_photos_folder_name, profile_id);
 
@@ -90,7 +89,6 @@ impl<'a> Service {
         profile_photo_new_path.push("delete_".to_owned() + photo_name);
 
         fs::rename(profile_photo_old_path, profile_photo_new_path)
-            .map_err(|err| Box::new(err) as Box<dyn Error>)
     }
 
     fn get_path_2_profile_photos(all_photos_folder_name: &str, profile_id: i64) -> PathBuf {
