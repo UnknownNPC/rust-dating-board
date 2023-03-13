@@ -8,8 +8,10 @@ mod html_render;
 mod common;
 mod constant;
 mod error;
+mod p404_page;
 
 pub use home_page::index_page;
+pub use p404_page::p404_page;
 
 pub use add_profile_page::add_profile_page;
 pub use edit_profile_page::edit_profile_page;

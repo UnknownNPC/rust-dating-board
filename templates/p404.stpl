@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% let head_title="404" ; %>
+    <% include!("./includes/head_body.stpl"); %>
+</head>
+
+<body>
+    <% include!("./includes/nav.stpl"); %>
+
+        <div class="container">
+            <h2 class="text-center pt-3">Нажаль сторінки вже не існує</h2>
+        </div>
+</body>
+<% include!("./includes/extra_scripts.stpl"); %>
+
+</html>

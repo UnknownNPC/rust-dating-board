@@ -29,6 +29,7 @@ async fn main() {
             .app_data(web::Data::new(provider.clone()))
             .app_data(web::Data::new(conf.clone()))
             .route("/", web::get().to(web_api::index_page))
+            .route("/404", web::get().to(web_api::p404_page))
             .route("/add_profile", web::get().to(web_api::add_profile_page))
             .route("/edit_profile", web::get().to(web_api::edit_profile_page))
             .route("/view_profile", web::get().to(web_api::view_profile_page))

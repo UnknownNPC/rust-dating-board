@@ -3,7 +3,7 @@ use std::{error::Error, fmt::Display, io};
 use actix_web::{
     error,
     http::{
-        header::{ContentType, LOCATION},
+        header::{LOCATION},
         StatusCode,
     },
     HttpResponse,
@@ -67,10 +67,10 @@ impl From<io::Error> for HtmlError {
 impl error::ResponseError for HtmlError {
     fn error_response(&self) -> HttpResponse {
         match *self {
-            HtmlError::ServerError => homepage(MSG_SERVER_ERROR_CODE, &self.status_code()),
-            HtmlError::NotAuthorized => homepage(MSG_UNAUTHORIZED_ERROR_CODE, &self.status_code()),
-            HtmlError::BadParams => homepage(MSG_BAD_REQUEST_ERROR_CODE, &self.status_code()),
-            HtmlError::BotDetection => homepage(MSG_BOT_DETECTED_ERROR_CODE, &self.status_code()),
+            HtmlError::ServerError => homepage(MSG_SERVER_ERROR_CODE),
+            HtmlError::NotAuthorized => homepage(MSG_UNAUTHORIZED_ERROR_CODE),
+            HtmlError::BadParams => homepage(MSG_BAD_REQUEST_ERROR_CODE),
+            HtmlError::BotDetection => homepage(MSG_BOT_DETECTED_ERROR_CODE),
             HtmlError::NotFound => page_404(),
         }
     }
@@ -86,17 +86,15 @@ impl error::ResponseError for HtmlError {
     }
 }
 
-pub fn homepage(message: &str, status: &StatusCode) -> HttpResponse {
+pub fn homepage(message: &str) -> HttpResponse {
     let path = format!("/?message={}", message);
-    HttpResponse::build(status.to_owned())
+    HttpResponse::PermanentRedirect()
         .insert_header((LOCATION, path))
-        .insert_header(ContentType::html())
         .finish()
 }
 
 pub fn page_404() -> HttpResponse {
-    HttpResponse::build(StatusCode::NOT_FOUND)
+    HttpResponse::PermanentRedirect()
         .insert_header((LOCATION, "/404"))
-        .insert_header(ContentType::html())
         .finish()
 }

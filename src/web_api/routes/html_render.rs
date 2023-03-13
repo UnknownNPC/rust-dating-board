@@ -6,6 +6,12 @@ use super::home_page::HomePageDataContext;
 use super::view_profile_page::ViewProfileResponse;
 
 #[derive(TemplateOnce)]
+#[template(path = "p404.stpl")]
+struct P404<'a> {
+    nav_context: &'a NavContext,
+}
+
+#[derive(TemplateOnce)]
 #[template(path = "home.stpl")]
 struct Home<'a> {
     nav_context: &'a NavContext,
@@ -68,5 +74,9 @@ impl HtmlPage {
             .render_once()
             .unwrap(),
         )
+    }
+
+    pub fn p404(nav_context: &NavContext) -> HttpResponse {
+        HttpResponse::NotFound().body(P404 { nav_context }.render_once().unwrap())
     }
 }
