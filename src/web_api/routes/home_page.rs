@@ -104,6 +104,7 @@ pub async fn index_page(
                 total: total_pages,
             },
             search_text: query.search.clone(),
+            message_code: query.message.clone()
         })
     }
 
@@ -126,6 +127,7 @@ pub struct Pagination {
 }
 
 pub struct HomePageDataContext {
+    pub message_code: Option<String>,
     pub search_text: Option<String>,
     pub profiles: Vec<HomePageProfileDataContext>,
     pub pagination: Pagination,
@@ -166,7 +168,7 @@ impl HomePageProfileDataContext {
 
 #[derive(Deserialize)]
 pub struct QueryRequest {
-    pub error: Option<String>,
+    pub message: Option<String>,
     pub show_my: Option<bool>,
     pub search: Option<String>,
     pub filter_city: Option<String>,

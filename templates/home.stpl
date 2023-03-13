@@ -10,10 +10,34 @@
     <% include!("./includes/nav.stpl"); %>
 
         <div class="container">
+
+            <% if data_context.message_code.is_some() { %>
+                <% let message = data_context.message_code.as_ref().unwrap();
+                   fn get_type_and_message(message: &String) -> (String, String) {
+                      match message.as_str() {
+                            "profile_added" => ("alert-success".to_string(), "Анкета опублікована".to_string()),
+                            "profile_updated" => ("alert-success".to_string(), "Анкета оновлена".to_string()),
+                            "sign_in_ok" => ("alert-success".to_string(), "Вхід виконано".to_string()),
+                            "sign_out_ok" => ("alert-success".to_string(), "Вихід виконано".to_string()),
+                            "server_error" => ("alert-danger".to_string(), "Помилка сервера. Спробуйте пізніше".to_string()),
+                            "unauthorized" => ("alert-warning".to_string(), "Авторизуйтесь і спробуйте ще раз".to_string()),
+                            "bad_request" => ("alert-danger".to_string(), "Данні вже невалідні, спробуйте знов".to_string()),
+                            "bot_detected" => ("alert-danger".to_string(), "Підозріла активність. Спробуйте пізніше".to_string()),
+                            _ => ("error".to_string(), "error".to_string())
+                      }
+                } %>
+                <div class="mt-3 mb-0 alert  <%= get_type_and_message(&message).0 %> alert-dismissible fade show" role="alert">
+                    <%= get_type_and_message(&message).1 %>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+            <% } %>
+
             <% if nav_context.is_search && !data_context.profiles.is_empty() { %>
-                <p class="h1">Результати пошуку <%= data_context.search_text.as_ref().unwrap() %></p>
+                <p class="h1 pt-3">Результати пошуку <%= data_context.search_text.as_ref().unwrap() %></p>
             <% } else if nav_context.is_user_profiles { %>
-                <p class="h1">Мої анкети</p>
+                <p class="h1 pt-3">Мої анкети</p>
             <% } else if !nav_context.current_city.is_empty() { %>
                 <% fn translate(city: &String) -> String {
                     if city == "harkiv" {
@@ -28,9 +52,9 @@
                         String::from("НЕВІДОМО")
                     }
                 } %>
-                <p class="h1">Анкети міста <%= translate(&nav_context.current_city) %></p>
+                <p class="h1 pt-3">Анкети міста <%= translate(&nav_context.current_city) %></p>
             <% } else if !data_context.profiles.is_empty() { %>
-                <p class="h1">Анкети України</p>
+                <p class="h1 pt-3">Анкети України</p>
             <% } %>
 
             <% if data_context.profiles.is_empty() { %>
