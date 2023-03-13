@@ -204,8 +204,8 @@ impl DbProvider {
         profile_photo::Entity::find()
             .from_raw_sql(Statement::from_sql_and_values(
                 DbBackend::Postgres,
-                "SELECT * FROM profile WHERE to_tsvector(phone_number) || to_tsvector(description) || to_tsvector(name) @@ plainto_tsquery($1)
-                 order by created_at limit $2;",
+                "SELECT * FROM profile WHERE to_tsvector(phone_number) || to_tsvector(description) || to_tsvector(name) @@ plainto_tsquery($1) 
+                AND status = 'active' order by created_at desc limit $2;",
                 [text.into(), limit.into()],
             ))
             .into_model::<ProfileModel>()
