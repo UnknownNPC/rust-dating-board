@@ -150,7 +150,7 @@ pub async fn add_or_edit_profile_post(
             } else {
                 format!("/?message={}", MSG_PROFILE_ADDED_CODE)
             };
-            HttpResponse::build(StatusCode::FOUND)
+            HttpResponse::PermanentRedirect()
                 .append_header((LOCATION, path))
                 .finish()
         })

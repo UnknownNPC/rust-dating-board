@@ -36,16 +36,14 @@ pub struct HtmlPage;
 
 impl HtmlPage {
     pub fn homepage(nav_context: &NavContext, data_context: &HomePageDataContext) -> HttpResponse {
-        let html = HttpResponse::Ok().body(
+        HttpResponse::Ok().body(
             Home {
                 nav_context,
                 data_context,
             }
             .render_once()
             .unwrap(),
-        );
-
-        html
+        )
     }
 
     pub fn add_or_edit_profile(
