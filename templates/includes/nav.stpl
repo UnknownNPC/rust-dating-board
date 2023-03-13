@@ -13,7 +13,7 @@
             <% } %>
         </ul>
 
-        <ul class="navbar-nav ml-auto">
+        <ul class="navbar-nav ml-auto pr-3">
             <form action="/" class="form-inline">
                 <input class="form-control mr-sm-2" name="search" type="search" placeholder="Телефон чи слово" aria-label="Search">
                 <button class="btn btn-primary my-2 my-sm-0" type="submit">Шукати</button>
