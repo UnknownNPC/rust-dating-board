@@ -54,15 +54,26 @@
                 </div>
             </li>
         <% if nav_context.name.is_empty() { %>
-            <div id="g_id_onload"
-                data-client_id="824603210544-6apptbcmddrbud4njlstqfqavim7fgla.apps.googleusercontent.com"
-                data-context="signin" data-ux_mode="popup" data-login_uri="http://localhost:8000/sign_in/google"
-                data-auto_prompt="false">
-            </div>
 
-            <div class="g_id_signin my-2 my-sm-0 ml-auto" data-type="standard" data-shape="pill" data-theme="outline"
-                data-text="signin" data-size="large" data-locale="uk" data-logo_alignment="left">
-            </div>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="login_nav_dropdown" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            Вхід
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="login_nav_dropdown">
+                    <a class="dropdown-item">
+                       <div id="g_id_onload"
+                          data-client_id="824603210544-6apptbcmddrbud4njlstqfqavim7fgla.apps.googleusercontent.com"
+                          data-context="signin" data-ux_mode="popup" data-login_uri="http://localhost:8000/sign_in/google"
+                          data-auto_prompt="false">
+                       </div>
+                       <div class="g_id_signin my-2 my-sm-0 ml-auto" data-type="standard" data-shape="pill" data-theme="outline"
+                          data-text="signin" data-size="large" data-locale="uk" data-logo_alignment="left">
+                       </div>
+                    </a>
+                 </div>                 
+            </li>
+
         <% } else { %>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
