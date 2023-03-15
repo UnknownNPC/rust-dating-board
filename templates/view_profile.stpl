@@ -52,7 +52,7 @@
                 </div>  
 
               </div>
-              <div class="col-md-4">
+              <div class="col-md-8">
                 <div class="card">
                   <div class="card-body">
                     <h3 class="card-title">Інформація</h3>
@@ -78,71 +78,6 @@
                     <p class="card-text mb-0">Опубліковано: <%= data_context.date_create %></p>
                   </div>
                 </div>    
-              </div>
-              <div class="col-md-4">
-                
-                <div class="card">
-                  <div class="card-body">
-                    <h3 class="card-title">Коментарі</h3>
-                    <div class="overflow-auto" style="max-height: 400px;">
-                      <ul class="list-unstyled">
-                        <li class="media">
-                          <div class="media-body">
-                            <h5 class="mt-0 mb-1">Имя автора</h5>
-                            <small class="text-muted">Дата комментария</small>
-                            <p>Текст комментария</p>
-                          </div>
-                        </li>
-                        <li class="media">
-                          <div class="media-body">
-                            <h5 class="mt-0 mb-1">Имя автора</h5>
-                            <small class="text-muted">Дата комментария</small>
-                            <p>Текст комментария</p>
-                          </div>
-                        </li>
-                        <li class="media">
-                          <div class="media-body">
-                            <h5 class="mt-0 mb-1">Имя автора</h5>
-                            <small class="text-muted">Дата комментария</small>
-                            <p>Текст комментария</p>
-                          </div>
-                        </li>
-                        <li class="media">
-                          <div class="media-body">
-                            <h5 class="mt-0 mb-1">Имя автора</h5>
-                            <small class="text-muted">Дата комментария</small>
-                            <p>Текст комментария</p>
-                          </div>
-                        </li>
-                        <li class="media">
-                          <div class="media-body">
-                            <h5 class="mt-0 mb-1">Имя автора</h5>
-                            <small class="text-muted">Дата комментария</small>
-                            <p>Текст комментария</p>
-                          </div>
-                        </li>
-                        <li class="media">
-                          <div class="media-body">
-                            <h5 class="mt-0 mb-1">Имя автора</h5>
-                            <small class="text-muted">Дата комментария</small>
-                            <p>Текст комментария</p>
-                          </div>
-                        </li>
-                        <!-- Добавьте сколько угодно комментариев -->
-                      </ul>
-                    </div>
-                    <form>
-                      <div class="form-group">
-                        <input placeholder="Імя" type="text" class="form-control" id="comment-name">
-                      </div>
-                      <div class="form-group">
-                        <textarea placeholder="Ваш комментар" class="form-control" rows="5" id="comment-text"></textarea>
-                      </div>
-                      <button type="submit" class="btn btn-primary mx-auto d-block">Відправити</button>
-                    </form>
-                  </div>
-                </div>
-                
               </div>
             </div>
           </div>
