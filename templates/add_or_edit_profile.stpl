@@ -22,17 +22,23 @@
             <form action="/add_or_edit_profile" method="post">
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <input type="text" class="form-control" name="name" id="name_id"
+                        <input type="text" aria-describedby="name_help" class="form-control" name="name" id="name_id"
                             value="<%= data_context.name %>" placeholder="Ім'я">
+                            <small id="name_help" class="form-text text-muted">
+                                Від 3 до 10 символів
+                            </small>
                     </div>
                     <div class="form-group col-md-4">
-                        <input placeholder="Зріст" type="number" 
+                        <input aria-describedby="height_help" placeholder="Зріст" type="number" 
                             class="form-control" name="height" id="height_id" 
                         <% if data_context.height==0 { %>
                             value=""
                         <% } else { %>
                             value="<%= data_context.height %>"
                         <% } %> >
+                        <small id="height_help" class="form-text text-muted">
+                            Від 100 до 220
+                        </small>
                     </div>
                 </div>
                 <div class="form-row">
@@ -78,8 +84,11 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-12">
-                        <textarea class="form-control" name="description" id="description_id"
+                        <textarea aria-describedby="description_help" class="form-control" name="description" id="description_id"
                             rows="4" placeholder="Опис"><%= data_context.description %></textarea>
+                        <small id="description_help" class="form-text text-muted">
+                                Від 10 до 600 символів
+                        </small>
                     </div>
                 </div>
                 <div class="form-row">

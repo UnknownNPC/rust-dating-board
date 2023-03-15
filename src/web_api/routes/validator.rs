@@ -66,7 +66,7 @@ impl Validator<AddOrEditProfileFormRequest> for AddOrEditProfileFormRequestRaw {
         //height
         err_context.if_true_add_error(self.is_empty(|f| &f.height), "height", "is_empty");
         err_context.if_true_add_error(
-            self.is_not_in_range(|f| &f.height, 100, 250),
+            self.is_not_in_range(|f| &f.height, 100, 220),
             "height",
             "range",
         );
