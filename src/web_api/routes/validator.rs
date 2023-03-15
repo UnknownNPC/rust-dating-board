@@ -7,13 +7,13 @@ type Code = String;
 
 #[derive(Debug)]
 pub struct ErrorContext {
-    pub data: HashMap<Key, Vec<Code>>,
+    pub data: HashMap<Key, Code>,
 }
 
 impl ErrorContext {
     pub fn empty() -> Self {
         ErrorContext {
-            data: HashMap::<Key, Vec<Code>>::new(),
+            data: HashMap::<Key, Code>::new(),
         }
     }
 
@@ -28,8 +28,7 @@ impl ErrorContext {
     }
 
     fn add_error(&mut self, key: &str, code: &str) {
-        let value = self.data.entry(key.to_string()).or_insert(Vec::new());
-        value.push(code.to_string());
+        self.data.entry(key.to_string()).or_insert(code.to_string());
     }
 }
 

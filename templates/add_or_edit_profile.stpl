@@ -19,18 +19,42 @@
                     Нова анкета
                 <% } %>        
             </p>
+            <% 
+            fn get_error_code_by_field(name: &str, error_context: &ErrorContext) -> String {
+                let error = error_context.data.get(name);
+                error.map(|f| f.to_owned()).unwrap_or_default()
+            }
+    
+            fn get_translation(code: &String) -> String {
+                match code.as_str() {
+                    "is_empty" => String::from("Поле не може бути пустим"),
+                    "length" => String::from("Невалідна довжина значення"),
+                    "range" => String::from("Значення не у валідному діапазоні"),
+                    _ => String::from("")
+                }
+            }
+            %>    
             <form action="/add_or_edit_profile" method="post">
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <input type="text" aria-describedby="name_help" class="form-control" name="name" id="name_id"
+                        <% let error_or_empty = get_translation(&get_error_code_by_field("name", error_context)); %>
+                        <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
+                        <input type="text" aria-describedby="name_help" class="form-control <%= input_class_value %> " name="name" id="name_id"
                             value="<%= data_context.name %>" placeholder="Ім'я">
                             <small id="name_help" class="form-text text-muted">
                                 Від 3 до 10 символів
                             </small>
+                         <% if !error_or_empty.is_empty() { %>
+                            <div class="invalid-feedback">
+                                <%= error_or_empty %>
+                              </div>
+                         <% } %>       
                     </div>
                     <div class="form-group col-md-4">
+                        <% let error_or_empty = get_translation(&get_error_code_by_field("height", error_context)); %>
+                        <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
                         <input aria-describedby="height_help" placeholder="Зріст" type="number" 
-                            class="form-control" name="height" id="height_id" 
+                            class="form-control <%= input_class_value %>" name="height" id="height_id" 
                         <% if data_context.height==0 { %>
                             value=""
                         <% } else { %>
@@ -39,6 +63,11 @@
                         <small id="height_help" class="form-text text-muted">
                             Від 100 до 220
                         </small>
+                        <% if !error_or_empty.is_empty() { %>
+                            <div class="invalid-feedback">
+                                <%= error_or_empty %>
+                              </div>
+                         <% } %>  
                     </div>
                 </div>
                 <div class="form-row">
@@ -46,11 +75,20 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text" id="phone_prefix">+380</span>
                         </div>
-                        <input type="text" class="form-control" aria-describedby="phone_prefix" name="phone_number"
+                        <% let error_or_empty = get_translation(&get_error_code_by_field("phone_number", error_context)); %>
+                        <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
+                        <input type="text" class="form-control <%= input_class_value %>" aria-describedby="phone_prefix" name="phone_number"
                             id="phone_number_id" value="<%= data_context.phone_number %>" placeholder="Телефон">
+                        <% if !error_or_empty.is_empty() { %>
+                            <div class="invalid-feedback">
+                                <%= error_or_empty %>
+                              </div>
+                         <% } %>
                     </div>
                     <div class="form-group col-md-4">
-                        <select class="custom-select" name="city" id="city_id">
+                        <% let error_or_empty = get_translation(&get_error_code_by_field("city", error_context)); %>
+                        <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
+                        <select class="custom-select <%= input_class_value %>" name="city" id="city_id">
                             <% if data_context.city.is_empty() { %>
                                 <option value="" selected>Виберіть місто</option>
                             <% } %>
@@ -80,15 +118,27 @@
                                     </option>
                                 <% } %>
                         </select>
+                        <% if !error_or_empty.is_empty() { %>
+                            <div class="invalid-feedback">
+                                <%= error_or_empty %>
+                              </div>
+                         <% } %>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group col-md-12">
-                        <textarea aria-describedby="description_help" class="form-control" name="description" id="description_id"
+                        <% let error_or_empty = get_translation(&get_error_code_by_field("description", error_context)); %>
+                        <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
+                        <textarea aria-describedby="description_help" class="form-control <%= input_class_value %>" name="description" id="description_id"
                             rows="4" placeholder="Опис"><%= data_context.description %></textarea>
                         <small id="description_help" class="form-text text-muted">
                                 Від 10 до 600 символів
                         </small>
+                        <% if !error_or_empty.is_empty() { %>
+                            <div class="invalid-feedback">
+                                <%= error_or_empty %>
+                              </div>
+                         <% } %>
                     </div>
                 </div>
                 <div class="form-row">
