@@ -36,6 +36,13 @@ impl Display for HtmlError {
     }
 }
 
+impl From<serde_json::Error> for HtmlError {
+    fn from(err: serde_json::Error) -> Self {
+        println!("[serde_json::Error] json parsing error: [{}]", &err);
+        HtmlError::ServerError
+    }
+}
+
 impl From<DbErr> for HtmlError {
     fn from(err: DbErr) -> Self {
         println!("[DbErr] db error happens: [{}]", &err);

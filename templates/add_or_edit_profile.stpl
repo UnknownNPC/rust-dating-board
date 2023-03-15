@@ -46,7 +46,7 @@
                     <div class="form-group col-md-4">
                         <select class="custom-select" name="city" id="city_id">
                             <% if data_context.city.is_empty() { %>
-                                <option selected>Виберіть місто</option>
+                                <option value="" selected>Виберіть місто</option>
                             <% } %>
                             <% fn translate(city: &String) -> String {
                                 if city == "harkiv" {

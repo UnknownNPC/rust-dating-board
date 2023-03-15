@@ -9,6 +9,7 @@ mod common;
 mod constant;
 mod error;
 mod p404_page;
+mod validator;
 
 pub use home_page::index_page;
 pub use p404_page::p404_page;

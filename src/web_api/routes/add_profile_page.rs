@@ -1,8 +1,5 @@
 use actix_web::web;
-use actix_web::{
-    HttpResponse,
-    http::{header::LOCATION}, Responder,
-};
+use actix_web::{http::header::LOCATION, HttpResponse, Responder};
 use futures::future::OptionFuture;
 use serde::Deserialize;
 
@@ -20,6 +17,8 @@ use crate::{
         },
     },
 };
+
+use super::validator::Validator;
 
 pub async fn add_profile_page(
     db_provider: web::Data<DbProvider>,
@@ -72,9 +71,29 @@ pub async fn add_profile_page(
 pub async fn add_or_edit_profile_post(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
-    form: web::Form<AddOrEditProfileFormRequest>,
+    form_raw: web::Form<AddOrEditProfileFormRequestRaw>,
     config: web::Data<Config>,
 ) -> Result<impl Responder, HtmlError> {
+    async fn create_or_reuse_draft_profile(
+        user_id: i64,
+        db_provider: &web::Data<DbProvider>,
+    ) -> Result<ProfileModel, HtmlError> {
+        let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await?;
+        match draft_profile_opt {
+            Some(draft_profile) => {
+                println!("[routes#add_or_edit_profile_post] Draft profile flow. Found draft profile. Re-useing");
+                Ok(draft_profile)
+            }
+            None => {
+                println!("[routes#add_or_edit_profile_post] Draft profile flow. Creating new draft profile");
+                db_provider
+                    .add_draft_profile_for(user_id)
+                    .await
+                    .map_err(|op| op.into())
+            }
+        }
+    }
+
     async fn resolve_profile(
         user_id: i64,
         profile_id_opt: &Option<i64>,
@@ -87,20 +106,7 @@ pub async fn add_or_edit_profile_post(
                 .await?
                 .ok_or(HtmlError::BadParams)
         } else {
-            let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await?;
-            match draft_profile_opt {
-                Some(draft_profile) => {
-                    println!("[routes#add_or_edit_profile_post] Draft profile flow. Found draft profile. Re-useing");
-                    Ok(draft_profile)
-                }
-                None => {
-                    println!("[routes#add_or_edit_profile_post] Draft profile flow. Creating new draft profile");
-                    db_provider
-                        .add_draft_profile_for(user_id)
-                        .await
-                        .map_err(|op| op.into())
-                }
-            }
+            create_or_reuse_draft_profile(user_id, db_provider).await
         }
     }
 
@@ -114,6 +120,31 @@ pub async fn add_or_edit_profile_post(
         return Err(HtmlError::NotAuthorized);
     }
 
+    let user_id = auth_gate.user_id.unwrap();
+
+    let form_validation = form_raw.validate();
+    let form = if let Err(error_context) = form_validation {
+        let error_json_str = serde_json::to_string(&error_context)?;
+        if form_raw.profile_id.as_ref().is_none() {
+            // error on submit. Let's create or re-use draft profile and fill with invalid data
+            let path = format!("/add_profile?errors={}", error_json_str);
+            println!("[route#add_or_edit_profile_post] Form includes errors. Add mode. Redirection to [{}]", &path);
+            return Ok(redirect_response_to(path.as_str()));
+        } else {
+            let id = form_raw.profile_id.unwrap_or_default();
+            let path = format!("/edit_profile?id={}&errors={}", id, error_json_str);
+            println!("[route#add_or_edit_profile_post] Form includes errors. Edit mode. Redirection to [{}]", &path);
+            return Ok(redirect_response_to(path.as_str()));
+        }
+    } else {
+        let form = form_validation.unwrap();
+        println!(
+            "[route#add_or_edit_profile_post] Form passes validation: [{:?}]",
+            &form
+        );
+        form
+    };
+
     let captcha_score =
         Recaptcha::verify(&config.captcha_google_secret, &form.captcha_token).await?;
 
@@ -125,7 +156,6 @@ pub async fn add_or_edit_profile_post(
         return Err(HtmlError::BotDetection);
     }
 
-    let user_id = auth_gate.user_id.unwrap();
     let profile_model = resolve_profile(user_id, &form.profile_id, &db_provider).await?;
 
     let is_edit_mode = form.profile_id.is_some();
@@ -134,7 +164,7 @@ pub async fn add_or_edit_profile_post(
         .publish_profie(
             &profile_model,
             &form.name,
-            form.height.parse::<i16>().unwrap(),
+            form.height,
             &form.city,
             &form.description,
             &form.phone_number,
@@ -150,15 +180,19 @@ pub async fn add_or_edit_profile_post(
             } else {
                 format!("/?message={}", MSG_PROFILE_ADDED_CODE)
             };
-            HttpResponse::Found()
-                .append_header((LOCATION, path))
-                .finish()
+            redirect_response_to(path.as_str())
         })
         .map_err(|err| err.into())
 }
 
+fn redirect_response_to(path: &str) -> HttpResponse {
+    HttpResponse::Found()
+        .append_header((LOCATION, path))
+        .finish()
+}
+
 #[derive(Deserialize)]
-pub struct AddOrEditProfileFormRequest {
+pub struct AddOrEditProfileFormRequestRaw {
     pub name: String,
     pub height: String,
     pub city: String,
@@ -167,4 +201,30 @@ pub struct AddOrEditProfileFormRequest {
     // edit mode ON
     pub profile_id: Option<i64>,
     pub captcha_token: String,
+}
+
+#[derive(Debug)]
+pub struct AddOrEditProfileFormRequest {
+    pub name: String,
+    pub height: i16,
+    pub city: String,
+    pub phone_number: String,
+    pub description: String,
+    // edit mode ON
+    pub profile_id: Option<i64>,
+    pub captcha_token: String,
+}
+
+impl AddOrEditProfileFormRequest {
+    pub fn from_raw(raw: &AddOrEditProfileFormRequestRaw) -> Self {
+        AddOrEditProfileFormRequest {
+            name: raw.name.clone(),
+            height: raw.height.parse::<i16>().unwrap(),
+            city: raw.city.clone(),
+            phone_number: raw.phone_number.clone(),
+            description: raw.description.clone(),
+            profile_id: raw.profile_id,
+            captcha_token: raw.captcha_token.clone(),
+        }
+    }
 }
