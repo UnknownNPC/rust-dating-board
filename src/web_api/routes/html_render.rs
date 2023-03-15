@@ -3,6 +3,7 @@ use sailfish::TemplateOnce;
 
 use super::common::{NavContext, ProfilePageDataContext};
 use super::home_page::HomePageDataContext;
+use super::validator::ErrorContext;
 use super::view_profile_page::ViewProfileResponse;
 
 #[derive(TemplateOnce)]
@@ -23,6 +24,7 @@ struct Home<'a> {
 struct AddOrEditProfile<'a> {
     nav_context: &'a NavContext,
     data_context: &'a ProfilePageDataContext,
+    error_context: &'a ErrorContext
 }
 
 #[derive(TemplateOnce)]
@@ -49,11 +51,13 @@ impl HtmlPage {
     pub fn add_or_edit_profile(
         nav_context: &NavContext,
         data_context: &ProfilePageDataContext,
+        error_context: &ErrorContext
     ) -> HttpResponse {
         HttpResponse::Ok().body(
             AddOrEditProfile {
                 nav_context,
                 data_context,
+                error_context
             }
             .render_once()
             .unwrap(),

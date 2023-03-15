@@ -1,23 +1,18 @@
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
-
 use super::add_profile_page::{AddOrEditProfileFormRequest, AddOrEditProfileFormRequestRaw};
 
 type Key = String;
 type Code = String;
 
-#[serde_as]
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ValidationErrorContext {
-    #[serde_as(as = "Vec<(_, _)>")]
+#[derive(Debug)]
+pub struct ErrorContext {
     pub data: HashMap<Key, Vec<Code>>,
 }
 
-impl ValidationErrorContext {
-    pub fn new() -> Self {
-        ValidationErrorContext {
+impl ErrorContext {
+    pub fn empty() -> Self {
+        ErrorContext {
             data: HashMap::<Key, Vec<Code>>::new(),
         }
     }
@@ -39,7 +34,7 @@ impl ValidationErrorContext {
 }
 
 pub trait Validator<R: Sized> {
-    fn validate(&self) -> Result<R, ValidationErrorContext>;
+    fn validate(&self) -> Result<R, ErrorContext>;
 
     fn is_empty(&self, f: fn(&Self) -> &String) -> bool {
         f(self).is_empty()
@@ -61,8 +56,8 @@ pub trait Validator<R: Sized> {
 }
 
 impl Validator<AddOrEditProfileFormRequest> for AddOrEditProfileFormRequestRaw {
-    fn validate(&self) -> Result<AddOrEditProfileFormRequest, ValidationErrorContext> {
-        let mut err_context = ValidationErrorContext::new();
+    fn validate(&self) -> Result<AddOrEditProfileFormRequest, ErrorContext> {
+        let mut err_context = ErrorContext::empty();
 
         // name
         err_context.if_true_add_error(self.is_empty(|f| &f.name), "name", "is_empty");

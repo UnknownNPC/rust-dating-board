@@ -8,7 +8,7 @@ use crate::{
         auth::AuthenticationGate,
         routes::{
             common::{NavContext, ProfilePageDataContext},
-            html_render::HtmlPage,
+            html_render::HtmlPage, validator::ErrorContext,
         },
     },
 };
@@ -57,8 +57,9 @@ pub async fn edit_profile_page(
         false,
         &cities_names,
     );
+    let error_context = ErrorContext::empty();
 
-    Ok(HtmlPage::add_or_edit_profile(&nav_context, &data_contex))
+    Ok(HtmlPage::add_or_edit_profile(&nav_context, &data_contex, &error_context))
 }
 
 #[derive(Deserialize)]

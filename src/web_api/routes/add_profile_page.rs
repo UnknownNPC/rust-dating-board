@@ -1,9 +1,12 @@
+use core::fmt;
+
 use actix_web::web;
 use actix_web::{http::header::LOCATION, HttpResponse, Responder};
 use futures::future::OptionFuture;
 use serde::Deserialize;
 
 use crate::web_api::routes::error::HtmlError;
+use crate::web_api::routes::validator::ErrorContext;
 use crate::{
     config::Config,
     db::{DbProvider, ProfileModel},
@@ -64,8 +67,13 @@ pub async fn add_profile_page(
         false,
         &cities_names,
     );
+    let error_context = ErrorContext::empty();
 
-    Ok(HtmlPage::add_or_edit_profile(&nav_context, &data_contex))
+    Ok(HtmlPage::add_or_edit_profile(
+        &nav_context,
+        &data_contex,
+        &error_context,
+    ))
 }
 
 pub async fn add_or_edit_profile_post(
@@ -74,26 +82,6 @@ pub async fn add_or_edit_profile_post(
     form_raw: web::Form<AddOrEditProfileFormRequestRaw>,
     config: web::Data<Config>,
 ) -> Result<impl Responder, HtmlError> {
-    async fn create_or_reuse_draft_profile(
-        user_id: i64,
-        db_provider: &web::Data<DbProvider>,
-    ) -> Result<ProfileModel, HtmlError> {
-        let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await?;
-        match draft_profile_opt {
-            Some(draft_profile) => {
-                println!("[routes#add_or_edit_profile_post] Draft profile flow. Found draft profile. Re-useing");
-                Ok(draft_profile)
-            }
-            None => {
-                println!("[routes#add_or_edit_profile_post] Draft profile flow. Creating new draft profile");
-                db_provider
-                    .add_draft_profile_for(user_id)
-                    .await
-                    .map_err(|op| op.into())
-            }
-        }
-    }
-
     async fn resolve_profile(
         user_id: i64,
         profile_id_opt: &Option<i64>,
@@ -101,13 +89,43 @@ pub async fn add_or_edit_profile_post(
     ) -> Result<ProfileModel, HtmlError> {
         if profile_id_opt.is_some() {
             let profile_id = profile_id_opt.unwrap_or_default();
+            println!(
+                "[routes#add_or_edit_profile_post] Active profile flow. Edit flow. Profile: {}",
+                profile_id
+            );
             db_provider
                 .find_active_profile_by_id_and_user_id(profile_id, user_id)
                 .await?
                 .ok_or(HtmlError::BadParams)
         } else {
-            create_or_reuse_draft_profile(user_id, db_provider).await
+            let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await?;
+            match draft_profile_opt {
+                Some(draft_profile) => {
+                    println!("[routes#add_or_edit_profile_post] Draft profile flow. Found draft profile. Re-useing");
+                    Ok(draft_profile)
+                }
+                None => {
+                    println!("[routes#add_or_edit_profile_post] Draft profile flow. Creating new draft profile");
+                    db_provider
+                        .add_draft_profile_for(user_id)
+                        .await
+                        .map_err(|op| op.into())
+                }
+            }
         }
+    }
+
+    fn update_profile_with_raw_data(
+        profile: &mut ProfileModel,
+        form_raw: &web::Form<AddOrEditProfileFormRequestRaw>,
+    ) {
+        profile.name = form_raw.name.clone();
+        if let Ok(height) = form_raw.height.parse::<i16>() {
+            profile.height = height
+        }
+        profile.city = form_raw.city.clone();
+        profile.phone_number = form_raw.phone_number.clone();
+        profile.description = form_raw.description.clone()
     }
 
     println!(
@@ -124,18 +142,34 @@ pub async fn add_or_edit_profile_post(
 
     let form_validation = form_raw.validate();
     let form = if let Err(error_context) = form_validation {
-        let error_json_str = serde_json::to_string(&error_context)?;
-        if form_raw.profile_id.as_ref().is_none() {
-            // error on submit. Let's create or re-use draft profile and fill with invalid data
-            let path = format!("/add_profile?errors={}", error_json_str);
-            println!("[route#add_or_edit_profile_post] Form includes errors. Add mode. Redirection to [{}]", &path);
-            return Ok(redirect_response_to(path.as_str()));
-        } else {
-            let id = form_raw.profile_id.unwrap_or_default();
-            let path = format!("/edit_profile?id={}&errors={}", id, error_json_str);
-            println!("[route#add_or_edit_profile_post] Form includes errors. Edit mode. Redirection to [{}]", &path);
-            return Ok(redirect_response_to(path.as_str()));
-        }
+        //if data with error
+        println!(
+            "[route#add_or_edit_profile_post] Form includes errors: [{:?}]. Buidling contexts...",
+            &error_context
+        );
+        let user_id = auth_gate.user_id.unwrap();
+        let user_name = auth_gate.user_name.unwrap();
+        let google_captcha_id = &config.captcha_google_id.as_str();
+        let cities = db_provider.find_city_names().await?;
+        let nav_context = NavContext::new(&user_name, "", google_captcha_id, false, false, &cities);
+
+        let mut profile = resolve_profile(user_id, &form_raw.profile_id, &db_provider).await?;
+        update_profile_with_raw_data(&mut profile, &form_raw);
+
+        let profile_photos = db_provider.find_all_profile_photos_for(profile.id).await?;
+        let is_edit = form_raw.profile_id.is_some();
+
+        let data_context = ProfilePageDataContext::new(
+            &config.all_photos_folder_name,
+            &Some(profile),
+            &profile_photos,
+            is_edit,
+        );
+        return Ok(HtmlPage::add_or_edit_profile(
+            &nav_context,
+            &data_context,
+            &error_context,
+        ));
     } else {
         let form = form_validation.unwrap();
         println!(
@@ -203,7 +237,6 @@ pub struct AddOrEditProfileFormRequestRaw {
     pub captcha_token: String,
 }
 
-#[derive(Debug)]
 pub struct AddOrEditProfileFormRequest {
     pub name: String,
     pub height: i16,
@@ -213,6 +246,23 @@ pub struct AddOrEditProfileFormRequest {
     // edit mode ON
     pub profile_id: Option<i64>,
     pub captcha_token: String,
+}
+
+impl fmt::Debug for AddOrEditProfileFormRequest {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut debug_struct = f.debug_struct("AddOrEditProfileFormRequest");
+        debug_struct.field("name", &self.name);
+        debug_struct.field("height", &self.height);
+        debug_struct.field("city", &self.city);
+        debug_struct.field("phone_number", &self.phone_number);
+        debug_struct.field("description", &self.description);
+        if let Some(profile_id) = self.profile_id {
+            debug_struct.field("profile_id", &profile_id);
+        } else {
+            debug_struct.field("profile_id", &"None");
+        }
+        debug_struct.finish()
+    }
 }
 
 impl AddOrEditProfileFormRequest {
