@@ -6,10 +6,13 @@
             class="navbar-toggler-icon"></span></button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
-            <li class="nav-item active"><a class="nav-link" href="/">Головна <span class="sr-only">(current)</span></a>
+            <% let home_active_class = if active_tab == "index" { "active" } else { "" }; %>
+            <li class="nav-item <%= home_active_class %>"><a class="nav-link" href="/">Головна</a>
             </li>
             <% if !nav_context.name.is_empty() { %>
-                <li class="nav-item"><a class="nav-link" href="/add_profile">Додати анкету</a></li>
+                <% let add_profile_active_class = if active_tab == "add_profile" { "active" } else { "" }; %>
+                <li class="nav-item <%= add_profile_active_class %>">
+                    <a class="nav-link" href="/add_profile">Додати анкету</a></li>
             <% } %>
         </ul>
 

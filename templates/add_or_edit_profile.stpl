@@ -9,6 +9,7 @@
 </head>
 
 <body>
+    <% let active_tab = if data_context.is_edit_mode { "" } else { "add_profile" }; %>
     <% include!("./includes/nav.stpl"); %>
 
         <div class="container">
