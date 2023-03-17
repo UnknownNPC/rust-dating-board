@@ -2,7 +2,12 @@
 <html lang="en">
 
 <head>
-    <% let head_title="Додати нову анкету" ; %>
+
+    <% let head_title = if data_context.is_edit_mode {
+        String::from("Редагування анкети")
+    } else {
+        String::from("Додати нову анкету")
+    }; %>
         <% include!("./includes/head_body.stpl"); %>
             <link rel="stylesheet" href="static/css/bootstrap-icons.min.css" crossorigin="anonymous">
             <link href="static/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
