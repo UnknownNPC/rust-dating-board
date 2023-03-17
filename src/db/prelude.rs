@@ -3,4 +3,5 @@
 pub use super::city::Entity as City;
 pub use super::profile::Entity as Profile;
 pub use super::profile_photo::Entity as ProfilePhoto;
+pub use super::report_profile::Entity as ReportProfile;
 pub use super::user::Entity as User;

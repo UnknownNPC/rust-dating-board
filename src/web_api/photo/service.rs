@@ -21,7 +21,7 @@ impl<'a> Service {
     pub fn save_photo_on_fs(
         original_file: &TempFile,
         all_photos_folder_name: &str,
-        profile_id: i64,
+        profile_id: &Uuid,
     ) -> Result<PhotoOnFS, io::Error> {
         let original_file_name = original_file.file_name.as_ref().unwrap();
         let original_file_extension = Path::new(&original_file_name)
@@ -67,7 +67,7 @@ impl<'a> Service {
 
     pub fn delete_photo_from_fs(
         all_photos_folder_name: &str,
-        profile_id: i64,
+        profile_id: &Uuid,
         photo_name: &str,
     ) -> Result<(), io::Error> {
         let profile_photo_folder_path =
@@ -91,7 +91,7 @@ impl<'a> Service {
         fs::rename(profile_photo_old_path, profile_photo_new_path)
     }
 
-    fn get_path_2_profile_photos(all_photos_folder_name: &str, profile_id: i64) -> PathBuf {
+    fn get_path_2_profile_photos(all_photos_folder_name: &str, profile_id: &Uuid) -> PathBuf {
         let mut new_file_path = env::current_exe().unwrap();
         // remove binary name
         new_file_path.pop();

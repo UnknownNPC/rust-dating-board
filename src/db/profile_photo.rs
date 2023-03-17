@@ -10,7 +10,7 @@ pub struct Model {
     pub created_at: DateTime,
     pub status: String,
     pub file_name: String,
-    pub profile_id: i64,
+    pub profile_id: Uuid,
     pub size: i64,
 }
 

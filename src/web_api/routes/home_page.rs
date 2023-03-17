@@ -1,5 +1,6 @@
 use actix_web::{web, Responder};
 use serde::Deserialize;
+use uuid::Uuid;
 
 use crate::{
     config::Config,
@@ -135,7 +136,7 @@ pub struct HomePageDataContext {
 
 #[derive(Clone)]
 pub struct HomePageProfileDataContext {
-    pub id: i64,
+    pub id: Uuid,
     pub name: String,
     pub city: String,
     pub short_description: String,

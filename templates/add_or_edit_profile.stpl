@@ -161,7 +161,7 @@
                     </div>
                 </div>
                 <% if data_context.is_edit_mode && data_context.id.is_some() { %>
-                    <input type="hidden" name="profile_id" value="<%= data_context.id.as_ref().unwrap() %>">   
+                    <input type="hidden" name="profile_id" value="<%= data_context.id.as_ref().unwrap().to_string() %>">   
                 <% } %> 
                 <input type="hidden" name="captcha_token" id="captcha_token" />
             </form>
@@ -223,7 +223,7 @@
                 showClose: false,
                 <% if data_context.is_edit_mode && data_context.id.is_some() { %>
                     uploadExtraData:{ 
-                        profile_id: <%= data_context.id.as_ref().unwrap() %>
+                        profile_id: '<%= data_context.id.as_ref().unwrap().to_string() %>'
                     },        
                 <% } %>    
                 browseOnZoneClick: true

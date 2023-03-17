@@ -14,6 +14,7 @@ use actix_web::http::header::LOCATION;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 pub async fn delete_profile_endpoint(
     db_provider: web::Data<DbProvider>,
@@ -32,10 +33,12 @@ pub async fn delete_profile_endpoint(
 
     let profile_id = form.id;
     let profile_opt = db_provider
-        .find_active_profile_by_id_and_user_id(profile_id, auth_gate.user_id.unwrap())
+        .find_active_profile_by_id_and_user_id(&profile_id, auth_gate.user_id.unwrap())
         .await?;
     let profile = profile_opt.ok_or(HtmlError::NotFound)?;
-    let profile_photos = db_provider.find_all_profile_photos_for(profile.id).await?;
+    let profile_photos = db_provider.find_all_profile_photos_for(&profile.id).await?;
+
+    println!("[route#delete_profile_endpoint] Deleting profile: [{}]. Starting IO", &profile_id);
 
     db_provider
         .delete_profile_and_photos(&profile, &profile_photos)
@@ -54,14 +57,14 @@ pub async fn add_profile_photo_endpoint(
 ) -> Result<impl Responder, JsonError> {
     async fn resolve_profile(
         user_id: i64,
-        profile_id_opt: &Option<i64>,
+        profile_id_opt: &Option<Uuid>,
         db_provider: &web::Data<DbProvider>,
     ) -> Result<ProfileModel, JsonError> {
         if profile_id_opt.is_some() {
             println!("[routes#add_profile_photo_endpoint] Edit flow. Searching active profile");
             let profile_id = profile_id_opt.unwrap_or_default();
             db_provider
-                .find_active_profile_by_id_and_user_id(profile_id, user_id)
+                .find_active_profile_by_id_and_user_id(&profile_id, user_id)
                 .await?
                 .ok_or(JsonError::BadParams)
         } else {
@@ -95,16 +98,16 @@ pub async fn add_profile_photo_endpoint(
     let user_id = auth_gate.user_id.unwrap();
     let profile_id_opt = form.0.profile_id.map(|f| f.0);
     let profile = resolve_profile(user_id, &profile_id_opt, &db_provider).await?;
-    let profile_photos = db_provider.count_profile_photos(profile.id).await?;
+    let profile_photos = db_provider.count_profile_photos(&profile.id).await?;
     if profile_photos > MAX_PROFILE_PHOTOS.to_owned() {
-        return Err(JsonError::BadParams)
+        return Err(JsonError::BadParams);
     }
 
     //Save photo to FS for this profile
     let photo_fs_save_result = PhotoService::save_photo_on_fs(
         &form.0.new_profile_photo,
         &config.all_photos_folder_name,
-        profile.id,
+        &profile.id,
     )?;
     println!(
         "[routes#add_profile_photo_endpoint]: Photo saved into fs with name: [{}]",
@@ -114,7 +117,7 @@ pub async fn add_profile_photo_endpoint(
     //Save profile photo db entity
     let profile_photo_db = db_provider
         .add_profile_photo(
-            profile.id,
+            &profile.id,
             &photo_fs_save_result.name.as_str(),
             photo_fs_save_result.size,
         )
@@ -138,7 +141,7 @@ pub async fn delete_profile_photo_endpoint(
     config: web::Data<Config>,
 ) -> Result<impl Responder, JsonError> {
     async fn process_deleting(
-        profile_id: i64,
+        profile_id: &Uuid,
         profile_photo: &ProfilePhotoModel,
         db_provider: &web::Data<DbProvider>,
         config: &web::Data<Config>,
@@ -149,7 +152,7 @@ pub async fn delete_profile_photo_endpoint(
 
         PhotoService::delete_photo_from_fs(
             &config.all_photos_folder_name,
-            profile_id,
+            &profile_id,
             &profile_photo.file_name,
         )
         .map_err(|_| JsonError::BadParams)
@@ -173,7 +176,7 @@ pub async fn delete_profile_photo_endpoint(
         .await?;
     let (profile_photo, profile) = profile_photo_profile_opt.ok_or(JsonError::BadParams)?;
 
-    process_deleting(profile.id, &profile_photo, &db_provider, &config)
+    process_deleting(&profile.id, &profile_photo, &db_provider, &config)
         .await
         .map(|_| {
             println!("[route#delete_profile_photo_endpoint] IO actions were done. Deleted: OK!");
@@ -185,12 +188,12 @@ pub async fn delete_profile_photo_endpoint(
 pub struct AddProfilePhotoMultipartRequest {
     pub new_profile_photo: TempFile,
     // it means edit mode
-    pub profile_id: Option<Text<i64>>,
+    pub profile_id: Option<Text<Uuid>>,
 }
 
 #[derive(Deserialize)]
 pub struct DeleteProfileRequest {
-    pub id: i64,
+    pub id: Uuid,
 }
 
 #[derive(Deserialize)]

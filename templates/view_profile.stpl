@@ -85,7 +85,7 @@
                     <h3 class="card-title">Доступні дії</h3>
                     <a href="/?search=<%= data_context.phone_num %>" class="btn btn-info">Інші анкети за номером</a>
                     <% if data_context.is_user_profile_author { %>
-                      <a href="/edit_profile?id=<%= data_context.id %>" class="btn btn-primary">Редагувати</a>
+                      <a href="/edit_profile?id=<%= data_context.id.to_string() %>" class="btn btn-primary">Редагувати</a>
                       <a id="delete_profile" href="#" class="btn btn-danger">Видалити</a>
                     <% } %>
                     <a class="btn btn-warning" href="#">Жалоба</a>
@@ -113,7 +113,7 @@
               </div>
               <div class="modal-footer">
                 <form action="/profile/delete" method="post">
-                  <input name="id" type="hidden" value="<%= data_context.id %>"/>
+                  <input name="id" type="hidden" value="<%= data_context.id.to_string() %>"/>
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Відмінити</button>
                   <button type="submit" class="btn btn-primary">Видалити</button>
                 </form>

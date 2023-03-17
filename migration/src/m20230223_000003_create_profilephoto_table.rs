@@ -28,7 +28,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(ProfilePhoto::FileName).string().not_null())
                     .col(
                         ColumnDef::new(ProfilePhoto::ProfileId)
-                            .big_integer()
+                            .uuid()
                             .not_null(),
                     )
                     .col(ColumnDef::new(ProfilePhoto::Size).big_integer().not_null())

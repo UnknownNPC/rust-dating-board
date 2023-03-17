@@ -4,6 +4,7 @@ use actix_web::web;
 use actix_web::{http::header::LOCATION, HttpResponse, Responder};
 use futures::future::OptionFuture;
 use serde::Deserialize;
+use uuid::Uuid;
 
 use crate::web_api::routes::error::HtmlError;
 use crate::web_api::routes::validator::ErrorContext;
@@ -44,7 +45,7 @@ pub async fn add_profile_page(
     let draft_profile_photos = OptionFuture::from(
         draft_profile_opt
             .as_ref()
-            .map(|profile| db_provider.find_all_profile_photos_for(profile.id)),
+            .map(|profile| db_provider.find_all_profile_photos_for(&profile.id)),
     )
     .await
     .unwrap_or(Ok(vec![]))?;
@@ -84,17 +85,17 @@ pub async fn add_or_edit_profile_post(
 ) -> Result<impl Responder, HtmlError> {
     async fn resolve_profile(
         user_id: i64,
-        profile_id_opt: &Option<i64>,
+        profile_id_opt: &Option<Uuid>,
         db_provider: &web::Data<DbProvider>,
     ) -> Result<ProfileModel, HtmlError> {
         if profile_id_opt.is_some() {
-            let profile_id = profile_id_opt.unwrap_or_default();
+            let profile_id = profile_id_opt.unwrap();
             println!(
                 "[routes#add_or_edit_profile_post] Active profile flow. Edit flow. Profile: {}",
                 profile_id
             );
             db_provider
-                .find_active_profile_by_id_and_user_id(profile_id, user_id)
+                .find_active_profile_by_id_and_user_id(&profile_id, user_id)
                 .await?
                 .ok_or(HtmlError::BadParams)
         } else {
@@ -156,7 +157,7 @@ pub async fn add_or_edit_profile_post(
         let mut profile = resolve_profile(user_id, &form_raw.profile_id, &db_provider).await?;
         update_profile_with_raw_data(&mut profile, &form_raw);
 
-        let profile_photos = db_provider.find_all_profile_photos_for(profile.id).await?;
+        let profile_photos = db_provider.find_all_profile_photos_for(&profile.id).await?;
         let is_edit = form_raw.profile_id.is_some();
 
         let data_context = ProfilePageDataContext::new(
@@ -233,7 +234,7 @@ pub struct AddOrEditProfileFormRequestRaw {
     pub phone_number: String,
     pub description: String,
     // edit mode ON
-    pub profile_id: Option<i64>,
+    pub profile_id: Option<Uuid>,
     pub captcha_token: String,
 }
 
@@ -244,7 +245,7 @@ pub struct AddOrEditProfileFormRequest {
     pub phone_number: String,
     pub description: String,
     // edit mode ON
-    pub profile_id: Option<i64>,
+    pub profile_id: Option<Uuid>,
     pub captcha_token: String,
 }
 

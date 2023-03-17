@@ -1,5 +1,6 @@
 use actix_web::{web, Responder};
 use serde::Deserialize;
+use uuid::Uuid;
 
 use crate::{
     config::Config,
@@ -8,7 +9,8 @@ use crate::{
         auth::AuthenticationGate,
         routes::{
             common::{NavContext, ProfilePageDataContext},
-            html_render::HtmlPage, validator::ErrorContext,
+            html_render::HtmlPage,
+            validator::ErrorContext,
         },
     },
 };
@@ -34,11 +36,11 @@ pub async fn edit_profile_page(
     let taget_profile_id = query.id;
 
     let profile_opt = db_provider
-        .find_active_profile_by_id_and_user_id(taget_profile_id, auth_gate.user_id.unwrap())
+        .find_active_profile_by_id_and_user_id(&taget_profile_id, auth_gate.user_id.unwrap())
         .await?;
     let profile = profile_opt.ok_or(HtmlError::NotFound)?;
 
-    let profile_photos = db_provider.find_all_profile_photos_for(profile.id).await?;
+    let profile_photos = db_provider.find_all_profile_photos_for(&profile.id).await?;
 
     let cities_names = db_provider.find_city_names().await?;
 
@@ -59,10 +61,14 @@ pub async fn edit_profile_page(
     );
     let error_context = ErrorContext::empty();
 
-    Ok(HtmlPage::add_or_edit_profile(&nav_context, &data_contex, &error_context))
+    Ok(HtmlPage::add_or_edit_profile(
+        &nav_context,
+        &data_contex,
+        &error_context,
+    ))
 }
 
 #[derive(Deserialize)]
 pub struct EditProfileRequest {
-    pub id: i64,
+    pub id: Uuid,
 }

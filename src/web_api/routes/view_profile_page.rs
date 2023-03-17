@@ -1,5 +1,6 @@
 use actix_web::{web, Responder};
 use serde::Deserialize;
+use uuid::Uuid;
 
 use crate::{
     config::Config,
@@ -23,12 +24,12 @@ pub async fn view_profile_page(
     query: web::Query<EditProfileRequest>,
 ) -> Result<impl Responder, HtmlError> {
     async fn resolve_view_profile(
-        profile_id: i64,
+        profile_id: &Uuid,
         db_provider: &web::Data<DbProvider>,
         config: &web::Data<Config>,
         auth_gate: &AuthenticationGate,
     ) -> Result<ViewProfileResponse, HtmlError> {
-        let profile_opt = db_provider.find_active_profile_by(profile_id).await?;
+        let profile_opt = db_provider.find_active_profile_by(&profile_id).await?;
         let profile = profile_opt.ok_or(HtmlError::NotFound)?;
         let profile_photos = db_provider.find_all_profile_photos_for(profile_id).await?;
 
@@ -91,7 +92,7 @@ pub async fn view_profile_page(
     );
 
     let nav_context = resolve_nav_context(&db_provider, &auth_gate, &config).await?;
-    let data_context = resolve_view_profile(query.id, &db_provider, &config, &auth_gate).await?;
+    let data_context = resolve_view_profile(&query.id, &db_provider, &config, &auth_gate).await?;
 
     Ok(HtmlPage::view_profile(&nav_context, &data_context))
 }
@@ -102,7 +103,7 @@ pub struct ViewProfileRequest {
 }
 
 pub struct ViewProfileResponse {
-    pub id: i64,
+    pub id: Uuid,
     pub name: String,
     pub phone_num: String,
     pub height: i64,

@@ -4,10 +4,11 @@ use chrono::Utc;
 use futures::future::try_join_all;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
-    query::*, ActiveModelTrait, ColumnTrait, DbBackend, DbErr, Order, PaginatorTrait, QueryFilter,
-    QueryOrder, Set, Statement, FromQueryResult,
+    query::*, ActiveModelTrait, ColumnTrait, DbBackend, DbErr, FromQueryResult, Order,
+    PaginatorTrait, QueryFilter, QueryOrder, Set, Statement,
 };
 use sea_orm::{DbConn, EntityTrait};
+use uuid::Uuid;
 
 use super::city::{self};
 use super::profile::{self, Model as ProfileModel};
@@ -51,11 +52,12 @@ impl DbProvider {
         user.insert(&self.db_con).await
     }
 
-    pub async fn count_profile_photos(&self, profile_id: i64) -> Result<u64, DbErr> {
+    pub async fn count_profile_photos(&self, profile_id: &Uuid) -> Result<u64, DbErr> {
         profile_photo::Entity::find()
-        .filter(profile_photo::Column::ProfileId.eq(profile_id))
-        .filter(profile_photo::Column::Status.eq("active"))
-        .count(&self.db_con).await
+            .filter(profile_photo::Column::ProfileId.eq(profile_id.to_owned()))
+            .filter(profile_photo::Column::Status.eq("active"))
+            .count(&self.db_con)
+            .await
     }
 
     pub async fn find_active_profile_photo_with_profile_by_id_and_user_id(
@@ -83,8 +85,8 @@ impl DbProvider {
             .await
     }
 
-    pub async fn find_active_profile_by(&self, id: i64) -> Result<Option<ProfileModel>, DbErr> {
-        profile::Entity::find_by_id(id)
+    pub async fn find_active_profile_by(&self, id: &Uuid) -> Result<Option<ProfileModel>, DbErr> {
+        profile::Entity::find_by_id(id.to_owned())
             .filter(profile::Column::Status.eq("active"))
             .one(&self.db_con)
             .await
@@ -92,10 +94,10 @@ impl DbProvider {
 
     pub async fn find_active_profile_by_id_and_user_id(
         &self,
-        id: i64,
+        id: &Uuid,
         user_id: i64,
     ) -> Result<Option<ProfileModel>, DbErr> {
-        profile::Entity::find_by_id(id)
+        profile::Entity::find_by_id(id.to_owned())
             .filter(profile::Column::Status.eq("active"))
             .filter(profile::Column::UserId.eq(user_id))
             .one(&self.db_con)
@@ -104,10 +106,10 @@ impl DbProvider {
 
     pub async fn find_all_profile_photos_for(
         &self,
-        profile_id: i64,
+        profile_id: &Uuid,
     ) -> Result<Vec<ProfilePhotoModel>, DbErr> {
         profile_photo::Entity::find()
-            .filter(profile_photo::Column::ProfileId.eq(profile_id))
+            .filter(profile_photo::Column::ProfileId.eq(profile_id.to_owned()))
             .filter(profile_photo::Column::Status.eq("active"))
             .all(&self.db_con)
             .await
@@ -115,7 +117,7 @@ impl DbProvider {
 
     pub async fn add_draft_profile_for(&self, user_id: i64) -> Result<ProfileModel, DbErr> {
         let profile = profile::ActiveModel {
-            id: NotSet,
+            id: Set(Uuid::new_v4()),
             created_at: Set(Utc::now().naive_utc()),
             updated_at: Set(Utc::now().naive_utc()),
             name: Set(String::from("")),
@@ -132,7 +134,7 @@ impl DbProvider {
 
     pub async fn add_profile_photo(
         &self,
-        profile_id: i64,
+        profile_id: &Uuid,
         file_name: &str,
         file_size: i64,
     ) -> Result<ProfilePhotoModel, DbErr> {
@@ -140,7 +142,7 @@ impl DbProvider {
             id: NotSet,
             created_at: Set(Utc::now().naive_utc()),
             status: Set(String::from("active")),
-            profile_id: Set(profile_id),
+            profile_id: Set(profile_id.to_owned()),
             file_name: Set(file_name.to_string()),
             size: Set(file_size),
         };
@@ -251,8 +253,8 @@ impl DbProvider {
 
     pub async fn find_first_profile_photos_for(
         &self,
-        profile_ids: &Vec<i64>,
-    ) -> Result<HashMap<i64, Option<ProfilePhotoModel>>, DbErr> {
+        profile_ids: &Vec<Uuid>,
+    ) -> Result<HashMap<Uuid, Option<ProfilePhotoModel>>, DbErr> {
         let profile_photo_str_ids: Vec<String> =
             profile_ids.clone().iter().map(|f| f.to_string()).collect();
 
@@ -261,7 +263,7 @@ impl DbProvider {
         } else {
             let query = format!(
                 "SELECT DISTINCT ON (profile_id) * FROM profile_photo WHERE status = 'active' and profile_id IN ({})",
-                profile_photo_str_ids.join(",")
+                profile_photo_str_ids.iter().map(|id| format!("'{}'", id)).collect::<Vec<String>>().join(",")
             );
 
             let profile_photos_res = profile_photo::Entity::find()

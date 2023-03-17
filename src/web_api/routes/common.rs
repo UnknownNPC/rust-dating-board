@@ -1,5 +1,6 @@
 use crate::db::{ProfileModel, ProfilePhotoModel};
 use serde::Serialize;
+use uuid::Uuid;
 
 //common models
 
@@ -33,7 +34,7 @@ impl NavContext {
 }
 
 pub struct ProfilePageDataContext {
-    pub id: Option<i64>,
+    pub id: Option<Uuid>,
     pub name: String,
     pub height: i16,
     pub description: String,
