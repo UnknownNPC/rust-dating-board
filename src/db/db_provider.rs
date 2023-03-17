@@ -51,6 +51,13 @@ impl DbProvider {
         user.insert(&self.db_con).await
     }
 
+    pub async fn count_profile_photos(&self, profile_id: i64) -> Result<u64, DbErr> {
+        profile_photo::Entity::find()
+        .filter(profile_photo::Column::ProfileId.eq(profile_id))
+        .filter(profile_photo::Column::Status.eq("active"))
+        .count(&self.db_con).await
+    }
+
     pub async fn find_active_profile_photo_with_profile_by_id_and_user_id(
         &self,
         id: i64,
@@ -82,6 +89,7 @@ impl DbProvider {
             .one(&self.db_con)
             .await
     }
+
     pub async fn find_active_profile_by_id_and_user_id(
         &self,
         id: i64,

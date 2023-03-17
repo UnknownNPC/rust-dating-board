@@ -1,4 +1,5 @@
 pub static PROFILES_ON_PAGE: &'static u64 = &10;
+pub static MAX_PROFILE_PHOTOS: &'static u64 = &5;
 
 pub static MSG_PROFILE_ADDED_CODE: &'static str = "profile_added";
 pub static MSG_PROFILE_UPDATED_CODE: &'static str = "profile_updated";

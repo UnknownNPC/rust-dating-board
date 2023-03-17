@@ -178,8 +178,10 @@
             var $el1 = $("#photo-files");
             $el1.fileinput({
                 uploadUrl: "/profile_photo/upload",
+                uploadAsync : false,
                 enableResumableUpload: false,
-                maxFileCount: 10,
+                maxFileCount: 5,
+                validateInitialCount: true,
                 duplicate: false,
                 maxSize: 15728640,
                 allowedFileExtensions: ["jpg", "jpeg"],
