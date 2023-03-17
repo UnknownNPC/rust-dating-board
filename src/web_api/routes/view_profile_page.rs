@@ -26,6 +26,7 @@ pub async fn view_profile_page(
         profile_id: i64,
         db_provider: &web::Data<DbProvider>,
         config: &web::Data<Config>,
+        auth_gate: &AuthenticationGate,
     ) -> Result<ViewProfileResponse, HtmlError> {
         let profile_opt = db_provider.find_active_profile_by(profile_id).await?;
         let profile = profile_opt.ok_or(HtmlError::NotFound)?;
@@ -42,6 +43,12 @@ pub async fn view_profile_page(
             false => photo_urls,
         };
 
+        let is_user_profile_author = auth_gate
+            .user_id
+            .as_ref()
+            .map(|auth_user_id| &profile.user_id == auth_user_id)
+            .unwrap_or_default();
+
         Ok(ViewProfileResponse {
             id: profile.id,
             name: profile.name,
@@ -51,6 +58,7 @@ pub async fn view_profile_page(
             description: profile.description,
             photo_urls: photo_urls_or_placeholder,
             date_create: profile.created_at.format(HOME_DATE_FORMAT).to_string(),
+            is_user_profile_author,
         })
     }
 
@@ -83,7 +91,7 @@ pub async fn view_profile_page(
     );
 
     let nav_context = resolve_nav_context(&db_provider, &auth_gate, &config).await?;
-    let data_context = resolve_view_profile(query.id, &db_provider, &config).await?;
+    let data_context = resolve_view_profile(query.id, &db_provider, &config, &auth_gate).await?;
 
     Ok(HtmlPage::view_profile(&nav_context, &data_context))
 }
@@ -102,4 +110,5 @@ pub struct ViewProfileResponse {
     pub description: String,
     pub photo_urls: Vec<String>,
     pub date_create: String,
+    pub is_user_profile_author: bool,
 }

@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <% let head_title="Акнкета" ; %>
+    <% let head_title="Анкета" ; %>
         <% include!("./includes/head_body.stpl"); %>
 </head>
 
@@ -79,12 +79,55 @@
                     <p class="card-text mb-0">Опубліковано: <%= data_context.date_create %></p>
                   </div>
                 </div>    
+
+                <div class="card mt-3">
+                  <div class="card-body">
+                    <h3 class="card-title">Доступні дії</h3>
+                    <a href="/?search=<%= data_context.phone_num %>" class="btn btn-info">Інші анкети за номером</a>
+                    <% if data_context.is_user_profile_author { %>
+                      <a href="/edit_profile?id=<%= data_context.id %>" class="btn btn-primary">Редагувати</a>
+                      <a id="delete_profile" href="#" class="btn btn-danger">Видалити</a>
+                    <% } %>
+                    <a class="btn btn-warning" href="#">Жалоба</a>
+                  </div>
+                </div>    
+
               </div>
             </div>
           </div>
         </div>
+        
+
+        <!-- delete profile modal -->
+        <div class="modal fade" id="delete_profile_modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Видалення анкети</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                  Ви впевнені, що хочете видалити анкету?
+              </div>
+              <div class="modal-footer">
+                <form action="/profile/delete" method="post">
+                  <input name="id" type="hidden" value="<%= data_context.id %>"/>
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Відмінити</button>
+                  <button type="submit" class="btn btn-primary">Видалити</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>    
       </div>
       
 </body>
     <% include!("./includes/extra_scripts.stpl"); %>
+    <script>
+      $(document).on("click", "#delete_profile", function () {
+       $('#delete_profile_modal').modal('show')
+  });
+  </script>
 </html>
