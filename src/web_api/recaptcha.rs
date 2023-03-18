@@ -54,7 +54,7 @@ impl Recaptcha {
             .send()
             .await
             .map_err(|err| CaptchaError {
-                message: err.to_string()
+                message: err.to_string(),
             })?;
 
         let response_json_res = raw_response.json::<Response>().await;

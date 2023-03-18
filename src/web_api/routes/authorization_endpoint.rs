@@ -18,7 +18,6 @@ use crate::{
 
 use super::error::HtmlError;
 
-
 pub async fn sign_out_endpoint(auth_gate: AuthenticationGate) -> impl Responder {
     let empty_cookie = AuthSessionManager::get_empty_jwt_token();
     if auth_gate.is_authorized {
@@ -110,7 +109,7 @@ pub struct GoogleSignInFormRequest {
 pub fn homepage(jwt_cookie_opt: Option<Cookie>, message: &str) -> HttpResponse {
     let path = format!("/?message={}", message);
     let mut response_builder = HttpResponse::build(StatusCode::FOUND);
-    
+
     response_builder.append_header((LOCATION, path));
     if jwt_cookie_opt.is_some() {
         response_builder.cookie(jwt_cookie_opt.unwrap());

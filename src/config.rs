@@ -14,28 +14,33 @@ pub struct Config {
 
     pub captcha_google_id: String,
     pub captcha_google_secret: String,
-    pub captcha_google_score: f64
+    pub captcha_google_score: f64,
 }
 
 impl Config {
     pub fn init() -> Config {
-
         dotenv().ok();
 
         let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
         let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
         let jwt_maxage = std::env::var("JWT_MAXAGE").expect("JWT_MAXAGE must be set");
 
-        let oauth_google_client_id=std::env::var("OAUTH_GOOGLE_CLIENT_ID").expect("DATABASE_URL must be set");
-        let oauth_google_client_secret=std::env::var("OAUTH_GOOGLE_CLIENT_SECRET").expect("OAUTH_GOOGLE_CLIENT_SECRET must be set");
-        let oauth_google_redirect_url=std::env::var("OAUTH_GOOGLE_REDIRECT_URL").expect("OAUTH_GOOGLE_REDIRECT_URL must be set");
+        let oauth_google_client_id =
+            std::env::var("OAUTH_GOOGLE_CLIENT_ID").expect("DATABASE_URL must be set");
+        let oauth_google_client_secret = std::env::var("OAUTH_GOOGLE_CLIENT_SECRET")
+            .expect("OAUTH_GOOGLE_CLIENT_SECRET must be set");
+        let oauth_google_redirect_url = std::env::var("OAUTH_GOOGLE_REDIRECT_URL")
+            .expect("OAUTH_GOOGLE_REDIRECT_URL must be set");
 
-        let all_photos_folder_name=std::env::var("ALL_PHOTOS_FOLDER_NAME").expect("ALL_PHOTOS_FOLDER_NAME must be set");
+        let all_photos_folder_name =
+            std::env::var("ALL_PHOTOS_FOLDER_NAME").expect("ALL_PHOTOS_FOLDER_NAME must be set");
 
-
-        let captcha_google_id=std::env::var("CAPTCHA_GOOGLE_ID").expect("CAPTCHA_GOOGLE_ID must be set");
-        let captcha_google_secret=std::env::var("CAPTCHA_GOOGLE_SECRET").expect("CAPTCHA_GOOGLE_SECRET must be set");
-        let captcha_google_score=std::env::var("CAPTCHA_GOOGLE_SCORE").expect("CAPTCHA_GOOGLE_SCORE must be set");
+        let captcha_google_id =
+            std::env::var("CAPTCHA_GOOGLE_ID").expect("CAPTCHA_GOOGLE_ID must be set");
+        let captcha_google_secret =
+            std::env::var("CAPTCHA_GOOGLE_SECRET").expect("CAPTCHA_GOOGLE_SECRET must be set");
+        let captcha_google_score =
+            std::env::var("CAPTCHA_GOOGLE_SCORE").expect("CAPTCHA_GOOGLE_SCORE must be set");
 
         Config {
             database_url,
@@ -47,7 +52,7 @@ impl Config {
             all_photos_folder_name,
             captcha_google_id,
             captcha_google_secret,
-            captcha_google_score: captcha_google_score.parse::<f64>().unwrap()
+            captcha_google_score: captcha_google_score.parse::<f64>().unwrap(),
         }
     }
 }

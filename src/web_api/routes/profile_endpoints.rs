@@ -38,7 +38,10 @@ pub async fn delete_profile_endpoint(
     let profile = profile_opt.ok_or(HtmlError::NotFound)?;
     let profile_photos = db_provider.find_all_profile_photos_for(&profile.id).await?;
 
-    println!("[route#delete_profile_endpoint] Deleting profile: [{}]. Starting IO", &profile_id);
+    println!(
+        "[route#delete_profile_endpoint] Deleting profile: [{}]. Starting IO",
+        &profile_id
+    );
 
     db_provider
         .delete_profile_and_photos(&profile, &profile_photos)

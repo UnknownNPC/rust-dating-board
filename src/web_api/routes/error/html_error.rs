@@ -2,10 +2,7 @@ use std::{error::Error, fmt::Display, io};
 
 use actix_web::{
     error,
-    http::{
-        header::{LOCATION},
-        StatusCode,
-    },
+    http::{header::LOCATION, StatusCode},
     HttpResponse,
 };
 use jsonwebtoken_google::ParserError;

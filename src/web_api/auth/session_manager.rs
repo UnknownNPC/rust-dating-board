@@ -20,7 +20,6 @@ pub struct SessionManager<'a> {
 }
 
 impl<'cfg> SessionManager<'cfg> {
-
     pub fn new(config: &'cfg Config) -> Self {
         Self { config }
     }

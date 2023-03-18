@@ -11,7 +11,7 @@ use crate::{
     },
 };
 
-use super::{constant::HOME_DATE_FORMAT, common::get_photo_url, error::HtmlError};
+use super::{common::get_photo_url, constant::HOME_DATE_FORMAT, error::HtmlError};
 
 pub async fn index_page(
     db_provider: web::Data<DbProvider>,
@@ -105,7 +105,7 @@ pub async fn index_page(
                 total: total_pages,
             },
             search_text: query.search.clone(),
-            message_code: query.message.clone()
+            message_code: query.message.clone(),
         })
     }
 
@@ -151,9 +151,9 @@ impl HomePageProfileDataContext {
         config: &web::Data<Config>,
     ) -> Self {
         let short_description: String = profile.description.chars().take(50).collect();
-        let photo_url_opt = profile_photo_opt.as_ref().map(|profile_photo| {
-            get_photo_url(profile_photo, &config.all_photos_folder_name)
-        });
+        let photo_url_opt = profile_photo_opt
+            .as_ref()
+            .map(|profile_photo| get_photo_url(profile_photo, &config.all_photos_folder_name));
 
         let date_create = profile.created_at.format(HOME_DATE_FORMAT).to_string();
         HomePageProfileDataContext {
