@@ -20,6 +20,7 @@ pub async fn delete_profile_endpoint(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
     form: web::Form<DeleteProfileRequest>,
+    config: web::Data<Config>,
 ) -> Result<impl Responder, HtmlError> {
     if !auth_gate.is_authorized {
         return Err(HtmlError::NotAuthorized);
@@ -46,6 +47,8 @@ pub async fn delete_profile_endpoint(
     db_provider
         .delete_profile_and_photos(&profile, &profile_photos)
         .await?;
+
+    PhotoService::delete_profile_from_fs(&config.all_photos_folder_name, &profile_id)?;
 
     Ok(HttpResponse::build(StatusCode::FOUND)
         .append_header((LOCATION, "/?show_my=true"))

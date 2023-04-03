@@ -842,6 +842,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "dating-board"
+version = "0.1.0"
+dependencies = [
+ "actix-cors",
+ "actix-files",
+ "actix-multipart",
+ "actix-session",
+ "actix-web",
+ "awc",
+ "chrono",
+ "dotenv",
+ "futures",
+ "jsonwebtoken",
+ "jsonwebtoken-google",
+ "mime",
+ "sailfish",
+ "sea-orm",
+ "serde",
+ "uuid",
+]
+
+[[package]]
 name = "der"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1255,28 +1277,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "747309b4b440c06d57b0b25f2aee03ee9b5e5397d288c60e21fc709bb98a7408"
 dependencies = [
  "winapi",
-]
-
-[[package]]
-name = "hot_esc"
-version = "0.1.0"
-dependencies = [
- "actix-cors",
- "actix-files",
- "actix-multipart",
- "actix-session",
- "actix-web",
- "awc",
- "chrono",
- "dotenv",
- "futures",
- "jsonwebtoken",
- "jsonwebtoken-google",
- "mime",
- "sailfish",
- "sea-orm",
- "serde",
- "uuid",
 ]
 
 [[package]]

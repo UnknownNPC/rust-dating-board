@@ -91,6 +91,27 @@ impl<'a> Service {
         fs::rename(profile_photo_old_path, profile_photo_new_path)
     }
 
+    pub fn delete_profile_from_fs(
+        all_photos_folder_name: &str,
+        profile_id: &Uuid,
+    ) -> Result<(), io::Error> {
+        let profile_photo_folder_path =
+            Self::get_path_2_profile_photos(all_photos_folder_name, profile_id);
+        if profile_photo_folder_path.exists() {
+            let new_profile_photo_folder_path =
+                profile_photo_folder_path.to_str().unwrap().to_owned() + "_delete";
+            println!(
+            "[PhotoOnFS#delete_profile_from_fs] Deleting profile photo folder. From [{}] to [{}]",
+            &profile_photo_folder_path.to_str().unwrap(),
+            &new_profile_photo_folder_path
+        );
+            fs::rename(profile_photo_folder_path, new_profile_photo_folder_path)
+        } else {
+            println!("[PhotoOnFS#delete_profile_from_fs] Profile folder doesn't exist. Skipping");
+            Ok(())
+        }
+    }
+
     fn get_path_2_profile_photos(all_photos_folder_name: &str, profile_id: &Uuid) -> PathBuf {
         let mut new_file_path = env::current_exe().unwrap();
         // remove binary name
