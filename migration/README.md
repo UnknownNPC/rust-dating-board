@@ -1,3 +1,6 @@
+# Example
+cargo run -- up -u postgres://postgres:postgres@localhost/datingdb
+
 # Running Migrator CLI
 
 - Generate a new migration file

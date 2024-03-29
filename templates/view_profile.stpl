@@ -88,7 +88,6 @@
                       <a href="/edit_profile?id=<%= data_context.id.to_string() %>" class="btn btn-primary">Редагувати</a>
                       <a id="delete_profile" href="#" class="btn btn-danger">Видалити</a>
                     <% } %>
-                    <a class="btn btn-warning" href="#">Жалоба</a>
                   </div>
                 </div>    
 
