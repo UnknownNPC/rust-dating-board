@@ -35,6 +35,8 @@ pub async fn p404_page(
             false,
             false,
             &city_names,
+            &config.oauth_google_client_id,
+            &config.oauth_google_redirect_url,
         ))
     }
 

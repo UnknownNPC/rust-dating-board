@@ -47,6 +47,8 @@ pub async fn index_page(
             is_user_profiles,
             is_search,
             &city_names,
+            &config.oauth_google_client_id,
+            &config.oauth_google_redirect_url,
         ))
     }
 

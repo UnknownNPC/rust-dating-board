@@ -11,6 +11,8 @@ pub struct NavContext {
     pub is_user_profiles: bool,
     pub is_search: bool,
     pub google_captcha_id: String,
+    pub google_oauth_client_id: String,
+    pub google_oauth_sign_in_url: String,
 }
 
 impl NavContext {
@@ -21,6 +23,8 @@ impl NavContext {
         is_user_profiles: bool,
         is_search: bool,
         cities: &Vec<String>,
+        google_oauth_client_id: &str,
+        google_oauth_sign_in_url: &str,
     ) -> Self {
         NavContext {
             name: name.to_owned(),
@@ -29,6 +33,8 @@ impl NavContext {
             is_user_profiles,
             is_search,
             google_captcha_id: google_captcha_id.to_owned(),
+            google_oauth_client_id: google_oauth_client_id.to_owned(),
+            google_oauth_sign_in_url: google_oauth_sign_in_url.to_owned(),
         }
     }
 }

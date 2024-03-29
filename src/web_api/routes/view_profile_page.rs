@@ -82,6 +82,8 @@ pub async fn view_profile_page(
             false,
             false,
             &cities_names,
+            &config.oauth_google_client_id,
+            &config.oauth_google_redirect_url,
         ))
     }
 

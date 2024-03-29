@@ -58,6 +58,8 @@ pub async fn edit_profile_page(
         false,
         false,
         &cities_names,
+        &config.oauth_google_client_id,
+            &config.oauth_google_redirect_url,
     );
     let error_context = ErrorContext::empty();
 

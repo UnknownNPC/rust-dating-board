@@ -67,6 +67,8 @@ pub async fn add_profile_page(
         false,
         false,
         &cities_names,
+        &config.oauth_google_client_id,
+        &config.oauth_google_redirect_url,
     );
     let error_context = ErrorContext::empty();
 
@@ -152,7 +154,16 @@ pub async fn add_or_edit_profile_post(
         let user_name = auth_gate.user_name.unwrap();
         let google_captcha_id = &config.captcha_google_id.as_str();
         let cities = db_provider.find_city_names().await?;
-        let nav_context = NavContext::new(&user_name, "", google_captcha_id, false, false, &cities);
+        let nav_context = NavContext::new(
+            &user_name,
+            "",
+            google_captcha_id,
+            false,
+            false,
+            &cities,
+            &config.oauth_google_client_id,
+            &config.oauth_google_redirect_url,
+        );
 
         let mut profile = resolve_profile(user_id, &form_raw.profile_id, &db_provider).await?;
         update_profile_with_raw_data(&mut profile, &form_raw);
