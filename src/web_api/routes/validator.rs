@@ -50,8 +50,8 @@ pub trait Validator<R: Sized> {
 
     fn has_not_length(&self, f: fn(&Self) -> &String, from: i64, to: i64) -> bool {
         let value = f(self);
-        let len = value.chars().count();
-        len < from.try_into().unwrap() || len > to.try_into().unwrap()
+        let len = value.chars().count() as i64;
+        len < from || len > to
     }
 }
 
