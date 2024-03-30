@@ -7,7 +7,7 @@ use crate::{
     db::{DbProvider, ProfileModel, ProfilePhotoModel},
     web_api::{
         auth::AuthenticationGate,
-        routes::{common::NavContext, constant::PROFILES_ON_PAGE, html_render::HtmlPage},
+        routes::{common::{HeadContext, NavContext}, constant::PROFILES_ON_PAGE, html_render::HtmlPage},
     },
 };
 
@@ -119,7 +119,18 @@ pub async fn index_page(
     let nav_context = get_nav_context(&auth_gate, &query, &config, &db_provider).await?;
     let data_context = get_data_context(&db_provider, &config, &query, &auth_gate).await?;
 
-    Ok(HtmlPage::homepage(&nav_context, &data_context))
+    let head_context = HeadContext::new(
+        "Голова сторінка",
+        "Безкоштовні знайомства",
+        &config.all_photos_folder_name,
+        &Option::None,
+    );
+
+    Ok(HtmlPage::homepage(
+        &head_context,
+        &nav_context,
+        &data_context,
+    ))
 }
 
 pub struct Pagination {

@@ -2,6 +2,10 @@ use dotenv::dotenv;
 
 #[derive(Debug, Clone)]
 pub struct Config {
+    pub site_protocol: String,
+    pub site_url: String,
+    pub site_port: i64,
+
     pub database_url: String,
     pub jwt_secret: String,
     pub jwt_max_age: i64,
@@ -20,6 +24,10 @@ pub struct Config {
 impl Config {
     pub fn init() -> Config {
         dotenv().ok();
+
+        let site_protocol = std::env::var("SITE_PROTOCOL").expect("SITE_PROTOCOL must be set");
+        let site_url = std::env::var("SITE_URL").expect("SITE_URL must be set");
+        let site_port = std::env::var("SITE_PORT").expect("SITE_PORT must be set");
 
         let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
         let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
@@ -43,6 +51,9 @@ impl Config {
             std::env::var("CAPTCHA_GOOGLE_SCORE").expect("CAPTCHA_GOOGLE_SCORE must be set");
 
         Config {
+            site_protocol,
+            site_url,
+            site_port: site_port.parse::<i64>().unwrap(),
             database_url,
             jwt_secret,
             jwt_max_age: jwt_maxage.parse::<i64>().unwrap(),

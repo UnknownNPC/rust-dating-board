@@ -4,6 +4,30 @@ use uuid::Uuid;
 
 //common models
 
+pub struct HeadContext {
+    pub title: String,
+    pub description: String,
+    pub preview_url: Option<String>,
+}
+
+impl HeadContext {
+    pub fn new(
+        title: &str,
+        description: &str,
+        all_photos_folder: &str,
+        profile_photo_opt: &Option<ProfilePhotoModel>,
+    ) -> Self {
+        let relative_profile_photo_url = profile_photo_opt
+            .as_ref()
+            .map(|profile_photo| get_photo_url(&profile_photo, all_photos_folder));
+        HeadContext {
+            title: title.to_owned(),
+            description: description.to_owned(),
+            preview_url: relative_profile_photo_url,
+        }
+    }
+}
+
 pub struct NavContext {
     pub name: String,
     pub all_cities: Vec<String>,
@@ -50,7 +74,7 @@ pub struct ProfilePageDataContext {
     pub is_edit_mode: bool,
 }
 
-impl<'a> ProfilePageDataContext {
+impl ProfilePageDataContext {
     pub fn new(
         all_photos_folder: &str,
         profile_opt: &Option<ProfileModel>,

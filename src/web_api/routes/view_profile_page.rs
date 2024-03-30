@@ -8,7 +8,7 @@ use crate::{
     web_api::{
         auth::AuthenticationGate,
         routes::{
-            common::{get_photo_url, NavContext},
+            common::{get_photo_url, HeadContext, NavContext},
             constant::{HOME_DATE_FORMAT, NO_PHOTO_URL},
             html_render::HtmlPage,
         },
@@ -96,7 +96,24 @@ pub async fn view_profile_page(
     let nav_context = resolve_nav_context(&db_provider, &auth_gate, &config).await?;
     let data_context = resolve_view_profile(&query.id, &db_provider, &config, &auth_gate).await?;
 
-    Ok(HtmlPage::view_profile(&nav_context, &data_context))
+    let page_title = format!(
+        "Анкета {} – {}",
+        &data_context.name, &data_context.phone_num
+    );
+    let profile_photos = db_provider.find_all_profile_photos_for(&query.id).await?;
+    let page_description: String = data_context.description.clone().chars().take(100).collect();
+    let head_context = HeadContext::new(
+        &page_title,
+        &page_description,
+        &config.all_photos_folder_name,
+        &profile_photos.first().cloned(),
+    );
+
+    Ok(HtmlPage::view_profile(
+        &head_context,
+        &nav_context,
+        &data_context,
+    ))
 }
 
 #[derive(Deserialize)]

@@ -8,7 +8,7 @@ use crate::{
     web_api::{
         auth::AuthenticationGate,
         routes::{
-            common::{NavContext, ProfilePageDataContext},
+            common::{HeadContext, NavContext, ProfilePageDataContext},
             html_render::HtmlPage,
             validator::ErrorContext,
         },
@@ -62,8 +62,15 @@ pub async fn edit_profile_page(
             &config.oauth_google_redirect_url,
     );
     let error_context = ErrorContext::empty();
+    let head_context = HeadContext::new(
+        "Редагування анкети",
+        "Сторінка редагування існуючої анкети",
+        &config.all_photos_folder_name,
+        &Option::None,
+    );
 
     Ok(HtmlPage::add_or_edit_profile(
+        &head_context,
         &nav_context,
         &data_contex,
         &error_context,

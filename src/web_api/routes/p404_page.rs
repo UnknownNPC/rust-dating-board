@@ -5,7 +5,7 @@ use crate::{
     db::DbProvider,
     web_api::{
         auth::AuthenticationGate,
-        routes::{common::NavContext, html_render::HtmlPage},
+        routes::{common::{HeadContext, NavContext}, html_render::HtmlPage},
     },
 };
 
@@ -46,6 +46,12 @@ pub async fn p404_page(
     );
 
     let nav_context = get_nav_context(&auth_gate, &config, &db_provider).await?;
+    let head_context = HeadContext::new(
+        "Сторінка не знайдена – 404",
+        "Запитувана сторінка не знайдена",
+        &config.all_photos_folder_name,
+        &Option::None,
+    );
 
-    Ok(HtmlPage::p404(&nav_context))
+    Ok(HtmlPage::p404(&head_context, &nav_context))
 }

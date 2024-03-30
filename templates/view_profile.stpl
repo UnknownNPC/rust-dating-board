@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-    <% let head_title="Анкета" ; %>
         <% include!("./includes/head_body.stpl"); %>
 </head>
 

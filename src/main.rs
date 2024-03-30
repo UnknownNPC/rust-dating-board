@@ -21,7 +21,7 @@ async fn main() {
     let db_con = establish_connection(&conf).await.unwrap();
     let provider = DbProvider::new(db_con);
 
-    let addr = "localhost:8000";
+    let addr = format!("{}:{}", &conf.site_url, &conf.site_port);
     let all_photos_os_folder = all_photos_folder_path(&conf);
 
     let server = HttpServer::new(move || {
@@ -58,10 +58,10 @@ async fn main() {
             .service(Files::new("/static", "static").show_files_listing())
             .service(Files::new("/photos", &all_photos_os_folder).show_files_listing())
     })
-    .bind(addr)
+    .bind(&addr)
     .unwrap()
     .run();
-    println!("Server live at http://{}", addr);
+    println!("Server live at http://{}", &addr);
     server.await.unwrap();
 }
 

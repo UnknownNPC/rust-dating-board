@@ -6,6 +6,7 @@ use futures::future::OptionFuture;
 use serde::Deserialize;
 use uuid::Uuid;
 
+use crate::web_api::routes::common::HeadContext;
 use crate::web_api::routes::error::HtmlError;
 use crate::web_api::routes::validator::ErrorContext;
 use crate::{
@@ -71,8 +72,15 @@ pub async fn add_profile_page(
         &config.oauth_google_redirect_url,
     );
     let error_context = ErrorContext::empty();
+    let head_context = HeadContext::new(
+        "Додати нову анкету",
+        "Публікація нової анкети",
+        &config.all_photos_folder_name,
+        &Option::None,
+    );
 
     Ok(HtmlPage::add_or_edit_profile(
+        &head_context,
         &nav_context,
         &data_contex,
         &error_context,
@@ -177,7 +185,26 @@ pub async fn add_or_edit_profile_post(
             &profile_photos,
             is_edit,
         );
+
+        let title = if data_context.is_edit_mode {
+            "Редагування анкети"
+        } else {
+            "Додати нову анкету"
+        };
+        let description = if data_context.is_edit_mode {
+            "Редагування існуючої анкети"
+        } else {
+            "Публікація нової анкети"
+        };
+        let head_context = HeadContext::new(
+            title,
+            description,
+            &config.all_photos_folder_name,
+            &profile_photos.first().cloned(),
+        );
+
         return Ok(HtmlPage::add_or_edit_profile(
+            &head_context,
             &nav_context,
             &data_context,
             &error_context,
