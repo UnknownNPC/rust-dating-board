@@ -7,9 +7,14 @@ use crate::{
     db::{DbProvider, ProfileModel, ProfilePhotoModel},
     web_api::{
         auth::AuthenticationGate,
-        routes::{common::{HeadContext, NavContext}, constant::PROFILES_ON_PAGE, html_render::HtmlPage},
+        routes::{
+            common::{HeadContext, NavContext},
+            constant::PROFILES_ON_PAGE,
+            html_render::HtmlPage,
+        },
     },
 };
+use rust_i18n::t;
 
 use super::{common::get_photo_url, constant::HOME_DATE_FORMAT, error::HtmlError};
 
@@ -120,8 +125,8 @@ pub async fn index_page(
     let data_context = get_data_context(&db_provider, &config, &query, &auth_gate).await?;
 
     let head_context = HeadContext::new(
-        "Голова сторінка",
-        "Безкоштовні знайомства",
+        t!("main_page_title").to_string().as_str(),
+        t!("main_page_description").to_string().as_str(),
         &config.all_photos_folder_name,
         &Option::None,
     );

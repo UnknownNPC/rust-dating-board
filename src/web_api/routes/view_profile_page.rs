@@ -14,6 +14,7 @@ use crate::{
         },
     },
 };
+use rust_i18n::t;
 
 use super::{edit_profile_page::EditProfileRequest, error::HtmlError};
 
@@ -97,7 +98,8 @@ pub async fn view_profile_page(
     let data_context = resolve_view_profile(&query.id, &db_provider, &config, &auth_gate).await?;
 
     let page_title = format!(
-        "Анкета {} – {}",
+        "{} {} – {}",
+        t!("view_profile_page_title"),
         &data_context.name, &data_context.phone_num
     );
     let profile_photos = db_provider.find_all_profile_photos_for(&query.id).await?;

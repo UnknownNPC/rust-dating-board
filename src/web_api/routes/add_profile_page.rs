@@ -6,6 +6,7 @@ use futures::future::OptionFuture;
 use serde::Deserialize;
 use uuid::Uuid;
 
+use rust_i18n::t;
 use crate::web_api::routes::common::HeadContext;
 use crate::web_api::routes::error::HtmlError;
 use crate::web_api::routes::validator::ErrorContext;
@@ -73,8 +74,8 @@ pub async fn add_profile_page(
     );
     let error_context = ErrorContext::empty();
     let head_context = HeadContext::new(
-        "Додати нову анкету",
-        "Публікація нової анкети",
+        t!("add_profile_page_title").to_string().as_str(),
+        t!("add_profile_page_description").to_string().as_str(),
         &config.all_photos_folder_name,
         &Option::None,
     );
@@ -187,18 +188,18 @@ pub async fn add_or_edit_profile_post(
         );
 
         let title = if data_context.is_edit_mode {
-            "Редагування анкети"
+            t!("edit_profile_page_title").to_string()
         } else {
-            "Додати нову анкету"
+            t!("add_profile_page_title").to_string()
         };
         let description = if data_context.is_edit_mode {
-            "Редагування існуючої анкети"
+            t!("edit_profile_page_description").to_string()
         } else {
-            "Публікація нової анкети"
+            t!("add_profile_page_description").to_string()
         };
         let head_context = HeadContext::new(
-            title,
-            description,
+            title.as_str(),
+            description.as_str(),
             &config.all_photos_folder_name,
             &profile_photos.first().cloned(),
         );

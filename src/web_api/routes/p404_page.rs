@@ -8,6 +8,7 @@ use crate::{
         routes::{common::{HeadContext, NavContext}, html_render::HtmlPage},
     },
 };
+use rust_i18n::t;
 
 use super::error::HtmlError;
 
@@ -47,8 +48,8 @@ pub async fn p404_page(
 
     let nav_context = get_nav_context(&auth_gate, &config, &db_provider).await?;
     let head_context = HeadContext::new(
-        "Сторінка не знайдена – 404",
-        "Запитувана сторінка не знайдена",
+        t!("404_page_title").to_string().as_str(),
+        t!("404_page_description").to_string().as_str(),
         &config.all_photos_folder_name,
         &Option::None,
     );

@@ -2,6 +2,7 @@ use actix_web::{web, Responder};
 use serde::Deserialize;
 use uuid::Uuid;
 
+use rust_i18n::t;
 use crate::{
     config::Config,
     db::DbProvider,
@@ -63,8 +64,8 @@ pub async fn edit_profile_page(
     );
     let error_context = ErrorContext::empty();
     let head_context = HeadContext::new(
-        "Редагування анкети",
-        "Сторінка редагування існуючої анкети",
+        t!("edit_profile_page_title").to_string().as_str(),
+        t!("edit_profile_page_description").to_string().as_str(),
         &config.all_photos_folder_name,
         &Option::None,
     );

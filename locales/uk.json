@@ -62,5 +62,14 @@
     "description": "Опис",
     "published": "Опубліковано",
     "profile_actions": "Доступні дії",
-    "other_profiles_by_phone": "Інші анкети за номером"
+    "other_profiles_by_phone": "Інші анкети за номером",
+    "add_profile_page_title": "Додати нову анкету",
+    "add_profile_page_description": "Опублікуй анкету безкоштовно!",
+    "edit_profile_page_title": "Редагування анкети",
+    "edit_profile_page_description": "Редагування існуючої анкети",
+    "main_page_title": "Безкоштовні оголошення знайомств",
+    "main_page_description": "Розмісти безкоштовне оголошення зі своєю анкетою!",
+    "404_page_title": "Сторінка не знайдена – 404",
+    "404_page_description": "Розмісти безкоштовне оголошення зі своєю анкетою!",
+    "view_profile_page_title": "Анкета"
 }
