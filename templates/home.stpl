@@ -1,3 +1,5 @@
+<% use rust_i18n::t; %>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -15,14 +17,14 @@
                 <% let message = data_context.message_code.as_ref().unwrap();
                    fn get_type_and_message(message: &String) -> (String, String) {
                       match message.as_str() {
-                            "profile_added" => ("alert-success".to_string(), "Анкета опублікована".to_string()),
-                            "profile_updated" => ("alert-success".to_string(), "Анкета оновлена".to_string()),
-                            "sign_in_ok" => ("alert-success".to_string(), "Вхід виконано".to_string()),
-                            "sign_out_ok" => ("alert-success".to_string(), "Вихід виконано".to_string()),
-                            "server_error" => ("alert-danger".to_string(), "Помилка сервера. Спробуйте пізніше".to_string()),
-                            "unauthorized" => ("alert-warning".to_string(), "Авторизуйтесь і спробуйте ще раз".to_string()),
-                            "bad_request" => ("alert-danger".to_string(), "Данні вже невалідні, спробуйте знов".to_string()),
-                            "bot_detected" => ("alert-danger".to_string(), "Підозріла активність. Спробуйте пізніше".to_string()),
+                            "profile_added" => ("alert-success".to_string(), t!("alert_profile_added").to_string()),
+                            "profile_updated" => ("alert-success".to_string(), t!("alert_profile_updated").to_string()),
+                            "sign_in_ok" => ("alert-success".to_string(), t!("alert_sign_in_ok").to_string()),
+                            "sign_out_ok" => ("alert-success".to_string(), t!("alert_sign_out_ok").to_string()),
+                            "server_error" => ("alert-danger".to_string(),  t!("alert_server_error").to_string()),
+                            "unauthorized" => ("alert-warning".to_string(),  t!("alert_unauthorized").to_string()),
+                            "bad_request" => ("alert-danger".to_string(),  t!("alert_bad_request").to_string()),
+                            "bot_detected" => ("alert-danger".to_string(),  t!("alert_bot_detected").to_string()),
                             _ => ("error".to_string(), "error".to_string())
                       }
                 } %>
@@ -35,46 +37,19 @@
             <% } %>
 
             <% if nav_context.is_search && !data_context.profiles.is_empty() { %>
-                <p class="h1 pt-3">Результати пошуку <%= data_context.search_text.as_ref().unwrap() %></p>
+                <p class="h1 pt-3"><%=t!("search_result")%> <%= data_context.search_text.as_ref().unwrap() %></p>
             <% } else if nav_context.is_user_profiles { %>
-                <p class="h1 pt-3">Мої анкети</p>
+                <p class="h1 pt-3"><%=t!("main_my_profiles")%></p>
             <% } else if !nav_context.current_city.is_empty() { %>
-                <% fn translate(city: &String) -> String {
-                    if city == "harkiv" {
-                        String::from("Харкова")
-                    } else if city == "kiev" {
-                        String::from("Київа")
-                    } else if city == "odesa" {
-                        String::from("Одеси")
-                    } else if city == "lviv" {
-                        String::from("Львова")
-                    } else {
-                        String::from("НЕВІДОМО")
-                    }
-                } %>
-                <p class="h1 pt-3">Анкети міста <%= translate(&nav_context.current_city) %></p>
+                <p class="h1 pt-3"><%=t!("cities_profiles")%> <%=t!(format!("profile_from_city_{}", &nav_context.current_city).as_str())%></p>
             <% } else if !data_context.profiles.is_empty() { %>
-                <p class="h1 pt-3">Анкети України</p>
+                <p class="h1 pt-3"><%=t!("all_country_profiles")%></p>
             <% } %>
 
             <% if data_context.profiles.is_empty() { %>
-                <h2 class="text-center pt-3">Нажаль нічого не знайдено</h2>
+                <h2 class="text-center pt-3"><%= t!("nothing_found") %></h2>
             <% } else { %>
                 <div class="card-columns">
-                    <% fn translate(city: &String) -> String {
-                        if city == "harkiv" {
-                            String::from("Харків")
-                        } else if city == "kiev" {
-                            String::from("Київ")
-                        } else if city == "odesa" {
-                            String::from("Одеса")
-                        } else if city == "lviv" {
-                            String::from("Львів")
-                        } else {
-                            String::from("")
-                        }
-                    }
-                    %>
                     <% for profile in &data_context.profiles { %> 
                         <div class="card" style="background-color: #e3f2fd;">
                             <% if profile.photo_url_opt.is_some() { %>
@@ -85,10 +60,10 @@
                                 <% if nav_context.is_user_profiles { %>
                                     <span class="ml-auto card-icons-box">
                                         <a href="/edit_profile?id=<%= profile.id.to_string() %>">
-                                            <i class="fas fa-pen fa-md mr-2" title="Редагувати"></i>
+                                            <i class="fas fa-pen fa-md mr-2" title="<%= t!("edit_profile_btn") %>"></i>
                                         </a>
                                         <a class="delete_profile_link" data-toggle="modal" data-id="<%= profile.id.to_string() %>" href="#">
-                                            <i class="fas fa-trash fa-md" title="Видалити"></i>
+                                            <i class="fas fa-trash fa-md" title="<%= t!("delete_profile_btn") %>"></i>
                                         </a>
                                     </span>
                                 <% } %>
@@ -100,7 +75,7 @@
                             </div>
                             <div class="card-footer d-flex p-2">
                                 <small class="text-muted"><%= profile.date_create %></small>
-                                <small class="text-muted ml-auto"><%= translate(&profile.city) %></small>
+                                <small class="text-muted ml-auto"><%= t!(format!("city_dropdown_{}", &profile.city).as_str()) %></small>
                             </div>
                         </div>
                             
@@ -119,11 +94,13 @@
                     <ul class="pagination justify-content-center">
                         <% if data_context.pagination.has_previous { %>
                             <li class="page-item">
-                                <a class="page-link" href="/?page=<%= &data_context.pagination.current - 1 %><%= city_query_param %>" tabindex="-1">Попередня</a>
+                                <a class="page-link" href="/?page=<%= &data_context.pagination.current - 1 %><%= city_query_param %>" tabindex="-1">
+                                <%= t!("previous_page") %>
+                                </a>
                             </li>
                         <% } else { %>
                             <li class="page-item disabled">
-                                <a class="page-link" href="#" tabindex="-1">Попередня</a>
+                                <a class="page-link" href="#" tabindex="-1"><%= t!("previous_page") %></a>
                             </li>
                         <% } %>
                         <% for page_index in 1..data_context.pagination.total + 1 { %>
@@ -140,11 +117,13 @@
                         <!-- disabled here -->
                         <% if data_context.pagination.has_next { %>
                             <li class="page-item">
-                                <a class="page-link" href="/?page=<%= &data_context.pagination.current + 1 %><%= city_query_param %>" tabindex="-1">Наступна</a>
+                                <a class="page-link" href="/?page=<%= &data_context.pagination.current + 1 %><%= city_query_param %>" tabindex="-1">
+                                    <%= t!("next_page") %>
+                                </a>
                             </li>
                         <% } else { %>
                             <li class="page-item disabled">
-                                <a class="page-link" href="#" tabindex="-1">Наступна</a>
+                                <a class="page-link" href="#" tabindex="-1"><%= t!("next_page") %></a>
                             </li>
                         <% } %>
                     </ul>
@@ -156,19 +135,19 @@
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="deleteModalLabel">Видалення анкети</h5>
+                      <h5 class="modal-title" id="deleteModalLabel"><%=t!("delete_profile")%></h5>
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
                     </div>
                     <div class="modal-body">
-                        Ви впевнені, що хочете видалити анкету?
+                        <%=t!("delete_profile_desc")%>
                     </div>
                     <div class="modal-footer">
                       <form action="/profile/delete" method="post">
                         <input id="id_input" name="id" type="hidden" value=""/>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Відмінити</button>
-                        <button type="submit" class="btn btn-primary">Видалити</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"><%=t!("cancel_btn")%></button>
+                        <button type="submit" class="btn btn-primary"><%=t!("delete_profile_btn")%></button>
                       </form>
                     </div>
                   </div>
