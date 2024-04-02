@@ -251,6 +251,14 @@ impl DbProvider {
         profiles.map(|data| (total_pages, data))
     }
 
+    pub async fn find_any_active_profile_photo(&self) -> Result<Option<ProfilePhotoModel>, DbErr> {
+        profile_photo::Entity::find()
+            .filter(profile_photo::Column::Status.eq("active"))
+            .order_by(profile_photo::Column::CreatedAt, Order::Desc)
+            .one(&self.db_con)
+            .await
+    }
+
     pub async fn find_first_profile_photos_for(
         &self,
         profile_ids: &Vec<Uuid>,

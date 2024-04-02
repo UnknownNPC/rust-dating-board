@@ -116,6 +116,19 @@ pub async fn index_page(
         })
     }
 
+    async fn get_head_context(
+        db_provider: &web::Data<DbProvider>,
+        config: &web::Data<Config>,
+    ) -> Result<HeadContext, HtmlError> {
+        let photo = &db_provider.find_any_active_profile_photo().await?;
+        Ok(HeadContext::new(
+            t!("main_page_title").to_string().as_str(),
+            t!("main_page_description").to_string().as_str(),
+            &config,
+            photo,
+        ))
+    }
+
     println!(
         "[route#add_profile_page] User auth status: [{}]. Index page",
         auth_gate.is_authorized,
@@ -123,14 +136,7 @@ pub async fn index_page(
 
     let nav_context = get_nav_context(&auth_gate, &query, &config, &db_provider).await?;
     let data_context = get_data_context(&db_provider, &config, &query, &auth_gate).await?;
-
-    let head_context = HeadContext::new(
-        t!("main_page_title").to_string().as_str(),
-        t!("main_page_description").to_string().as_str(),
-        &config,
-        &Option::None,
-    );
-
+    let head_context = get_head_context(&db_provider, &config).await?;
     Ok(HtmlPage::homepage(
         &head_context,
         &nav_context,
