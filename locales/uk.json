@@ -1,0 +1,17 @@
+{
+    "_version": 1,
+    "site_title": "Знайомства 0.1",
+    "main_name": "Головна",
+    "main_add_profile": "Додати анкету",
+    "search_placeholder": "Телефон чи слово",
+    "search_text": "Шукати",
+    "all_cities_dropdown": "Усі міста",
+    "city_dropdown_harkiv": "Харків",
+    "city_dropdown_kiev": "Київ",
+    "city_dropdown_odesa": "Одеса",
+    "city_dropdown_lviv": "Львів",
+    "city_dropdown_": "Усі міста",
+    "main_login": "Вхід",
+    "main_my_profiles": "Мої анкети",
+    "main_logout": "Вихід"
+}

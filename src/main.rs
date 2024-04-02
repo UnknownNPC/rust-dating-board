@@ -8,6 +8,10 @@ use std::fs;
 mod config;
 mod db;
 mod web_api;
+use rust_i18n::t;
+
+rust_i18n::i18n!("locales");
+
 
 use crate::{config::Config, db::DbProvider};
 
@@ -17,6 +21,11 @@ async fn establish_connection(conf: &Config) -> Result<DbConn, DbErr> {
 
 #[actix_web::main]
 async fn main() {
+
+    rust_i18n::set_locale("uk");
+    let add_profile_txt = t!(concat!("{}+{}", "hello_", "main_add_profile"));
+    let locale = rust_i18n::locale().to_string();
+
     let conf = Config::init();
     let db_con = establish_connection(&conf).await.unwrap();
     let provider = DbProvider::new(db_con);
