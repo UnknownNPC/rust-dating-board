@@ -54,5 +54,13 @@
     "previous_page": "Попередня",
     "delete_profile": "Видалення анкети",
     "delete_profile_desc": "Ви впевнені, що хочете видалити анкету?",
-    "cancel_btn": "Відмінити"
+    "cancel_btn": "Відмінити",
+    "404_error": "Нажаль сторінки вже не існує",
+    "photos": "Фотографії",
+    "information_title": "Інформація",
+    "city": "Місто",
+    "description": "Опис",
+    "published": "Опубліковано",
+    "profile_actions": "Доступні дії",
+    "other_profiles_by_phone": "Інші анкети за номером"
 }

@@ -1,3 +1,5 @@
+<% use rust_i18n::t; %>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -16,7 +18,7 @@
               <div class="col-md-4">
                 <div class="card">
                   <div class="card-body">
-                    <h3 class="card-title">Фотографії</h3>
+                    <h3 class="card-title"><%= t!("photos") %></h3>
                     <div id="profile_photos" class="carousel slide" data-ride="carousel">
                       <ol class="carousel-indicators">
                         <% for (i, _url) in data_context.photo_urls.iter().enumerate() { %>
@@ -41,11 +43,11 @@
                       </div>
                       <a class="carousel-control-prev" href="#profile_photos" role="button" data-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Попередня</span>
+                        <span class="sr-only"><%= t!("previous_page") %></span>
                       </a>
                       <a class="carousel-control-next" href="#profile_photos" role="button" data-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="sr-only">Наступна</span>
+                        <span class="sr-only"><%= t!("next_page") %></span>
                       </a>
                     </div>
                   </div>
@@ -55,37 +57,24 @@
               <div class="col-md-8">
                 <div class="card">
                   <div class="card-body">
-                    <h3 class="card-title">Інформація</h3>
+                    <h3 class="card-title"><%= t!("information_title") %></h3>
                    
-                    <p class="card-text mb-0">Імя: <%= data_context.name %></h2>
-                    <p class="card-text mb-0">Зріст: <%= data_context.height %></p>
-                    <p class="card-text mb-0">Телефон: <%= data_context.phone_num %></p>
-                    <% fn translate(city: &String) -> String {
-                        if city == "harkiv" {
-                            String::from("Харків")
-                        } else if city == "kiev" {
-                            String::from("Київ")
-                        } else if city == "odesa" {
-                            String::from("Одеса")
-                        } else if city == "lviv" {
-                            String::from("Львів")
-                        } else {
-                            String::from("")
-                        }
-                    } %>
-                    <p class="card-text mb-0">Місто: <%= translate(&data_context.city) %></p>
-                    <p class="card-text mb-0">Опис: <%= data_context.description %></p>
-                    <p class="card-text mb-0">Опубліковано: <%= data_context.date_create %></p>
+                    <p class="card-text mb-0"><%=t!("name_placeholder")%>: <%= data_context.name %></h2>
+                    <p class="card-text mb-0"><%=t!("height_placeholder")%>: <%= data_context.height %></p>
+                    <p class="card-text mb-0"><%=t!("phone_placeholder")%>: <%= data_context.phone_num %></p>
+                    <p class="card-text mb-0"><%=t!("city")%>: <%=t!(format!("city_dropdown_{}", &data_context.city).as_str())%></p>
+                    <p class="card-text mb-0"><%=t!("description")%>: <%= data_context.description %></p>
+                    <p class="card-text mb-0"><%=t!("published")%>: <%= data_context.date_create %></p>
                   </div>
                 </div>    
 
                 <div class="card mt-3">
                   <div class="card-body">
-                    <h3 class="card-title">Доступні дії</h3>
-                    <a href="/?search=<%= data_context.phone_num %>" class="btn btn-info">Інші анкети за номером</a>
+                    <h3 class="card-title"><%=t!("profile_actions")%></h3>
+                    <a href="/?search=<%= data_context.phone_num %>" class="btn btn-info"><%=t!("other_profiles_by_phone")%></a>
                     <% if data_context.is_user_profile_author { %>
-                      <a href="/edit_profile?id=<%= data_context.id.to_string() %>" class="btn btn-primary">Редагувати</a>
-                      <a id="delete_profile" href="#" class="btn btn-danger">Видалити</a>
+                      <a href="/edit_profile?id=<%= data_context.id.to_string() %>" class="btn btn-primary"><%=t!("edit_profile_btn")%></a>
+                      <a id="delete_profile" href="#" class="btn btn-danger"><%=t!("delete_profile_btn")%></a>
                     <% } %>
                   </div>
                 </div>    
@@ -101,19 +90,19 @@
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Видалення анкети</h5>
+                <h5 class="modal-title" id="deleteModalLabel"><%=t!("delete_profile")%></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
               <div class="modal-body">
-                  Ви впевнені, що хочете видалити анкету?
+                  <%=t!("delete_profile_desc")%>
               </div>
               <div class="modal-footer">
                 <form action="/profile/delete" method="post">
                   <input name="id" type="hidden" value="<%= data_context.id.to_string() %>"/>
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Відмінити</button>
-                  <button type="submit" class="btn btn-primary">Видалити</button>
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal"><%=t!("cancel_btn")%></button>
+                  <button type="submit" class="btn btn-primary"><%=t!("delete_profile_btn")%></button>
                 </form>
               </div>
             </div>
