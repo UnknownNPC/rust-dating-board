@@ -8,7 +8,7 @@ use crate::{
     web_api::{
         auth::AuthenticationGate,
         routes::{
-            common::{get_photo_url, HeadContext, NavContext},
+            common::{get_relative_photo_url, HeadContext, NavContext},
             constant::{HOME_DATE_FORMAT, NO_PHOTO_URL},
             html_render::HtmlPage,
         },
@@ -37,7 +37,7 @@ pub async fn view_profile_page(
         let photo_urls: Vec<String> = profile_photos
             .iter()
             .map(|profile_photo| {
-                get_photo_url(profile_photo, config.all_photos_folder_name.as_str())
+                get_relative_photo_url(profile_photo, config.all_photos_folder_name.as_str())
             })
             .collect();
         let photo_urls_or_placeholder = match photo_urls.is_empty() {

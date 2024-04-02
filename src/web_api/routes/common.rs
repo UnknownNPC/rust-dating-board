@@ -1,3 +1,4 @@
+use super::constant::NO_PHOTO_URL;
 use crate::{
     config::Config,
     db::{ProfileModel, ProfilePhotoModel},
@@ -5,12 +6,10 @@ use crate::{
 use serde::Serialize;
 use uuid::Uuid;
 
-//common models
-
 pub struct HeadContext {
     pub title: String,
     pub description: String,
-    pub preview_url: Option<String>,
+    pub preview_url: String,
 }
 
 impl HeadContext {
@@ -20,20 +19,27 @@ impl HeadContext {
         config: &Config,
         profile_photo_opt: &Option<ProfilePhotoModel>,
     ) -> Self {
-        let site_photo_url = profile_photo_opt.as_ref().map(|profile_photo| {
-            let relative_path = get_photo_url(&profile_photo, &config.all_photos_folder_name);
+        fn get_absolute_url(config: &Config, path: &String) -> String {
             if config.site_port == 80 || config.site_port == 443 {
-                format!(
-                    "{}://{}/{}",
-                    &config.site_protocol, &config.site_url, &relative_path
-                )
+                format!("{}://{}{}", &config.site_protocol, &config.site_url, &path)
             } else {
                 format!(
-                    "{}://{}:{}/{}",
-                    &config.site_protocol, &config.site_url, &config.site_port, &relative_path
+                    "{}://{}:{}{}",
+                    &config.site_protocol, &config.site_url, &config.site_port, &path
                 )
             }
-        });
+        }
+
+        let site_photo_url = profile_photo_opt
+            .as_ref()
+            .map(|profile_photo| {
+                let relative_path = format!(
+                    "/{}",
+                    get_relative_photo_url(&profile_photo, &config.all_photos_folder_name)
+                );
+                get_absolute_url(&config, &relative_path)
+            })
+            .unwrap_or(get_absolute_url(&config, &NO_PHOTO_URL.to_string()));
         HeadContext {
             title: title.to_owned(),
             description: description.to_owned(),
@@ -139,7 +145,10 @@ pub struct AddProfilePhotoContext {
     pub append: bool,
 }
 
-pub fn get_photo_url(profile_photo: &ProfilePhotoModel, all_photos_folder: &str) -> String {
+pub fn get_relative_photo_url(
+    profile_photo: &ProfilePhotoModel,
+    all_photos_folder: &str,
+) -> String {
     all_photos_folder.to_owned()
         + "/"
         + &profile_photo.profile_id.to_string()
@@ -154,7 +163,7 @@ impl<'a> AddProfilePhotoContext {
     ) -> Self {
         let photo_urls = db_photos
             .iter()
-            .map(|db_photo| get_photo_url(db_photo, all_photos_folder))
+            .map(|db_photo| get_relative_photo_url(db_photo, all_photos_folder))
             .collect();
 
         let photo_confings = db_photos
