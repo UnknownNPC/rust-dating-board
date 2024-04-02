@@ -132,7 +132,7 @@
                 <div class="form-row">
                     <div class="form-group col-md-12">
                         <div class="file-loading">
-                            <input id="photo-files" name="new_profile_photo" type="file" multiple>
+                            <input id="photo-files" name="new_profile_photos" type="file" multiple>
                         </div>
                     </div>
                 </div>
@@ -172,7 +172,7 @@
                 duplicate: false,
                 maxSize: 15728640,
                 allowedFileExtensions: ["jpg", "jpeg"],
-                language: 'ua',
+                language: '<%= data_context.id.as_ref().unwrap().to_string() %>',
                 initialPreviewAsData: true,
                 overwriteInitial: false,
 

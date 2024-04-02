@@ -13,6 +13,7 @@ use actix_multipart::form::MultipartForm;
 use actix_web::http::header::LOCATION;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpResponse, Responder};
+use futures::future;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -109,34 +110,46 @@ pub async fn add_profile_photo_endpoint(
         return Err(JsonError::BadParams);
     }
 
-    //Save photo to FS for this profile
-    let photo_fs_save_result = PhotoService::save_photo_on_fs(
-        &form.0.new_profile_photo,
-        &config.all_photos_folder_name,
-        &profile.id,
-    )?;
-    println!(
-        "[routes#add_profile_photo_endpoint]: Photo saved into fs with name: [{}]",
-        &photo_fs_save_result.name
-    );
+    async fn process_image(
+        new_profile_photo: &TempFile,
+        config: &Config,
+        profile_id: &Uuid,
+        db_provider: &web::Data<DbProvider>,
+    ) -> Result<ProfilePhotoModel, JsonError> {
+        let photo_fs_save_result = PhotoService::save_photo_on_fs(
+            new_profile_photo,
+            &config.all_photos_folder_name,
+            profile_id,
+        )?;
 
-    //Save profile photo db entity
-    let profile_photo_db = db_provider
-        .add_profile_photo(
-            &profile.id,
-            &photo_fs_save_result.name.as_str(),
-            photo_fs_save_result.size,
-        )
-        .await?;
-    println!(
-        "[routes#add_profile_photo_endpoint]: Photo saved into database with id: [{}]",
-        &profile_photo_db.id
-    );
+        println!(
+            "[routes#add_profile_photo_endpoint]: Photo saved into fs with name: [{:?}]",
+            &photo_fs_save_result
+        );
+        let save_result = db_provider
+            .add_profile_photo(
+                profile_id,
+                &photo_fs_save_result.name.as_str(),
+                photo_fs_save_result.size,
+            )
+            .await;
 
-    let response = AddProfilePhotoContext::new_with_payload(
-        &config.all_photos_folder_name,
-        &vec![profile_photo_db],
-    );
+        println!(
+            "[routes#add_profile_photo_endpoint]: Photo saved into database with id: [{:?}]",
+            &save_result
+        );
+        save_result.map_err(|err| err.into())
+    }
+
+    let db_photos =
+        future::try_join_all(form.0.new_profile_photos.iter().map(|new_profile_photo| {
+            process_image(new_profile_photo, &config, &profile.id, &db_provider)
+        }))
+        .await
+        .unwrap();
+
+    let response =
+        AddProfilePhotoContext::new_with_payload(&config.all_photos_folder_name, &db_photos);
     Ok(web::Json(response))
 }
 
@@ -192,7 +205,7 @@ pub async fn delete_profile_photo_endpoint(
 
 #[derive(MultipartForm)]
 pub struct AddProfilePhotoMultipartRequest {
-    pub new_profile_photo: TempFile,
+    pub new_profile_photos: Vec<TempFile>,
     // it means edit mode
     pub profile_id: Option<Text<Uuid>>,
 }
