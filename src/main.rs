@@ -25,6 +25,7 @@ async fn main() {
     rust_i18n::set_locale("uk");
     let add_profile_txt = t!(concat!("{}+{}", "hello_", "main_add_profile"));
     let locale = rust_i18n::locale().to_string();
+    let s = t!("asdasd").to_string();
 
     let conf = Config::init();
     let db_con = establish_connection(&conf).await.unwrap();

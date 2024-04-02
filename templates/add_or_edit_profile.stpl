@@ -1,3 +1,5 @@
+<% use rust_i18n::t; %>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -14,9 +16,9 @@
         <div class="container">
             <p class="h1">
                 <% if data_context.is_edit_mode { %>
-                    Редагування анкети
+                    <%= t!("edit_profile") %>
                 <% } else { %>
-                    Нова анкета
+                    <%= t!("new_profile") %>
                 <% } %>        
             </p>
             <% 
@@ -27,9 +29,9 @@
     
             fn get_translation(code: &String) -> String {
                 match code.as_str() {
-                    "is_empty" => String::from("Поле не може бути пустим"),
-                    "length" => String::from("Невалідна довжина значення"),
-                    "range" => String::from("Значення не у валідному діапазоні"),
+                    "is_empty" => t!("validation_empty_field").to_string(),
+                    "length" => t!("validation_length").to_string(),
+                    "range" => t!("validation_range").to_string(),
                     _ => String::from("")
                 }
             }
@@ -40,9 +42,9 @@
                         <% let error_or_empty = get_translation(&get_error_code_by_field("name", error_context)); %>
                         <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
                         <input type="text" aria-describedby="name_help" class="form-control <%= input_class_value %> " name="name" id="name_id"
-                            value="<%= data_context.name %>" placeholder="Ім'я">
+                            value="<%= data_context.name %>" placeholder="<%= t!("name_placeholder") %>">
                             <small id="name_help" class="form-text text-muted">
-                                Від 3 до 10 символів
+                                <%= t!("name_range") %>
                             </small>
                          <% if !error_or_empty.is_empty() { %>
                             <div class="invalid-feedback">
@@ -53,7 +55,7 @@
                     <div class="form-group col-md-4">
                         <% let error_or_empty = get_translation(&get_error_code_by_field("height", error_context)); %>
                         <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
-                        <input aria-describedby="height_help" placeholder="Зріст" type="number" 
+                        <input aria-describedby="height_help" placeholder="<%= t!("height_placeholder") %>" type="number" 
                             class="form-control <%= input_class_value %>" name="height" id="height_id" 
                         <% if data_context.height==0 { %>
                             value=""
@@ -61,7 +63,7 @@
                             value="<%= data_context.height %>"
                         <% } %> >
                         <small id="height_help" class="form-text text-muted">
-                            Від 100 до 220
+                            <%= t!("height_range") %>
                         </small>
                         <% if !error_or_empty.is_empty() { %>
                             <div class="invalid-feedback">
@@ -78,7 +80,7 @@
                         <% let error_or_empty = get_translation(&get_error_code_by_field("phone_number", error_context)); %>
                         <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
                         <input type="text" class="form-control <%= input_class_value %>" aria-describedby="phone_prefix" name="phone_number"
-                            id="phone_number_id" value="<%= data_context.phone_number %>" placeholder="Телефон">
+                            id="phone_number_id" value="<%= data_context.phone_number %>" placeholder="<%= t!("phone_placeholder") %>">
                         <% if !error_or_empty.is_empty() { %>
                             <div class="invalid-feedback">
                                 <%= error_or_empty %>
@@ -90,31 +92,17 @@
                         <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
                         <select class="custom-select <%= input_class_value %>" name="city" id="city_id">
                             <% if data_context.city.is_empty() { %>
-                                <option value="" selected>Виберіть місто</option>
+                                <option value="" selected><%= t!("select_city") %></option>
                             <% } %>
-                            <% fn translate(city: &String) -> String {
-                                if city == "harkiv" {
-                                    String::from("Харків")
-                                } else if city == "kiev" {
-                                    String::from("Київ")
-                                } else if city == "odesa" {
-                                    String::from("Одеса")
-                                } else if city == "lviv" {
-                                    String::from("Львів")
-                                } else {
-                                    String::from("")
-                                }
-                               }
-                               for city in &nav_context.all_cities { %>
+                            <% for city in &nav_context.all_cities { %>
                                     <option 
                                     
                                     <% if &data_context.city == city { %>
                                         selected
                                     <% } %>
-                                    
-                                    
+
                                     value="<%= city %>">
-                                        <%= translate(city) %>
+                                        <%= t!(format!("city_dropdown_{}", city).as_str()) %>
                                     </option>
                                 <% } %>
                         </select>
@@ -130,9 +118,9 @@
                         <% let error_or_empty = get_translation(&get_error_code_by_field("description", error_context)); %>
                         <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
                         <textarea aria-describedby="description_help" class="form-control <%= input_class_value %>" name="description" id="description_id"
-                            rows="4" placeholder="Опис"><%= data_context.description %></textarea>
+                            rows="4" placeholder="<%= t!("tell_about_yourself") %>"><%= data_context.description %></textarea>
                         <small id="description_help" class="form-text text-muted">
-                                Від 10 до 600 символів
+                            <%= t!("tell_about_yourself_placeholder") %>
                         </small>
                         <% if !error_or_empty.is_empty() { %>
                             <div class="invalid-feedback">
@@ -152,9 +140,9 @@
                     <div class="form-group col-md-12">
                         <button type="submit" class="btn btn-primary mx-auto d-block">
                             <% if data_context.is_edit_mode { %>
-                               Оновити  
+                               <%= t!("btn_update") %>  
                             <% } else { %>
-                               Опублікувати
+                               <%= t!("btn_publish") %>
                             <% } %>       
                         </button>
                     </div>
@@ -204,9 +192,9 @@
                         },
                     <% } %>
                 ],
-                browseLabel: "Вибрати світлини",
-                dropZoneTitle: "Перетягніть світлини у зону автоматичної загрузки",
-                dropZoneClickTitle: "<br\>(або нажміть для вибору файлів)",
+                browseLabel: "<%= t!("select_photos") %>",
+                dropZoneTitle: "<%= t!("select_photos_desc") %>",
+                dropZoneClickTitle: "<%=t!("select_photos_desc_2") %>",
                 fileActionSettings: {
                     showZoom: false,
                     showRotate: false,
