@@ -50,7 +50,7 @@ pub async fn p404_page(
     let head_context = HeadContext::new(
         t!("404_page_title").to_string().as_str(),
         t!("404_page_description").to_string().as_str(),
-        &config.all_photos_folder_name,
+        &config,
         &Option::None,
     );
 

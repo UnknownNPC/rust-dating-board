@@ -1,4 +1,7 @@
-use crate::db::{ProfileModel, ProfilePhotoModel};
+use crate::{
+    config::Config,
+    db::{ProfileModel, ProfilePhotoModel},
+};
 use serde::Serialize;
 use uuid::Uuid;
 
@@ -14,16 +17,27 @@ impl HeadContext {
     pub fn new(
         title: &str,
         description: &str,
-        all_photos_folder: &str,
+        config: &Config,
         profile_photo_opt: &Option<ProfilePhotoModel>,
     ) -> Self {
-        let relative_profile_photo_url = profile_photo_opt
-            .as_ref()
-            .map(|profile_photo| get_photo_url(&profile_photo, all_photos_folder));
+        let site_photo_url = profile_photo_opt.as_ref().map(|profile_photo| {
+            let relative_path = get_photo_url(&profile_photo, &config.all_photos_folder_name);
+            if config.site_port == 80 || config.site_port == 443 {
+                format!(
+                    "{}://{}/{}",
+                    &config.site_protocol, &config.site_url, &relative_path
+                )
+            } else {
+                format!(
+                    "{}://{}:{}/{}",
+                    &config.site_protocol, &config.site_url, &config.site_port, &relative_path
+                )
+            }
+        });
         HeadContext {
             title: title.to_owned(),
             description: description.to_owned(),
-            preview_url: relative_profile_photo_url,
+            preview_url: site_photo_url,
         }
     }
 }

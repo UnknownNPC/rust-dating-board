@@ -76,7 +76,7 @@ pub async fn add_profile_page(
     let head_context = HeadContext::new(
         t!("add_profile_page_title").to_string().as_str(),
         t!("add_profile_page_description").to_string().as_str(),
-        &config.all_photos_folder_name,
+        &config,
         &Option::None,
     );
 
@@ -200,7 +200,7 @@ pub async fn add_or_edit_profile_post(
         let head_context = HeadContext::new(
             title.as_str(),
             description.as_str(),
-            &config.all_photos_folder_name,
+            &config,
             &profile_photos.first().cloned(),
         );
 

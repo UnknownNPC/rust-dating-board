@@ -127,7 +127,7 @@ pub async fn index_page(
     let head_context = HeadContext::new(
         t!("main_page_title").to_string().as_str(),
         t!("main_page_description").to_string().as_str(),
-        &config.all_photos_folder_name,
+        &config,
         &Option::None,
     );
 

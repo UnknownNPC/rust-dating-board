@@ -107,7 +107,7 @@ pub async fn view_profile_page(
     let head_context = HeadContext::new(
         &page_title,
         &page_description,
-        &config.all_photos_folder_name,
+        &config,
         &profile_photos.first().cloned(),
     );
 
