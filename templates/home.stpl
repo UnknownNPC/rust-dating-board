@@ -36,7 +36,7 @@
                   </div>
             <% } %>
 
-            <% if nav_context.is_search && !data_context.profiles.is_empty() { %>
+            <% if nav_context.search.is_some() && !data_context.profiles.is_empty() { %>
                 <p class="h1 pt-3"><%=t!("search_result")%> <%= data_context.search_text.as_ref().unwrap() %></p>
             <% } else if nav_context.is_user_profiles { %>
                 <p class="h1 pt-3"><%=t!("main_my_profiles")%></p>
@@ -83,7 +83,7 @@
                 </div>
             <% } %>
 
-            <% if !nav_context.is_user_profiles && !nav_context.is_search { %>
+            <% if !nav_context.is_user_profiles && !nav_context.search.is_some() { %>
                 <% let city_query_param = if nav_context.current_city.is_empty() { 
                     String::from("")
                 } else { 

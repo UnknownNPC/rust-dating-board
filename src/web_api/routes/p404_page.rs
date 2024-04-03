@@ -34,7 +34,7 @@ pub async fn p404_page(
             "",
             &config.captcha_google_id,
             false,
-            false,
+            &Option::None,
             &city_names,
             &config.oauth_google_client_id,
             &config.oauth_google_redirect_url,

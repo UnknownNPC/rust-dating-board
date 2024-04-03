@@ -20,7 +20,13 @@
 
         <ul class="navbar-nav ml-auto">
             <form action="/" class="form-inline pr-3">
-                <input class="form-control mr-sm-2" name="search" type="search" placeholder="<%= t!("search_placeholder") %>" aria-label="Search">
+                <input class="form-control mr-sm-2" name="search" type="search"
+                <% if nav_context.search.is_some() { %>
+                    value="<%= nav_context.search.as_ref().unwrap().to_string() %>"
+                <% } else { %> 
+                    value=""
+                <% } %>
+                placeholder="<%= t!("search_placeholder") %>" aria-label="Search">
                 <button class="btn btn-primary my-2 my-sm-0" type="submit"><%= t!("search_text") %></button>
               </form>
             <li class="nav-item dropdown">

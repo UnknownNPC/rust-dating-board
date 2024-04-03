@@ -43,14 +43,13 @@ pub async fn index_page(
             .unwrap_or_default();
 
         let is_user_profiles = auth_gate.is_authorized && query.show_my.unwrap_or_default();
-        let is_search = query.search.is_some();
 
         Ok(NavContext::new(
             user_name,
             current_city,
             &config.captcha_google_id,
             is_user_profiles,
-            is_search,
+            &query.search,
             &city_names,
             &config.oauth_google_client_id,
             &config.oauth_google_redirect_url,
