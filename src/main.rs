@@ -27,7 +27,9 @@ async fn main() {
     let db_con = establish_connection(&conf).await.unwrap();
     let provider = DbProvider::new(db_con);
 
-    let addr = format!("{}:{}", &conf.site_url, &conf.site_port);
+    let port = std::env::var("PORT").unwrap_or("8080".to_string());
+    let addr = format!("localhost:{}", &port);
+
     let all_photos_os_folder = all_photos_folder_path(&conf);
 
     let server = HttpServer::new(move || {
