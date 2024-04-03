@@ -109,7 +109,7 @@
           </div>
         </div>    
       </div>
-      
+  <% include!("./includes/footer.stpl"); %>
 </body>
     <% include!("./includes/extra_scripts.stpl"); %>
     <script>

@@ -14,6 +14,7 @@
         <div class="container">
             <h2 class="text-center pt-3"><%= t!("404_error") %></h2>
         </div>
+    <% include!("./includes/footer.stpl"); %>
 </body>
 <% include!("./includes/extra_scripts.stpl"); %>
 
