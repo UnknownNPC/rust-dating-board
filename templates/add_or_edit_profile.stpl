@@ -172,7 +172,7 @@
                 duplicate: false,
                 maxSize: 15728640,
                 allowedFileExtensions: ["jpg", "jpeg"],
-                language: '<%= data_context.id.as_ref().unwrap().to_string() %>',
+                language: '<%= rust_i18n::locale().to_string() %>',
                 initialPreviewAsData: true,
                 overwriteInitial: false,
 

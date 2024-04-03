@@ -1,5 +1,5 @@
 use actix_web::{web, Responder};
-use chrono::{NaiveDateTime, Utc};
+use chrono::Utc;
 
 use crate::{config::Config, db::DbProvider, web_api::routes::html_render::HtmlPage};
 

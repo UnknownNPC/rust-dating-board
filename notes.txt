@@ -10,6 +10,6 @@ escortdb
 postgres:postgres
 
 
-sea-orm-cli generate entity -u postgres://postgres:postgres@localhost/datingdb -s public -o src/db
+sea-orm-cli generate entity -u postgres://postgres:postgres@localhost:5433/datingdb -s public -o src/db
 
 find src | entr -r cargo run

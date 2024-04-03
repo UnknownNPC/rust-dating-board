@@ -27,7 +27,12 @@ impl MigrationTrait for Migration {
         let db = manager.get_connection();
 
         db.execute_unprepared(
-            "INSERT INTO CITY (NAME, STATUS) VALUES ('kiev', 'on'), ('lviv', 'on'), ('odesa', 'on');"
+            "INSERT INTO CITY (NAME, STATUS) VALUES ('kiev', 'on'), ('lviv', 'on'), ('odesa', 'on'),
+            ('ujgorod', 'on'), ('ivano-frankivsk', 'on'), ('chernivci', 'on'), ('ternopil', 'on'), ('luck', 'on'), 
+            ('rivne', 'on'), ('hmelnickij', 'on'), ('jutomyr', 'on'), ('vinnica', 'on'), ('chernigiv', 'on'), 
+            ('symu', 'on'), ('cherkasy', 'on'), ('poltava', 'on'), ('harkiv', 'on'), ('lugansk', 'on'), 
+            ('doneck', 'on'), ('dnipro', 'on'), ('zaporija', 'on'), ('herson', 'on'), ('mykolaiv', 'on'), 
+            ('kropivnyckij', 'on'), ('simferopol', 'on');"
         )
         .await?;
 
