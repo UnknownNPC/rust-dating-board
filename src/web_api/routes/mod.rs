@@ -8,8 +8,11 @@ mod home_page;
 mod html_render;
 mod p404_page;
 mod profile_endpoints;
+mod sitemap_page;
 mod validator;
 mod view_profile_page;
+
+pub use sitemap_page::sitemap;
 
 pub use home_page::index_page;
 pub use p404_page::p404_page;

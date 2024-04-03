@@ -39,6 +39,7 @@ async fn main() {
             .route("/add_profile", web::get().to(web_api::add_profile_page))
             .route("/edit_profile", web::get().to(web_api::edit_profile_page))
             .route("/view_profile", web::get().to(web_api::view_profile_page))
+            .route("/sitemap.xml", web::get().to(web_api::sitemap))
             .route(
                 "/add_or_edit_profile",
                 web::post().to(web_api::add_or_edit_profile_post),

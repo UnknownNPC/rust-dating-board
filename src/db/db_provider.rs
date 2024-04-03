@@ -196,7 +196,7 @@ impl DbProvider {
         profile::Entity::find()
             .filter(profile::Column::Status.eq("active"))
             .filter(profile::Column::UserId.eq(user_id))
-            .order_by(profile::Column::CreatedAt, Order::Desc)
+            .order_by(profile::Column::UpdatedAt, Order::Desc)
             .all(&self.db_con)
             .await
     }
@@ -211,12 +211,35 @@ impl DbProvider {
             text
         );
 
-        profile_photo::Entity::find()
+        profile::Entity::find()
             .from_raw_sql(Statement::from_sql_and_values(
                 DbBackend::Postgres,
                 "SELECT * FROM profile WHERE to_tsvector(phone_number) || to_tsvector(description) || to_tsvector(name) @@ plainto_tsquery($1) 
                 AND status = 'active' order by created_at desc limit $2;",
                 [text.into(), limit.into()],
+            ))
+            .into_model::<ProfileModel>()
+            .all(&self.db_con)
+            .await
+    }
+
+    pub async fn find_latest_active_profile_from_every_city(
+        &self,
+    ) -> Result<Vec<ProfileModel>, DbErr> {
+        let raw_query = "SELECT *
+        FROM (
+            SELECT *,
+                   ROW_NUMBER() OVER (PARTITION BY city ORDER BY updated_at DESC) AS row_num
+            FROM profile p
+            WHERE status = 'active'
+        ) AS ranked_profiles
+        WHERE row_num = 1;";
+
+        profile::Entity::find()
+            .from_raw_sql(Statement::from_sql_and_values(
+                DbBackend::Postgres,
+                raw_query,
+                [],
             ))
             .into_model::<ProfileModel>()
             .all(&self.db_con)
@@ -234,7 +257,7 @@ impl DbProvider {
             .apply_if(city_opt.to_owned(), |query, v| {
                 query.filter(profile::Column::City.eq(v))
             })
-            .order_by(profile::Column::CreatedAt, Order::Desc)
+            .order_by(profile::Column::UpdatedAt, Order::Desc)
             .paginate(&self.db_con, number_of_entities);
 
         let total_pages = query.num_pages().await.unwrap();

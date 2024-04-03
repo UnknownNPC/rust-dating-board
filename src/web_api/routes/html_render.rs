@@ -3,6 +3,7 @@ use sailfish::TemplateOnce;
 
 use super::common::{HeadContext, NavContext, ProfilePageDataContext};
 use super::home_page::HomePageDataContext;
+use super::sitemap_page::SitemapContext;
 use super::validator::ErrorContext;
 use super::view_profile_page::ViewProfileResponse;
 
@@ -36,6 +37,12 @@ struct ViewProfile<'a> {
     head_context: &'a HeadContext,
     nav_context: &'a NavContext,
     data_context: &'a ViewProfileResponse,
+}
+
+#[derive(TemplateOnce)]
+#[template(path = "sitemap.stpl")]
+struct Sitemap<'a> {
+    context: &'a SitemapContext,
 }
 
 pub struct HtmlPage;
@@ -100,5 +107,9 @@ impl HtmlPage {
             .render_once()
             .unwrap(),
         )
+    }
+
+    pub fn sitemap(context: &SitemapContext) -> HttpResponse {
+        HttpResponse::Ok().body(Sitemap { context }.render_once().unwrap())
     }
 }
