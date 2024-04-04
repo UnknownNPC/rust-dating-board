@@ -159,8 +159,7 @@
 
 <% include!("./includes/extra_scripts.stpl"); %>
     <script src="static/js/fileinput.min.js"></script>
-    <script src="static/js/locales/ru.js"></script>
-    <script src="static/js/locales/ua.js"></script>
+    <script src="static/js/locales/uk.js"></script>
     <script>
         $(document).ready(function () {
             var $el1 = $("#photo-files");

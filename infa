@@ -1,0 +1,69 @@
+#binary is here
+/root/dating-board-server_blue
+
+#systemctl service
+/lib/systemd/system/dating-board-server-blue.service
+
+
+#systemctl config
+
+[Unit]
+Description=Dating board server blue
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/dating-board-server_blue
+ExecStart=/root/dating-board-server_blue/dating-board
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=dating-board-server-blue
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
+
+
+#nginx config
+root@dating-dashboard-server:~/dating-board-server_blue# cat /etc/nginx/sites-available/default 
+server {
+
+    access_log  /var/log/nginx/access_433.log;
+
+    server_name anketa.vip;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+    }
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/anketa.vip/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/anketa.vip/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+        
+        access_log  /var/log/nginx/access_80.log;
+
+	if ($host = anketa.vip) {
+		return 301 https://$host$request_uri;
+	} # managed by Certbot
+
+
+	listen 80 ;
+	listen [::]:80 ;
+	server_name anketa.vip;
+	return 404; # managed by Certbot
+
+}
