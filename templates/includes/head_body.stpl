@@ -12,5 +12,7 @@
 <link rel="stylesheet" href="static/css/styles.css">
 <link rel="stylesheet" href="static/css/fontawesome_all.css">
 
+<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon.png">
+
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://www.google.com/recaptcha/enterprise.js?render=<%= nav_context.google_captcha_id %>"></script>
