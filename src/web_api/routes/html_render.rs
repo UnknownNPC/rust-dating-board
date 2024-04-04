@@ -1,3 +1,4 @@
+use actix_web::http::header::ContentType;
 use actix_web::HttpResponse;
 use sailfish::TemplateOnce;
 
@@ -110,6 +111,8 @@ impl HtmlPage {
     }
 
     pub fn sitemap(context: &SitemapContext) -> HttpResponse {
-        HttpResponse::Ok().body(Sitemap { context }.render_once().unwrap())
+        HttpResponse::Ok()
+            .content_type(ContentType::xml())
+            .body(Sitemap { context }.render_once().unwrap())
     }
 }
