@@ -221,7 +221,7 @@
     </script>
     <script>
         grecaptcha.enterprise.ready(function() {
-            grecaptcha.enterprise.execute('6LfnsvEkAAAAALx2ZI1eiXPo-wFKaFWV7ceUBcjh', {action: 'add_or_edit_profile'})
+            grecaptcha.enterprise.execute('<%= nav_context.google_captcha_id %>', {action: 'add_or_edit_profile'})
                 .then(function(token) {
                     document.getElementById('captcha_token').value = token;
             });
