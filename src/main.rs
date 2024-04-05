@@ -20,7 +20,6 @@ async fn establish_connection(conf: &Config) -> Result<DbConn, DbErr> {
 
 #[actix_web::main]
 async fn main() {
-
     rust_i18n::set_locale("uk");
 
     let conf = Config::init();
@@ -46,6 +45,7 @@ async fn main() {
                 "/add_or_edit_profile",
                 web::post().to(web_api::add_or_edit_profile_post),
             )
+            .route("/robots.txt", web::get().to(web_api::robots_txt))
             .service(
                 web::resource("/profile/delete")
                     .route(web::post().to(web_api::delete_profile_endpoint)),
@@ -66,6 +66,7 @@ async fn main() {
             // static services
             .service(Files::new("/static", "static").show_files_listing())
             .service(Files::new("/photos", &all_photos_os_folder).show_files_listing())
+            .default_service(web::route().to(web_api::p404_page))
     })
     .bind(&addr)
     .unwrap()

@@ -19,17 +19,6 @@ impl HeadContext {
         config: &Config,
         profile_photo_opt: &Option<ProfilePhotoModel>,
     ) -> Self {
-        fn get_absolute_url(config: &Config, path: &String) -> String {
-            if config.site_port == 80 || config.site_port == 443 {
-                format!("{}://{}{}", &config.site_protocol, &config.site_url, &path)
-            } else {
-                format!(
-                    "{}://{}:{}{}",
-                    &config.site_protocol, &config.site_url, &config.site_port, &path
-                )
-            }
-        }
-
         let site_photo_url = profile_photo_opt
             .as_ref()
             .map(|profile_photo| {
@@ -143,6 +132,17 @@ pub struct AddProfilePhotoContext {
     #[serde(rename = "initialPreviewConfig")]
     pub initial_preview_config: Vec<ProfilePhotoPreviewContext>,
     pub append: bool,
+}
+
+pub fn get_absolute_url(config: &Config, path: &str) -> String {
+    if config.site_port == 80 || config.site_port == 443 {
+        format!("{}://{}{}", &config.site_protocol, &config.site_url, &path)
+    } else {
+        format!(
+            "{}://{}:{}{}",
+            &config.site_protocol, &config.site_url, &config.site_port, &path
+        )
+    }
 }
 
 pub fn get_relative_photo_url(

@@ -11,7 +11,9 @@ mod profile_endpoints;
 mod sitemap_page;
 mod validator;
 mod view_profile_page;
+mod robots_page;
 
+pub use robots_page::robots_txt;
 pub use sitemap_page::sitemap;
 
 pub use home_page::index_page;

@@ -3,7 +3,7 @@ use chrono::Utc;
 
 use crate::{config::Config, db::DbProvider, web_api::routes::html_render::HtmlPage};
 
-use super::error::HtmlError;
+use super::{common::get_absolute_url, error::HtmlError};
 
 pub static DATE_FORMAT: &'static str = "%Y-%m-%d";
 pub static INDEX_URL_PRIORITY: &'static str = "1.0";
@@ -39,16 +39,6 @@ pub async fn sitemap(
     config: web::Data<Config>,
     db_provider: web::Data<DbProvider>,
 ) -> Result<impl Responder, HtmlError> {
-    fn get_absolute_url(config: &Config, path: &str) -> String {
-        if config.site_port == 80 || config.site_port == 443 {
-            format!("{}://{}{}", &config.site_protocol, &config.site_url, &path)
-        } else {
-            format!(
-                "{}://{}:{}{}",
-                &config.site_protocol, &config.site_url, &config.site_port, &path
-            )
-        }
-    }
 
     let index = get_absolute_url(&config, "/");
 
