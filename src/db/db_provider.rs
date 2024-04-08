@@ -122,6 +122,7 @@ impl DbProvider {
             updated_at: Set(Utc::now().naive_utc()),
             name: Set(String::from("")),
             height: Set(0),
+            weight: Set(0),
             description: Set(String::from("")),
             phone_number: Set(String::from("")),
             user_id: Set(user_id),
@@ -164,6 +165,7 @@ impl DbProvider {
         model: &ProfileModel,
         name: &str,
         height: i16,
+        weight: i16,
         city: &str,
         description: &str,
         phone_number: &str,
@@ -171,10 +173,12 @@ impl DbProvider {
         let mut mutable: profile::ActiveModel = model.to_owned().into();
         mutable.name = Set(name.to_owned());
         mutable.height = Set(height);
+        mutable.weight = Set(weight);
         mutable.city = Set(city.to_owned());
         mutable.description = Set(description.to_owned());
         mutable.phone_number = Set(phone_number.to_owned());
         mutable.status = Set("active".to_owned());
+        mutable.updated_at = Set(Utc::now().naive_utc());
 
         mutable.update(&self.db_con).await
     }

@@ -76,6 +76,7 @@ pub struct ProfilePageDataContext {
     pub id: Option<Uuid>,
     pub name: String,
     pub height: i16,
+    pub weight: i16,
     pub description: String,
     pub phone_number: String,
     pub city: String,
@@ -99,6 +100,7 @@ impl ProfilePageDataContext {
             .map(|f| f.name.clone())
             .unwrap_or_default();
         let height = &profile_opt.as_ref().map(|f| f.height).unwrap_or(0);
+        let weight = &profile_opt.as_ref().map(|f| f.weight).unwrap_or(0);
         let description = profile_opt
             .as_ref()
             .map(|f| f.description.clone())
@@ -115,6 +117,7 @@ impl ProfilePageDataContext {
             id,
             name,
             height: height.to_owned(),
+            weight: weight.to_owned(),
             description: description,
             phone_number: phone_number,
             city,

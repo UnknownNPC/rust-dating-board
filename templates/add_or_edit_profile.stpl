@@ -71,6 +71,25 @@
                               </div>
                          <% } %>  
                     </div>
+                    <div class="form-group col-md-4">
+                        <% let error_or_empty = get_translation(&get_error_code_by_field("weight", error_context)); %>
+                        <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
+                        <input aria-describedby="height_help" placeholder="<%= t!("weight_placeholder") %>" type="number" 
+                            class="form-control <%= input_class_value %>" name="weight" id="weight_id" 
+                        <% if data_context.weight==0 { %>
+                            value=""
+                        <% } else { %>
+                            value="<%= data_context.weight %>"
+                        <% } %> >
+                        <small id="weight_help" class="form-text text-muted">
+                            <%= t!("weight_range") %>
+                        </small>
+                        <% if !error_or_empty.is_empty() { %>
+                            <div class="invalid-feedback">
+                                <%= error_or_empty %>
+                              </div>
+                         <% } %>  
+                    </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group input-group col-md-4">

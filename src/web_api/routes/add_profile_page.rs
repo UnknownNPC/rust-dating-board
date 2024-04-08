@@ -134,6 +134,13 @@ pub async fn add_or_edit_profile_post(
         profile.name = form_raw.name.clone();
         if let Ok(height) = form_raw.height.parse::<i16>() {
             profile.height = height
+        } else {
+            profile.height = 0
+        }
+        if let Ok(weight) = form_raw.weight.parse::<i16>() {
+            profile.weight = weight
+        } else {
+            profile.weight = 0
         }
         profile.city = form_raw.city.clone();
         profile.phone_number = form_raw.phone_number.clone();
@@ -239,6 +246,7 @@ pub async fn add_or_edit_profile_post(
             &profile_model,
             &form.name,
             form.height,
+            form.weight,
             &form.city,
             &form.description,
             &form.phone_number,
@@ -269,6 +277,7 @@ fn redirect_response_to(path: &str) -> HttpResponse {
 pub struct AddOrEditProfileFormRequestRaw {
     pub name: String,
     pub height: String,
+    pub weight: String,
     pub city: String,
     pub phone_number: String,
     pub description: String,
@@ -280,6 +289,7 @@ pub struct AddOrEditProfileFormRequestRaw {
 pub struct AddOrEditProfileFormRequest {
     pub name: String,
     pub height: i16,
+    pub weight: i16,
     pub city: String,
     pub phone_number: String,
     pub description: String,
@@ -293,6 +303,7 @@ impl fmt::Debug for AddOrEditProfileFormRequest {
         let mut debug_struct = f.debug_struct("AddOrEditProfileFormRequest");
         debug_struct.field("name", &self.name);
         debug_struct.field("height", &self.height);
+        debug_struct.field("weight", &self.weight);
         debug_struct.field("city", &self.city);
         debug_struct.field("phone_number", &self.phone_number);
         debug_struct.field("description", &self.description);
@@ -310,6 +321,7 @@ impl AddOrEditProfileFormRequest {
         AddOrEditProfileFormRequest {
             name: raw.name.clone(),
             height: raw.height.parse::<i16>().unwrap(),
+            weight: raw.weight.parse::<i16>().unwrap(),
             city: raw.city.clone(),
             phone_number: raw.phone_number.clone(),
             description: raw.description.clone(),

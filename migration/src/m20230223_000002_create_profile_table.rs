@@ -64,6 +64,7 @@ pub enum Profile {
     UpdatedAt,
     Name,
     Height,
+    Weight,
     Description,
     PhoneNumber,
     City,

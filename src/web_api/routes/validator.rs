@@ -71,6 +71,14 @@ impl Validator<AddOrEditProfileFormRequest> for AddOrEditProfileFormRequestRaw {
             "range",
         );
 
+        //weight
+        err_context.if_true_add_error(self.is_empty(|f| &f.weight), "weight", "is_empty");
+        err_context.if_true_add_error(
+            self.is_not_in_range(|f| &f.weight, 20, 200),
+            "weight",
+            "range",
+        );
+
         // city
         err_context.if_true_add_error(self.is_empty(|f| &f.city), "city", "is_empty");
 
