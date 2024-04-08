@@ -297,7 +297,7 @@ impl DbProvider {
             Ok(HashMap::new())
         } else {
             let query = format!(
-                "SELECT DISTINCT ON (profile_id) * FROM profile_photo WHERE status = 'active' and profile_id IN ({})",
+                "SELECT DISTINCT ON (profile_id) * FROM profile_photo WHERE status = 'active' and profile_id IN ({}) order by profile_id, created_at;",
                 profile_photo_str_ids.iter().map(|id| format!("'{}'", id)).collect::<Vec<String>>().join(",")
             );
 
