@@ -1,7 +1,7 @@
 use std::env;
 
 use actix_files::Files;
-use actix_web::{web, App, HttpServer};
+use actix_web::{middleware, web, App, HttpServer};
 use sea_orm::{Database, DbConn, DbErr};
 use std::fs;
 
@@ -10,7 +10,6 @@ mod db;
 mod web_api;
 
 rust_i18n::i18n!("locales");
-
 
 use crate::{config::Config, db::DbProvider};
 
@@ -64,8 +63,12 @@ async fn main() {
             )
             .service(web::resource("/sign_out").route(web::get().to(web_api::sign_out_endpoint)))
             // static services
-            .service(Files::new("/static", "static").show_files_listing())
-            .service(Files::new("/photos", &all_photos_os_folder).show_files_listing())
+            .service(
+                web::scope("")
+                    .wrap(middleware::DefaultHeaders::new().add(("Cache-Control", "max-age=86400")))
+                    .service(Files::new("/static", "static").show_files_listing())
+                    .service(Files::new("/photos", &all_photos_os_folder).show_files_listing()),
+            )
             .default_service(web::route().to(web_api::p404_page))
     })
     .bind(&addr)
