@@ -53,7 +53,9 @@
                     <% for profile in &data_context.profiles { %> 
                         <div class="card" style="background-color: #e3f2fd;">
                             <% if profile.photo_url_opt.is_some() { %>
-                            <img class="card-img-top" src="<%= profile.photo_url_opt.as_ref().unwrap() %>" alt="photo">
+                                <div class="text-center">
+                                    <img class="card-img-top w-100" src="<%= profile.photo_url_opt.as_ref().unwrap() %>" alt="photo">
+                                </div>
                             <% } %>
                             <div class="card-header d-flex p-2">
                                 <b><%= profile.name %></b>

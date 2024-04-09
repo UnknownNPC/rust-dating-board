@@ -6,8 +6,12 @@ use std::{
 };
 
 use actix_multipart::form::tempfile::TempFile;
+use image::{GenericImageView, ImageError};
 use std::fs;
 use uuid::Uuid;
+
+pub static MAX_PROFILE_PHOTO_HEIGHT: &'static u32 = &550;
+pub static MAX_PROFILE_PHOTO_WIDTH: &'static u32 = &360;
 
 pub struct Service;
 
@@ -23,6 +27,39 @@ impl<'a> Service {
         all_photos_folder_name: &str,
         profile_id: &Uuid,
     ) -> Result<PhotoOnFS, io::Error> {
+        fn image_error_to_io_error(err: &ImageError) -> io::Error {
+            io::Error::new(io::ErrorKind::Other, format!("ImageError: {:?}", err))
+        }
+
+        fn image_scaling_post_processing(
+            profile_photo_folder_path: &PathBuf,
+        ) -> Result<(), io::Error> {
+            let image_for_post_processing = image::open(&profile_photo_folder_path)
+                .map_err(|err| image_error_to_io_error(&err))?;
+
+            let (width, height) = image_for_post_processing.dimensions();
+
+            if (width > *MAX_PROFILE_PHOTO_WIDTH) || height > *MAX_PROFILE_PHOTO_WIDTH {
+                println!(
+                    "[PhotoOnFS#save_photo_on_fs] We need scaling: width: {}, height: {} ",
+                    width, height
+                );
+
+                let resized_img = image_for_post_processing.resize_to_fill(
+                    *MAX_PROFILE_PHOTO_WIDTH,
+                    *MAX_PROFILE_PHOTO_HEIGHT,
+                    image::imageops::FilterType::Triangle,
+                );
+
+                resized_img
+                    .save(&profile_photo_folder_path)
+                    .map_err(|err| image_error_to_io_error(&err))
+            } else {
+                println!("[PhotoOnFS#save_photo_on_fs] we do not change scaling: is_horizontal: width: {}, height: {} ", width, height);
+                Ok(())
+            }
+        }
+
         let original_file_name = original_file.file_name.as_ref().unwrap();
         let original_file_extension = Path::new(&original_file_name)
             .extension()
@@ -57,6 +94,8 @@ impl<'a> Service {
             &profile_photo_folder_path.to_str().unwrap()
         );
         fs::copy(&from_file_path, &profile_photo_folder_path)?;
+
+        image_scaling_post_processing(&profile_photo_folder_path)?;
 
         Ok(PhotoOnFS {
             name: new_file_name,

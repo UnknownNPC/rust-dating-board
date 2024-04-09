@@ -80,7 +80,7 @@
         msgLoading: 'Загрузка файла {index} из {files} &hellip;',
         msgProgress: 'Загрузка файла {index} из {files} - {name} - {percent}% завершено.',
         msgSelected: 'Выбрано файлов: {n}',
-        msgProcessing: 'Processing ...',
+        msgProcessing: 'Обробка ...',
         msgFoldersNotAllowed: 'Разрешено перетаскивание только файлов! Пропущено {n} папок.',
         msgImageWidthSmall: 'Ширина изображения {name} должна быть не меньше <b>{size} px</b> (detected <b>{dimension} px</b>).',
         msgImageHeightSmall: 'Высота изображения {name} должна быть не меньше <b>{size} px</b> (detected <b>{dimension} px</b>).',
