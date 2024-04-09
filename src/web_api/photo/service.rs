@@ -5,10 +5,15 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use ab_glyph::FontRef;
 use actix_multipart::form::tempfile::TempFile;
 use image::{GenericImageView, ImageError};
 use std::fs;
 use uuid::Uuid;
+
+use image::io::Reader as ImageReader;
+use image::{DynamicImage, Rgba};
+use imageproc::drawing::draw_text_mut;
 
 pub static MAX_PROFILE_PHOTO_HEIGHT: &'static u32 = &550;
 pub static MAX_PROFILE_PHOTO_WIDTH: &'static u32 = &360;
@@ -60,6 +65,43 @@ impl<'a> Service {
             }
         }
 
+        fn add_watermark_post_processing(
+            profile_photo_folder_path: &PathBuf,
+        ) -> Result<(), io::Error> {
+            println!(
+                "[PhotoOnFS#add_watermark_post_processing] watermark for file: {}",
+                &profile_photo_folder_path.to_str().unwrap()
+            );
+            let reader = ImageReader::open(profile_photo_folder_path)?;
+            let mut img = reader
+                .decode()
+                .map_err(|err| image_error_to_io_error(&err))?;
+
+            let color = Rgba([255, 255, 255, 255]);
+
+            let text = "Anketa.VIP";
+
+            let font = FontRef::try_from_slice(include_bytes!("microsoftsansserif.ttf")).unwrap();
+
+            let (width, height) = img.dimensions();
+            let position = (width - 100, height - 25);
+
+            draw_text_mut(
+                &mut img,
+                color,
+                position.0 as i32,
+                position.1 as i32,
+                20.0,
+                &font,
+                text,
+            );
+
+            let output_img: DynamicImage = img.into();
+            output_img
+                .save(profile_photo_folder_path)
+                .map_err(|err| image_error_to_io_error(&err))
+        }
+
         let original_file_name = original_file.file_name.as_ref().unwrap();
         let original_file_extension = Path::new(&original_file_name)
             .extension()
@@ -96,6 +138,7 @@ impl<'a> Service {
         fs::copy(&from_file_path, &profile_photo_folder_path)?;
 
         image_scaling_post_processing(&profile_photo_folder_path)?;
+        add_watermark_post_processing(&profile_photo_folder_path)?;
 
         Ok(PhotoOnFS {
             name: new_file_name,
