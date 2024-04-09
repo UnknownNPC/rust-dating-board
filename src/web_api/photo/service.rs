@@ -46,7 +46,7 @@ impl<'a> Service {
 
             if (width > *MAX_PROFILE_PHOTO_WIDTH) || height > *MAX_PROFILE_PHOTO_WIDTH {
                 println!(
-                    "[PhotoOnFS#save_photo_on_fs] We need scaling: width: {}, height: {} ",
+                    "We need scaling: width: {}, height: {} ",
                     width, height
                 );
 
@@ -60,7 +60,7 @@ impl<'a> Service {
                     .save(&profile_photo_folder_path)
                     .map_err(|err| image_error_to_io_error(&err))
             } else {
-                println!("[PhotoOnFS#save_photo_on_fs] we do not change scaling: is_horizontal: width: {}, height: {} ", width, height);
+                println!("We do not change scaling: width: {}, height: {} ", width, height);
                 Ok(())
             }
         }
@@ -69,7 +69,7 @@ impl<'a> Service {
             profile_photo_folder_path: &PathBuf,
         ) -> Result<(), io::Error> {
             println!(
-                "[PhotoOnFS#add_watermark_post_processing] watermark for file: {}",
+                "Adding watermark for file: {}",
                 &profile_photo_folder_path.to_str().unwrap()
             );
             let reader = ImageReader::open(profile_photo_folder_path)?;
@@ -114,7 +114,7 @@ impl<'a> Service {
 
         if !profile_photo_folder_path.exists() {
             println!(
-                "[PhotoOnFS#save_photo_on_fs] creating folder for new file: {}",
+                "Creating folder for new file: {}",
                 &profile_photo_folder_path.to_str().unwrap()
             );
             fs::create_dir_all(&profile_photo_folder_path)?;
@@ -125,13 +125,13 @@ impl<'a> Service {
         // add photo name with ext
         profile_photo_folder_path.push(&new_file_name);
         println!(
-            "[PhotoOnFS#save_photo_on_fs] forming path for new file: {}",
+            "Forming path for new file: {}",
             &profile_photo_folder_path.to_str().unwrap()
         );
 
         let from_file_path = original_file.file.path();
         println!(
-            "[PhotoOnFS#save_photo_on_fs] copying data from file {} to file {1}",
+            "Copying data from file {} to file {1}",
             &from_file_path.to_str().unwrap(),
             &profile_photo_folder_path.to_str().unwrap()
         );
@@ -161,7 +161,7 @@ impl<'a> Service {
 
         if !profile_photo_old_path.exists() {
             println!(
-                "[PhotoOnFS#delete_photo_from_fs] cant find file {}. Was it deleted manually? ",
+                "Cant find file {}. Was it deleted manually? ",
                 &profile_photo_old_path.to_str().unwrap()
             );
             return Ok(());
@@ -183,13 +183,13 @@ impl<'a> Service {
             let new_profile_photo_folder_path =
                 profile_photo_folder_path.to_str().unwrap().to_owned() + "_delete";
             println!(
-            "[PhotoOnFS#delete_profile_from_fs] Deleting profile photo folder. From [{}] to [{}]",
+            "Deleting profile photo folder. From [{}] to [{}]",
             &profile_photo_folder_path.to_str().unwrap(),
             &new_profile_photo_folder_path
         );
             fs::rename(profile_photo_folder_path, new_profile_photo_folder_path)
         } else {
-            println!("[PhotoOnFS#delete_profile_from_fs] Profile folder doesn't exist. Skipping");
+            println!("Profile folder doesn't exist. Skipping");
             Ok(())
         }
     }

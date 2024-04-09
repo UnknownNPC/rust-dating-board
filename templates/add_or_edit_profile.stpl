@@ -177,8 +177,8 @@
 </body>
 
 <% include!("./includes/extra_scripts.stpl"); %>
-    <script src="static/js/fileinput.min.js"></script>
-    <script src="static/js/locales/uk.js"></script>
+    <script src="/static/js/fileinput.min.js"></script>
+    <script src="/static/js/locales/uk.js"></script>
     <script>
         $(document).ready(function () {
             var $el1 = $("#photo-files");
@@ -191,7 +191,7 @@
                 duplicate: false,
                 maxSize: 15728640,
                 allowedFileExtensions: ["jpg", "jpeg"],
-                language: '<%= rust_i18n::locale().to_string() %>',
+                language: '<%=rust_i18n::locale().to_string()%>',
                 initialPreviewAsData: true,
                 overwriteInitial: false,
 
