@@ -215,10 +215,19 @@ impl DbProvider {
             text
         );
 
+        if text.is_empty() {
+            return Ok(vec![]);
+        }
+
         profile::Entity::find()
             .from_raw_sql(Statement::from_sql_and_values(
                 DbBackend::Postgres,
-                "SELECT * FROM profile WHERE to_tsvector(phone_number) || to_tsvector(description) || to_tsvector(name) @@ plainto_tsquery($1) 
+                "SELECT * FROM profile WHERE 
+                (
+                    to_tsvector(phone_number) || to_tsvector(description) || to_tsvector(name) @@ plainto_tsquery($1)
+                    OR 
+                    (phone_number = $1 OR phone_number = substring($1, 2))
+                )
                 AND status = 'active' order by created_at desc limit $2;",
                 [text.into(), limit.into()],
             ))

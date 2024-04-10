@@ -99,7 +99,7 @@ pub async fn view_profile_page(
     let data_context = resolve_view_profile(&query.id, &db_provider, &config, &auth_gate).await?;
 
     let page_title = format!(
-        "{} {} – {}",
+        "{} {} – 0{}",
         t!("view_profile_page_title"),
         &data_context.name, &data_context.phone_num
     );

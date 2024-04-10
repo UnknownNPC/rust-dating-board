@@ -72,7 +72,7 @@
                 <div class="card mt-3">
                   <div class="card-body">
                     <h3 class="card-title"><%=t!("profile_actions")%></h3>
-                    <a href="/?search=<%= data_context.phone_num %>" class="btn btn-info"><%=t!("other_profiles_by_phone")%></a>
+                    <a href="/?search=0<%=data_context.phone_num%>" class="btn btn-info"><%=t!("other_profiles_by_phone")%></a>
                     <% if data_context.is_user_profile_author { %>
                       <a href="/edit_profile?id=<%= data_context.id.to_string() %>" class="btn btn-primary"><%=t!("edit_profile_btn")%></a>
                       <a id="delete_profile" href="#" class="btn btn-danger"><%=t!("delete_profile_btn")%></a>
