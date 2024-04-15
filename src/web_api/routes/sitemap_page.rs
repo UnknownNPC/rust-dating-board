@@ -51,7 +51,7 @@ pub async fn sitemap(
         .map(|f| {
             let lastmod = f.updated_at.format(DATE_FORMAT).to_string();
             UrlContext::new(
-                format!("{}{}", &index, f.city).as_str(),
+                format!("{}?filter_city={}", &index, f.city).as_str(),
                 lastmod.as_str(),
                 CITY_URL_UPDATE_FREQ,
                 CITY_URL_PRIORITY,
