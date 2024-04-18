@@ -66,16 +66,8 @@ async fn main() {
             .service(
                 web::scope("")
                     .wrap(middleware::DefaultHeaders::new().add(("Cache-Control", "max-age=86400")))
-                    .service(
-                        Files::new("/static", "static")
-                            .show_files_listing()
-                            .index_file("not_found"),
-                    )
-                    .service(
-                        Files::new("/photos", &all_photos_os_folder)
-                            .show_files_listing()
-                            .index_file("not_found"),
-                    )
+                    .service(Files::new("/static", "static").index_file("not_found"))
+                    .service(Files::new("/photos", &all_photos_os_folder).index_file("not_found")),
             )
             .default_service(web::route().to(web_api::p404_page))
     })
