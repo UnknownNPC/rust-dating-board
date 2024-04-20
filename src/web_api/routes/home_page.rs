@@ -65,6 +65,7 @@ pub async fn index_page(
         config: &web::Data<Config>,
         query: &web::Query<QueryRequest>,
         auth_gate: &AuthenticationGate,
+        bot_detector: &BotDetector,
     ) -> Result<HomePageDataContext, HtmlError> {
         let is_user_profiles = auth_gate.is_authorized && query.show_my.unwrap_or_default();
         let is_search = query.search.is_some();
@@ -89,8 +90,7 @@ pub async fn index_page(
         let all_profiles_ids = all_profiles.1.iter().map(|profile| profile.id).collect();
         let profile_id_and_profile_photo_map = db_provider
             .find_first_profile_photos_for(&all_profiles_ids)
-            .await
-            .unwrap();
+            .await?;
 
         let context_profiles: Vec<HomePageProfileDataContext> = all_profiles
             .1
@@ -105,6 +105,25 @@ pub async fn index_page(
         let curret_page = query.page.unwrap_or(1);
         let has_next = curret_page < total_pages;
         let has_previous = curret_page > 1;
+
+        //increase view counter
+        // if not user_profiles == regular page or search request
+        if is_user_profiles || bot_detector.is_bot {
+            println!(
+                "Searching for his own profiles [{}] or bot [{}]. Do not increase view counter",
+                is_user_profiles, bot_detector.is_bot
+            )
+        } else {
+            let update_res = db_provider
+                .increase_view_for_profiles(&all_profiles_ids)
+                .await?;
+
+            println!(
+                "Increasing view count [{}/{}]",
+                update_res,
+                all_profiles_ids.len()
+            );
+        }
 
         Ok(HomePageDataContext {
             profiles: context_profiles,
@@ -150,7 +169,8 @@ pub async fn index_page(
     );
 
     let nav_context = get_nav_context(&auth_gate, &query, &config, &db_provider).await?;
-    let data_context = get_data_context(&db_provider, &config, &query, &auth_gate).await?;
+    let data_context =
+        get_data_context(&db_provider, &config, &query, &auth_gate, &bot_detector).await?;
     let head_context = get_head_context(&db_provider, &config, &query.search).await?;
     Ok(HtmlPage::homepage(
         &head_context,

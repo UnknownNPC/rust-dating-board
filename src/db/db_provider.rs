@@ -2,10 +2,12 @@ use std::collections::HashMap;
 
 use chrono::Utc;
 use futures::future::try_join_all;
+use sea_orm::query::*;
+use sea_orm::sea_query::Expr;
 use sea_orm::ActiveValue::NotSet;
 use sea_orm::{
-    query::*, ActiveModelTrait, ColumnTrait, DbBackend, DbErr, FromQueryResult, Order,
-    PaginatorTrait, QueryFilter, QueryOrder, Set, Statement,
+    ActiveModelTrait, ColumnTrait, DbBackend, DbErr, FromQueryResult, Order, PaginatorTrait,
+    QueryFilter, QueryOrder, Set, Statement,
 };
 use sea_orm::{DbConn, EntityTrait};
 use uuid::Uuid;
@@ -293,6 +295,23 @@ impl DbProvider {
             .order_by(profile_photo::Column::CreatedAt, Order::Desc)
             .one(&self.db_con)
             .await
+    }
+
+    pub async fn increase_view_for_profiles(&self, profile_ids: &Vec<Uuid>) -> Result<u64, DbErr> {
+        if profile_ids.is_empty() {
+            Ok(0)
+        } else {
+            let update_result = profile::Entity::update_many()
+                .col_expr(
+                    profile::Column::ViewCount,
+                    Expr::col(profile::Column::ViewCount).add(1),
+                )
+                .filter(profile::Column::Id.is_in(profile_ids.clone()))
+                .exec(&self.db_con)
+                .await;
+
+            update_result.map(|res| res.rows_affected)
+        }
     }
 
     pub async fn find_first_profile_photos_for(
