@@ -63,8 +63,10 @@
                     <p class="card-text mb-0"><%=t!("height_placeholder")%>: <%= data_context.height %></p>
                     <p class="card-text mb-0"><%=t!("weight_placeholder")%>: <%= data_context.weight %></p>
                     <p class="card-text mb-0"><%=t!("phone_placeholder")%>: +380<%= data_context.phone_num %></p>
-                    <p class="card-text mb-0"><%=t!("city")%>: <%=t!(format!("city_dropdown_{}", &data_context.city).as_str())%></p>
                     <p class="card-text mb-0"><%=t!("description")%>: <%= data_context.description %></p>
+                    <hr class="my-12"/>
+                    <p class="card-text mb-0"><%=t!("city")%>: <%=t!(format!("city_dropdown_{}", &data_context.city).as_str())%></p>
+                    <p class="card-text mb-0"><%=t!("number_of_view")%>: 100000</p>
                     <p class="card-text mb-0"><%=t!("published")%>: <%= data_context.date_create %></p>
                   </div>
                 </div>    

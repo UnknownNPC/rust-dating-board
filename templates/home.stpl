@@ -76,8 +76,13 @@
                                 <a href="/view_profile?id=<%= profile.id.to_string() %>" class="stretched-link"></a>
                             </div>
                             <div class="card-footer d-flex p-2">
-                                <small class="text-muted"><%= profile.date_create %></small>
-                                <small class="text-muted ml-auto"><%= t!(format!("city_dropdown_{}", &profile.city).as_str()) %></small>
+                                <small class="text-muted">
+                                    <div><%=t!("city")%>: <%= t!(format!("city_dropdown_{}", &profile.city).as_str()) %></div>
+                                    <div><%=t!("published")%>: <%= profile.date_create %></div>
+                                </small>
+                                <small class="text-muted ml-auto">
+                                    <%=t!("number_of_view")%>: 1000000
+                                </small>
                             </div>
                         </div>
                             
