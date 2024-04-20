@@ -5,6 +5,7 @@ mod m20230223_000002_create_profile_table;
 mod m20230223_000003_create_profilephoto_table;
 mod m20230304_000004_create_city_table;
 mod m20240408_000005_alter_profile_with_weight;
+mod m20240420_000006_alter_profile_with_view;
 
 pub struct Migrator;
 
@@ -17,6 +18,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20230223_000003_create_profilephoto_table::Migration),
             Box::new(m20230304_000004_create_city_table::Migration),
             Box::new(m20240408_000005_alter_profile_with_weight::Migration),
+            Box::new(m20240420_000006_alter_profile_with_view::Migration),
         ]
     }
 }

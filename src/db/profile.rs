@@ -17,6 +17,7 @@ pub struct Model {
     pub user_id: i64,
     pub status: String,
     pub weight: i16,
+    pub view_count: i64,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

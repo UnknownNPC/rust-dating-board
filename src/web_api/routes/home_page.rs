@@ -16,11 +16,15 @@ use crate::{
 };
 use rust_i18n::t;
 
-use super::{common::get_relative_photo_url, constant::HOME_DATE_FORMAT, error::HtmlError};
+use super::{
+    bot_detector_gate::BotDetector, common::get_relative_photo_url, constant::HOME_DATE_FORMAT,
+    error::HtmlError,
+};
 
 pub async fn index_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
+    bot_detector: BotDetector,
     query: web::Query<QueryRequest>,
     config: web::Data<Config>,
 ) -> Result<impl Responder, HtmlError> {
@@ -141,8 +145,8 @@ pub async fn index_page(
     }
 
     println!(
-        "[route#add_profile_page] User auth status: [{}]. Index page",
-        auth_gate.is_authorized,
+        "[route#index_page] User auth status: [{}], Is Bot [{}]. Index page",
+        auth_gate.is_authorized, bot_detector.is_bot
     );
 
     let nav_context = get_nav_context(&auth_gate, &query, &config, &db_provider).await?;
@@ -177,6 +181,7 @@ pub struct HomePageProfileDataContext {
     pub short_description: String,
     pub photo_url_opt: Option<String>,
     pub date_create: String,
+    pub view_count: i64,
 }
 
 impl HomePageProfileDataContext {
@@ -198,6 +203,7 @@ impl HomePageProfileDataContext {
             short_description: short_description,
             photo_url_opt: photo_url_opt,
             date_create,
+            view_count: profile.view_count,
         }
     }
 }

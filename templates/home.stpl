@@ -81,7 +81,7 @@
                                     <div><%=t!("published")%>: <%= profile.date_create %></div>
                                 </small>
                                 <small class="text-muted ml-auto">
-                                    <%=t!("number_of_view")%>: 1000000
+                                    <%=t!("number_of_view")%>: <%= profile.view_count %>
                                 </small>
                             </div>
                         </div>

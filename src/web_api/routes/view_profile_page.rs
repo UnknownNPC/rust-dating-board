@@ -16,11 +16,12 @@ use crate::{
 };
 use rust_i18n::t;
 
-use super::{edit_profile_page::EditProfileRequest, error::HtmlError};
+use super::{bot_detector_gate::BotDetector, edit_profile_page::EditProfileRequest, error::HtmlError};
 
 pub async fn view_profile_page(
     db_provider: web::Data<DbProvider>,
     auth_gate: AuthenticationGate,
+    bot_detector: BotDetector,
     config: web::Data<Config>,
     query: web::Query<EditProfileRequest>,
 ) -> Result<impl Responder, HtmlError> {
@@ -62,6 +63,7 @@ pub async fn view_profile_page(
             photo_urls: photo_urls_or_placeholder,
             date_create: profile.created_at.format(HOME_DATE_FORMAT).to_string(),
             is_user_profile_author,
+            view_count: profile.view_count
         })
     }
 
@@ -90,9 +92,10 @@ pub async fn view_profile_page(
     }
 
     println!(
-        "[route#view_profile_page] User auth status: [{}]. User ID: [{}]",
+        "[route#view_profile_page] User auth status: [{}]. User ID: [{}]. Is bot: [{}]",
         auth_gate.is_authorized,
-        auth_gate.user_id.unwrap_or_default()
+        auth_gate.user_id.unwrap_or_default(),
+        bot_detector.is_bot
     );
 
     let nav_context = resolve_nav_context(&db_provider, &auth_gate, &config).await?;
@@ -135,4 +138,5 @@ pub struct ViewProfileResponse {
     pub photo_urls: Vec<String>,
     pub date_create: String,
     pub is_user_profile_author: bool,
+    pub view_count: i64,
 }

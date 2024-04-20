@@ -69,5 +69,6 @@ pub enum Profile {
     PhoneNumber,
     City,
     UserId,
-    Status
+    Status,
+    ViewCount
 }

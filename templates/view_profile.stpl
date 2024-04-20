@@ -66,7 +66,7 @@
                     <p class="card-text mb-0"><%=t!("description")%>: <%= data_context.description %></p>
                     <hr class="my-12"/>
                     <p class="card-text mb-0"><%=t!("city")%>: <%=t!(format!("city_dropdown_{}", &data_context.city).as_str())%></p>
-                    <p class="card-text mb-0"><%=t!("number_of_view")%>: 100000</p>
+                    <p class="card-text mb-0"><%=t!("number_of_view")%>: <%=data_context.view_count%></p>
                     <p class="card-text mb-0"><%=t!("published")%>: <%= data_context.date_create %></p>
                   </div>
                 </div>    

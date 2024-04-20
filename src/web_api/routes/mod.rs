@@ -12,6 +12,7 @@ mod sitemap_page;
 mod validator;
 mod view_profile_page;
 mod robots_page;
+mod bot_detector_gate;
 
 pub use robots_page::robots_txt;
 pub use sitemap_page::sitemap;
