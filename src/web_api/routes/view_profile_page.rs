@@ -63,11 +63,9 @@ pub async fn view_profile_page(
                 is_user_profile_author, bot_detector.is_bot
             )
         } else {
-            let update_res = db_provider
+            db_provider
                 .increase_view_for_profiles(&vec![profile.id])
                 .await?;
-
-            println!("Increasing view count [{}/{}]", update_res, 1);
         }
 
         Ok(ViewProfileResponse {

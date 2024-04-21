@@ -106,25 +106,6 @@ pub async fn index_page(
         let has_next = curret_page < total_pages;
         let has_previous = curret_page > 1;
 
-        //increase view counter
-        // if not user_profiles == regular page or search request
-        if is_user_profiles || bot_detector.is_bot {
-            println!(
-                "Searching for his own profiles [{}] or bot [{}]. Do not increase view counter",
-                is_user_profiles, bot_detector.is_bot
-            )
-        } else {
-            let update_res = db_provider
-                .increase_view_for_profiles(&all_profiles_ids)
-                .await?;
-
-            println!(
-                "Increasing view count [{}/{}]",
-                update_res,
-                all_profiles_ids.len()
-            );
-        }
-
         Ok(HomePageDataContext {
             profiles: context_profiles,
             pagination: Pagination {
