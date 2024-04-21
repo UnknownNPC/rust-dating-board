@@ -149,8 +149,7 @@ pub async fn index_page(
     );
 
     let nav_context = get_nav_context(&auth_gate, &query, &config, &db_provider).await?;
-    let data_context =
-        get_data_context(&db_provider, &config, &query, &auth_gate, &bot_detector).await?;
+    let data_context = get_data_context(&db_provider, &config, &query, &auth_gate).await?;
     let head_context = get_head_context(&db_provider, &config, &query.search).await?;
     Ok(HtmlPage::homepage(
         &head_context,
