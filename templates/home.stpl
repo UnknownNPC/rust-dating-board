@@ -49,45 +49,50 @@
             <% if data_context.profiles.is_empty() { %>
                 <h2 class="text-center pt-3"><%= t!("nothing_found") %></h2>
             <% } else { %>
-                <div class="card-columns">
-                    <% for profile in &data_context.profiles { %> 
-                        <div class="card" style="background-color: #e3f2fd;">
-                            <% if profile.photo_url_opt.is_some() { %>
-                                <div class="text-center">
-                                    <img class="card-img-top w-100" src="<%= profile.photo_url_opt.as_ref().unwrap() %>" alt="photo">
-                                </div>
-                            <% } %>
-                            <div class="card-header d-flex p-2">
-                                <b><%= profile.name %></b>
-                                <% if nav_context.is_user_profiles { %>
-                                    <span class="ml-auto card-icons-box">
-                                        <a href="/edit_profile?id=<%= profile.id.to_string() %>">
-                                            <i class="icon-edit" title="<%= t!("edit_profile_btn") %>"></i>
-                                        </a>
-                                        <a class="delete_profile_link" data-toggle="modal" data-id="<%= profile.id.to_string() %>" href="#">
-                                            <i class="icon-trash" title="<%= t!("delete_profile_btn") %>"></i>
-                                        </a>
-                                    </span>
+                <%# <div class="card-columns"> %>
+                    <% for (index, profile) in data_context.profiles.iter().enumerate() { %> 
+                        <% if index % 4 == 0 { %>
+                            <div class="row">
+                        <% } %>
+                         <div class="col-sm-3 pt-3">
+                            <div class="card" style="background-color: #e3f2fd;">
+                                <% if profile.photo_url_opt.is_some() { %>
+                                    <div class="text-center">
+                                        <img class="card-img-top w-100" src="<%= profile.photo_url_opt.as_ref().unwrap() %>" alt="photo">
+                                    </div>
                                 <% } %>
+                                <div class="card-header d-flex p-2">
+                                    <b><%= profile.name %></b>
+                                    <% if nav_context.is_user_profiles { %>
+                                        <span class="ml-auto card-icons-box">
+                                            <a href="/edit_profile?id=<%= profile.id.to_string() %>">
+                                                <i class="icon-edit" title="<%= t!("edit_profile_btn") %>"></i>
+                                            </a>
+                                            <a class="delete_profile_link" data-toggle="modal" data-id="<%= profile.id.to_string() %>" href="#">
+                                                <i class="icon-trash" title="<%= t!("delete_profile_btn") %>"></i>
+                                            </a>
+                                        </span>
+                                    <% } %>
 
-                            </div>
-                            <div class="card-body p-2">
-                                <p class="card-text"><%= profile.short_description %>...</p>
-                                <a href="/view_profile?id=<%= profile.id.to_string() %>" class="stretched-link"></a>
-                            </div>
-                            <div class="card-footer d-flex p-2">
-                                <small class="text-muted">
-                                    <div><%=t!("city")%>: <%= t!(format!("city_dropdown_{}", &profile.city).as_str()) %></div>
-                                    <div><%=t!("published")%>: <%= profile.date_create %></div>
-                                </small>
-                                <small class="text-muted ml-auto">
-                                    <%=t!("number_of_view")%>: <%= profile.view_count %>
-                                </small>
+                                </div>
+                                <div class="card-body p-2">
+                                    <p class="card-text"><%= profile.short_description %>...</p>
+                                    <a href="/view_profile?id=<%= profile.id.to_string() %>" class="stretched-link"></a>
+                                </div>
+                                <div class="card-footer d-flex p-2">
+                                    <small class="text-muted">
+                                        <div><%=t!("city")%>: <%= t!(format!("city_dropdown_{}", &profile.city).as_str()) %></div>
+                                        <div><%=t!("published")%>: <%= profile.date_create %></div>
+                                        <div><%=t!("number_of_view")%>: <%= profile.view_count %></div>
+                                    </small>
+                                </div>
                             </div>
                         </div>
-                            
+                        <% if (index + 1) % 4 == 0 || (index + 1) == data_context.profiles.len() { %>
+                            </div>
+                        <% } %>
                     <% } %>
-                </div>
+                <%# </div> %>
             <% } %>
 
             <% if !nav_context.is_user_profiles && !nav_context.search.is_some() { %>
