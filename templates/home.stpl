@@ -62,10 +62,10 @@
                                 <% if nav_context.is_user_profiles { %>
                                     <span class="ml-auto card-icons-box">
                                         <a href="/edit_profile?id=<%= profile.id.to_string() %>">
-                                            <i class="fas fa-pen fa-md mr-2" title="<%= t!("edit_profile_btn") %>"></i>
+                                            <i class="icon-edit" title="<%= t!("edit_profile_btn") %>"></i>
                                         </a>
                                         <a class="delete_profile_link" data-toggle="modal" data-id="<%= profile.id.to_string() %>" href="#">
-                                            <i class="fas fa-trash fa-md" title="<%= t!("delete_profile_btn") %>"></i>
+                                            <i class="icon-trash" title="<%= t!("delete_profile_btn") %>"></i>
                                         </a>
                                     </span>
                                 <% } %>
