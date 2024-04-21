@@ -2,12 +2,15 @@ use std::env;
 
 use actix_files::Files;
 use actix_web::{middleware, web, App, HttpServer};
+use env_logger::Builder;
 use sea_orm::{Database, DbConn, DbErr};
 use std::fs;
 
 mod config;
 mod db;
 mod web_api;
+
+use log::info;
 
 rust_i18n::i18n!("locales");
 
@@ -19,6 +22,12 @@ async fn establish_connection(conf: &Config) -> Result<DbConn, DbErr> {
 
 #[actix_web::main]
 async fn main() {
+
+    Builder::new()
+        .filter_level(log::LevelFilter::Info)
+        .filter_module("sqlx::query", log::LevelFilter::Off)
+        .init();
+
     rust_i18n::set_locale("uk");
 
     let conf = Config::init();
@@ -74,7 +83,7 @@ async fn main() {
     .bind(&addr)
     .unwrap()
     .run();
-    println!("Server live at http://{}", &addr);
+    info!("Server live at http://{}", &addr);
     server.await.unwrap();
 }
 

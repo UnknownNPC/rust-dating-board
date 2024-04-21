@@ -6,6 +6,7 @@ use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use crate::config::Config;
 
 use super::session_manager::TokenClaims;
+use log::info;
 
 pub struct AuthenticationGate {
     pub is_authorized: bool,
@@ -33,7 +34,7 @@ impl FromRequest for AuthenticationGate {
         let token = req.cookie("token").map(|c| c.value().to_string());
 
         if token.is_none() {
-            println!("[authentication_gate] Token doesn't exist. Exit");
+            info!("Token doesn't exist. Exit");
             return ready(Ok(AuthenticationGate::empty()));
         }
 
@@ -51,8 +52,8 @@ impl FromRequest for AuthenticationGate {
                 let id = token.claims.sub.parse::<i64>().unwrap();
                 let name = token.claims.name;
                 let email = token.claims.email;
-                println!(
-                    "[authentication_gate] JWT token user id [{}], name: [{}], email: [{}]",
+                info!(
+                    "JWT token user id [{}], name: [{}], email: [{}]",
                     &id, &name, &email
                 );
                 ready(Ok(AuthenticationGate {
@@ -63,7 +64,7 @@ impl FromRequest for AuthenticationGate {
                 }))
             }
             Err(_) => {
-                println!("[authentication_gate] Found token but wasn't able to verify it. I guess it was hoooker attack :3");
+                info!("Found token but wasn't able to verify it. I guess it was hoooker attack :3");
                 ready(Ok(AuthenticationGate::empty()))
             }
         }

@@ -8,6 +8,7 @@ use std::{
 use ab_glyph::FontRef;
 use actix_multipart::form::tempfile::TempFile;
 use image::{GenericImageView, ImageError};
+use log::info;
 use std::fs;
 use uuid::Uuid;
 
@@ -45,10 +46,7 @@ impl<'a> Service {
             let (width, height) = image_for_post_processing.dimensions();
 
             if (width > *MAX_PROFILE_PHOTO_WIDTH) || height > *MAX_PROFILE_PHOTO_WIDTH {
-                println!(
-                    "We need scaling: width: {}, height: {} ",
-                    width, height
-                );
+                info!("We need scaling: width: {}, height: {} ", width, height);
 
                 let resized_img = image_for_post_processing.resize_to_fill(
                     *MAX_PROFILE_PHOTO_WIDTH,
@@ -60,7 +58,10 @@ impl<'a> Service {
                     .save(&profile_photo_folder_path)
                     .map_err(|err| image_error_to_io_error(&err))
             } else {
-                println!("We do not change scaling: width: {}, height: {} ", width, height);
+                info!(
+                    "We do not change scaling: width: {}, height: {}",
+                    width, height
+                );
                 Ok(())
             }
         }
@@ -68,7 +69,7 @@ impl<'a> Service {
         fn add_watermark_post_processing(
             profile_photo_folder_path: &PathBuf,
         ) -> Result<(), io::Error> {
-            println!(
+            info!(
                 "Adding watermark for file: {}",
                 &profile_photo_folder_path.to_str().unwrap()
             );
@@ -113,7 +114,7 @@ impl<'a> Service {
             Self::get_path_2_profile_photos(all_photos_folder_name, profile_id);
 
         if !profile_photo_folder_path.exists() {
-            println!(
+            info!(
                 "Creating folder for new file: {}",
                 &profile_photo_folder_path.to_str().unwrap()
             );
@@ -124,13 +125,13 @@ impl<'a> Service {
         let new_file_name = format!("{}.{1}", new_file_unique_id, original_file_extension);
         // add photo name with ext
         profile_photo_folder_path.push(&new_file_name);
-        println!(
+        info!(
             "Forming path for new file: {}",
             &profile_photo_folder_path.to_str().unwrap()
         );
 
         let from_file_path = original_file.file.path();
-        println!(
+        info!(
             "Copying data from file {} to file {1}",
             &from_file_path.to_str().unwrap(),
             &profile_photo_folder_path.to_str().unwrap()
@@ -160,7 +161,7 @@ impl<'a> Service {
         profile_photo_old_path.push(photo_name);
 
         if !profile_photo_old_path.exists() {
-            println!(
+            info!(
                 "Cant find file {}. Was it deleted manually? ",
                 &profile_photo_old_path.to_str().unwrap()
             );
@@ -182,14 +183,14 @@ impl<'a> Service {
         if profile_photo_folder_path.exists() {
             let new_profile_photo_folder_path =
                 profile_photo_folder_path.to_str().unwrap().to_owned() + "_delete";
-            println!(
-            "Deleting profile photo folder. From [{}] to [{}]",
-            &profile_photo_folder_path.to_str().unwrap(),
-            &new_profile_photo_folder_path
-        );
+            info!(
+                "Deleting profile photo folder. From [{}] to [{}]",
+                &profile_photo_folder_path.to_str().unwrap(),
+                &new_profile_photo_folder_path
+            );
             fs::rename(profile_photo_folder_path, new_profile_photo_folder_path)
         } else {
-            println!("Profile folder doesn't exist. Skipping");
+            info!("Profile folder doesn't exist. Skipping");
             Ok(())
         }
     }

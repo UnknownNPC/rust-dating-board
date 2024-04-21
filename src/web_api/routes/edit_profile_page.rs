@@ -1,8 +1,8 @@
 use actix_web::{web, Responder};
 use serde::Deserialize;
 use uuid::Uuid;
+use log::info;
 
-use rust_i18n::t;
 use crate::{
     config::Config,
     db::DbProvider,
@@ -15,6 +15,7 @@ use crate::{
         },
     },
 };
+use rust_i18n::t;
 
 use super::error::HtmlError;
 
@@ -28,8 +29,8 @@ pub async fn edit_profile_page(
         return Err(HtmlError::NotAuthorized);
     }
 
-    println!(
-        "[route#add_or_edit_profile_post] User auth status: [{}]. User ID: [{}]",
+    info!(
+        "User auth status: [{}]. User ID: [{}]",
         auth_gate.is_authorized,
         auth_gate.user_id.unwrap_or_default()
     );
@@ -60,7 +61,7 @@ pub async fn edit_profile_page(
         &Option::None,
         &cities_names,
         &config.oauth_google_client_id,
-            &config.oauth_google_redirect_url,
+        &config.oauth_google_redirect_url,
     );
     let error_context = ErrorContext::empty();
     let head_context = HeadContext::new(

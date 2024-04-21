@@ -14,6 +14,7 @@ use actix_web::http::header::LOCATION;
 use actix_web::http::StatusCode;
 use actix_web::{web, HttpResponse, Responder};
 use futures::future;
+use log::info;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -27,8 +28,8 @@ pub async fn delete_profile_endpoint(
         return Err(HtmlError::NotAuthorized);
     }
 
-    println!(
-        "[route#delete_profile_endpoint] User auth status: [{}]. User ID: [{}]",
+    info!(
+        "User auth status: [{}]. User ID: [{}]",
         auth_gate.is_authorized,
         auth_gate.user_id.unwrap_or_default()
     );
@@ -40,10 +41,7 @@ pub async fn delete_profile_endpoint(
     let profile = profile_opt.ok_or(HtmlError::NotFound)?;
     let profile_photos = db_provider.find_all_profile_photos_for(&profile.id).await?;
 
-    println!(
-        "[route#delete_profile_endpoint] Deleting profile: [{}]. Starting IO",
-        &profile_id
-    );
+    info!("Deleting profile: [{}]. Starting IO", &profile_id);
 
     db_provider
         .delete_profile_and_photos(&profile, &profile_photos)
@@ -68,7 +66,7 @@ pub async fn add_profile_photo_endpoint(
         db_provider: &web::Data<DbProvider>,
     ) -> Result<ProfileModel, JsonError> {
         if profile_id_opt.is_some() {
-            println!("[routes#add_profile_photo_endpoint] Edit flow. Searching active profile");
+            info!("Edit flow. Searching active profile");
             let profile_id = profile_id_opt.unwrap_or_default();
             db_provider
                 .find_active_profile_by_id_and_user_id(&profile_id, user_id)
@@ -78,11 +76,11 @@ pub async fn add_profile_photo_endpoint(
             let draft_profile_opt = db_provider.find_draft_profile_for(user_id).await?;
             match draft_profile_opt {
                 Some(draft_profile) => {
-                    println!("[routes#add_profile_photo_endpoint] Draft profile flow. Found draft profile. Re-useing");
+                    info!("Draft profile flow. Found draft profile. Re-useing");
                     Ok(draft_profile)
                 }
                 None => {
-                    println!("[routes#add_profile_photo_endpoint] Draft profile flow. Creating new draft profile");
+                    info!("Draft profile flow. Creating new draft profile");
                     db_provider
                         .add_draft_profile_for(user_id)
                         .await
@@ -96,8 +94,8 @@ pub async fn add_profile_photo_endpoint(
         return Err(JsonError::NotAuthorized);
     }
 
-    println!(
-        "[route#add_profile_photo_endpoint] User auth status: [{}]. User ID: [{}]",
+    info!(
+        "User auth status: [{}]. User ID: [{}]",
         auth_gate.is_authorized,
         auth_gate.user_id.unwrap_or_default()
     );
@@ -122,8 +120,8 @@ pub async fn add_profile_photo_endpoint(
             profile_id,
         )?;
 
-        println!(
-            "[routes#add_profile_photo_endpoint]: Photo saved into fs with name: [{:?}]",
+        info!(
+            "Photo saved into fs with name: [{:?}]",
             &photo_fs_save_result
         );
         let save_result = db_provider
@@ -134,10 +132,7 @@ pub async fn add_profile_photo_endpoint(
             )
             .await;
 
-        println!(
-            "[routes#add_profile_photo_endpoint]: Photo saved into database with id: [{:?}]",
-            &save_result
-        );
+        info!("Photo saved into database with id: [{:?}]", &save_result);
         save_result.map_err(|err| err.into())
     }
 
@@ -181,8 +176,8 @@ pub async fn delete_profile_photo_endpoint(
         return Err(JsonError::NotAuthorized);
     }
 
-    println!(
-        "[route#delete_profile_photo_endpoint] User auth status: [{}]. User ID: [{}]",
+    info!(
+        "User auth status: [{}]. User ID: [{}]",
         auth_gate.is_authorized,
         auth_gate.user_id.unwrap_or_default()
     );
@@ -198,7 +193,7 @@ pub async fn delete_profile_photo_endpoint(
     process_deleting(&profile.id, &profile_photo, &db_provider, &config)
         .await
         .map(|_| {
-            println!("[route#delete_profile_photo_endpoint] IO actions were done. Deleted: OK!");
+            info!("IO actions were done. Deleted: OK!");
             web::Json(DeleteProfilePhotoJsonResponse::new())
         })
 }

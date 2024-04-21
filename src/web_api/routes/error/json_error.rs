@@ -1,6 +1,7 @@
 use std::{error::Error, fmt::Display, io};
 
 use actix_web::{error, http::StatusCode, web, HttpResponse};
+use log::error;
 use sea_orm::DbErr;
 use serde::Serialize;
 
@@ -30,14 +31,14 @@ impl Display for JsonError {
 
 impl From<DbErr> for JsonError {
     fn from(err: DbErr) -> Self {
-        println!("[DbErr] db error happens: [{}]", &err);
+        error!("[DbErr] db error happens: [{}]", &err);
         JsonError::ServerError
     }
 }
 
 impl From<io::Error> for JsonError {
     fn from(err: io::Error) -> Self {
-        println!("[io::Error] io exception: [{}]", &err);
+        error!("[io::Error] io exception: [{}]", &err);
         JsonError::ServerError
     }
 }

@@ -1,4 +1,5 @@
 use actix_web::{web, Responder};
+use log::info;
 use serde::Deserialize;
 use uuid::Uuid;
 
@@ -58,7 +59,7 @@ pub async fn view_profile_page(
         //increase view counter
         // if not is_user_profile_author == regular page or search request
         if is_user_profile_author || bot_detector.is_bot {
-            println!(
+            info!(
                 "Is user profile owner [{}] or bot [{}]. Do not increase view counter",
                 is_user_profile_author, bot_detector.is_bot
             )
@@ -107,8 +108,8 @@ pub async fn view_profile_page(
         ))
     }
 
-    println!(
-        "[route#view_profile_page] Profile ID [{}]. User auth status: [{}]. User ID: [{}]. Is bot: [{}]",
+    info!(
+        "Profile ID [{}]. User auth status: [{}]. User ID: [{}]. Is bot: [{}]",
         &query.id,
         auth_gate.is_authorized,
         auth_gate.user_id.unwrap_or_default(),

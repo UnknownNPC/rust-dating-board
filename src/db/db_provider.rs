@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use chrono::Utc;
 use futures::future::try_join_all;
+use log::info;
 use sea_orm::query::*;
 use sea_orm::sea_query::Expr;
 use sea_orm::ActiveValue::NotSet;
@@ -198,7 +199,7 @@ impl DbProvider {
     }
 
     pub async fn all_user_profiles(&self, user_id: i64) -> Result<Vec<ProfileModel>, DbErr> {
-        println!("[db_provider#all_user_profiles] User fetches all his profiles");
+        info!("User [{}] fetches all his profiles", user_id);
         profile::Entity::find()
             .filter(profile::Column::Status.eq("active"))
             .filter(profile::Column::UserId.eq(user_id))
@@ -212,10 +213,7 @@ impl DbProvider {
         text: &str,
         limit: i64,
     ) -> Result<Vec<ProfileModel>, DbErr> {
-        println!(
-            "[db_provider#search_profiles] User search for profiles: {}",
-            text
-        );
+        info!("User search for profiles: {}", text);
 
         if text.is_empty() {
             return Ok(vec![]);
@@ -278,8 +276,8 @@ impl DbProvider {
         let total_pages = query.num_pages().await.unwrap();
 
         let query_page = page_opt.map(|f| if f > 0 { f - 1 } else { f }).unwrap_or(0);
-        println!(
-            "[db_providing#find_pagination] Fetching page: [{}]. City: [{}]. Total num of pages: [{}]",
+        info!(
+            "Fetching page: [{}]. City: [{}]. Total num of pages: [{}]",
             query_page + 1,
             city_opt.as_deref().unwrap_or_default(),
             total_pages

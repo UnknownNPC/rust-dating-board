@@ -2,6 +2,7 @@ use core::fmt;
 use std::error::Error;
 
 use awc::{http::header, Client};
+use log::info;
 use mime::APPLICATION_JSON;
 use serde::{Deserialize, Serialize};
 
@@ -61,7 +62,7 @@ impl Recaptcha {
 
         response_json_res
             .map(|response| {
-                println!("[Recaptcha#verify] recaptcha RAW response {:?}", response);
+                info!("Recaptcha RAW response {:?}", response);
 
                 response.score.unwrap_or_default()
             })

@@ -3,6 +3,7 @@ use actix_web::{
     http::{header::LOCATION, StatusCode},
     web, HttpRequest, HttpResponse, Responder,
 };
+use log::info;
 use serde::Deserialize;
 
 use crate::{
@@ -21,13 +22,13 @@ use super::error::HtmlError;
 pub async fn sign_out_endpoint(auth_gate: AuthenticationGate) -> impl Responder {
     let empty_cookie = AuthSessionManager::get_empty_jwt_token();
     if auth_gate.is_authorized {
-        println!(
+        info!(
             "[route#sign_out_endpoint] auth user {} is loging out. Token exists.",
             auth_gate.user_id.unwrap()
         );
         homepage(Some(empty_cookie), MSG_SIGN_OUT_CODE)
     } else {
-        println!(
+        info!(
             "[route#sign_out_endpoint] auth user {} is loging out. Session expired",
             auth_gate.user_id.unwrap()
         );
@@ -50,14 +51,14 @@ pub async fn google_sign_in_endpoint(
         let db_user_opt = db_provider.find_user_by_email(&oauth_user.email).await?;
         match db_user_opt {
             Some(db_user) => {
-                println!(
+                info!(
                     "[route#google_sign_in_endpoint] email [{}] exists. Just reusing",
                     &db_user.email
                 );
                 Ok(db_user)
             }
             None => {
-                println!(
+                info!(
                     "[route#google_sign_in_endpoint] email [{}] is new. Creating new user",
                     &oauth_user.email
                 );
@@ -80,7 +81,7 @@ pub async fn google_sign_in_endpoint(
         || callback_payload.g_csrf_token.is_empty()
         || !is_gsrf_token_matches
     {
-        println!("[route#google_sign_in_endpoint] sign in error: credential [{}], g_csrf_token [{}], gsrf_token_matches [{}]",
+        info!("[route#google_sign_in_endpoint] sign in error: credential [{}], g_csrf_token [{}], gsrf_token_matches [{}]",
         &callback_payload.credential.is_empty(), &callback_payload.g_csrf_token.is_empty(), is_gsrf_token_matches
     );
         return Err(HtmlError::BadParams);

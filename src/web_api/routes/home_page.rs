@@ -14,6 +14,7 @@ use crate::{
         },
     },
 };
+use log::info;
 use rust_i18n::t;
 
 use super::{
@@ -143,8 +144,8 @@ pub async fn index_page(
         ))
     }
 
-    println!(
-        "[route#index_page] User auth status: [{}], Is Bot [{}]. Index page",
+    info!(
+        "User auth status: [{}], Is Bot [{}]. Index page",
         auth_gate.is_authorized, bot_detector.is_bot
     );
 

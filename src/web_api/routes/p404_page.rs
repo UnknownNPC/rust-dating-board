@@ -5,9 +5,13 @@ use crate::{
     db::DbProvider,
     web_api::{
         auth::AuthenticationGate,
-        routes::{common::{HeadContext, NavContext}, html_render::HtmlPage},
+        routes::{
+            common::{HeadContext, NavContext},
+            html_render::HtmlPage,
+        },
     },
 };
+use log::info;
 use rust_i18n::t;
 
 use super::error::HtmlError;
@@ -41,8 +45,8 @@ pub async fn p404_page(
         ))
     }
 
-    println!(
-        "[route#404] User auth status: [{}]. 404 page",
+    info!(
+        " User auth status: [{}]. 404 page",
         auth_gate.is_authorized,
     );
 

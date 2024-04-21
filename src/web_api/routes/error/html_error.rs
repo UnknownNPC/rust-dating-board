@@ -6,6 +6,7 @@ use actix_web::{
     HttpResponse,
 };
 use jsonwebtoken_google::ParserError;
+use log::error;
 use sea_orm::DbErr;
 
 use crate::web_api::{
@@ -35,28 +36,28 @@ impl Display for HtmlError {
 
 impl From<DbErr> for HtmlError {
     fn from(err: DbErr) -> Self {
-        println!("[DbErr] db error happens: [{}]", &err);
+        error!("[DbErr] db error happens: [{}]", &err);
         HtmlError::ServerError
     }
 }
 
 impl From<CaptchaError> for HtmlError {
     fn from(err: CaptchaError) -> Self {
-        println!("[CaptchaError] captcha exception: [{}]", &err);
+        error!("[CaptchaError] captcha exception: [{}]", &err);
         HtmlError::BadParams
     }
 }
 
 impl From<ParserError> for HtmlError {
     fn from(err: ParserError) -> Self {
-        println!("[ParserError] parse exception: [{}]", &err);
+        error!("[ParserError] parse exception: [{}]", &err);
         HtmlError::ServerError
     }
 }
 
 impl From<io::Error> for HtmlError {
     fn from(err: io::Error) -> Self {
-        println!("[io::Error] io exception: [{}]", &err);
+        error!("[io::Error] io exception: [{}]", &err);
         HtmlError::ServerError
     }
 }
