@@ -65,7 +65,6 @@ pub async fn index_page(
         config: &web::Data<Config>,
         query: &web::Query<QueryRequest>,
         auth_gate: &AuthenticationGate,
-        bot_detector: &BotDetector,
     ) -> Result<HomePageDataContext, HtmlError> {
         let is_user_profiles = auth_gate.is_authorized && query.show_my.unwrap_or_default();
         let is_search = query.search.is_some();
