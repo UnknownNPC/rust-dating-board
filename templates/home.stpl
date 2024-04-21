@@ -49,7 +49,6 @@
             <% if data_context.profiles.is_empty() { %>
                 <h2 class="text-center pt-3"><%= t!("nothing_found") %></h2>
             <% } else { %>
-                <%# <div class="card-columns"> %>
                     <% for (index, profile) in data_context.profiles.iter().enumerate() { %> 
                         <% if index % 4 == 0 { %>
                             <div class="row">
@@ -92,7 +91,6 @@
                             </div>
                         <% } %>
                     <% } %>
-                <%# </div> %>
             <% } %>
 
             <% if !nav_context.is_user_profiles && !nav_context.search.is_some() { %>
@@ -143,41 +141,44 @@
             <% } %>
 
             <!-- delete profile modal -->
-            <div class="modal fade" id="delete_profile_modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="deleteModalLabel"><%=t!("delete_profile")%></h5>
-                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
+            <% if nav_context.is_user_profiles { %>
+                <div class="modal fade" id="delete_profile_modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel"><%=t!("delete_profile")%></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        </div>
+                        <div class="modal-body">
+                            <%=t!("delete_profile_desc")%>
+                        </div>
+                        <div class="modal-footer">
+                        <form action="/profile/delete" method="post">
+                            <input id="id_input" name="id" type="hidden" value=""/>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"><%=t!("cancel_btn")%></button>
+                            <button type="submit" class="btn btn-primary"><%=t!("delete_profile_btn")%></button>
+                        </form>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <%=t!("delete_profile_desc")%>
                     </div>
-                    <div class="modal-footer">
-                      <form action="/profile/delete" method="post">
-                        <input id="id_input" name="id" type="hidden" value=""/>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal"><%=t!("cancel_btn")%></button>
-                        <button type="submit" class="btn btn-primary"><%=t!("delete_profile_btn")%></button>
-                      </form>
-                    </div>
-                  </div>
                 </div>
-              </div>    
-
+            <% } %>
         </div>
 
     <% include!("./includes/footer.stpl"); %>
 </body>
 
 <% include!("./includes/extra_scripts.stpl"); %>
-<script>
-    $(document).on("click", ".delete_profile_link", function () {
-     var delete_profile_id = $(this).data('id');
-     $("#delete_profile_modal #id_input").val(delete_profile_id);
-     $('#delete_profile_modal').modal('show')
-});
-</script>
+<% if nav_context.is_user_profiles { %>
+    <script>
+        $(document).on("click", ".delete_profile_link", function () {
+        var delete_profile_id = $(this).data('id');
+        $("#delete_profile_modal #id_input").val(delete_profile_id);
+        $('#delete_profile_modal').modal('show')
+    });
+    </script>
+<% } %>
 
 </html>
