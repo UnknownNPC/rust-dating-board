@@ -3,48 +3,40 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
-#[sea_orm(table_name = "profile")]
+#[sea_orm(table_name = "comment")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
-    pub name: String,
-    pub height: i16,
-    pub description: String,
-    pub phone_number: String,
-    pub city: String,
     pub user_id: i64,
+    pub profile_id: Uuid,
     pub status: String,
-    pub weight: i16,
-    pub view_count: i64,
+    pub created_at: DateTime,
+    pub text: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::comment::Entity")]
-    Comment,
-    #[sea_orm(has_many = "super::profile_photo::Entity")]
-    ProfilePhoto,
+    #[sea_orm(
+        belongs_to = "super::profile::Entity",
+        from = "Column::ProfileId",
+        to = "super::profile::Column::Id",
+        on_update = "Cascade",
+        on_delete = "Cascade"
+    )]
+    Profile,
     #[sea_orm(
         belongs_to = "super::user::Entity",
         from = "Column::UserId",
         to = "super::user::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
+        on_update = "Cascade",
+        on_delete = "Cascade"
     )]
     User,
 }
 
-impl Related<super::comment::Entity> for Entity {
+impl Related<super::profile::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Comment.def()
-    }
-}
-
-impl Related<super::profile_photo::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::ProfilePhoto.def()
+        Relation::Profile.def()
     }
 }
 

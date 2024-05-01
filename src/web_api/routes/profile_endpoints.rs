@@ -1,5 +1,6 @@
 use crate::web_api::photo::PhotoService;
 use crate::web_api::routes::constant::MAX_PROFILE_PHOTOS;
+use crate::web_api::routes::constant::MSG_COMMENT_REMOVED_CODE;
 use crate::web_api::routes::error::HtmlError;
 use crate::web_api::routes::error::JsonError;
 use crate::{
@@ -17,6 +18,41 @@ use futures::future;
 use log::info;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
+pub async fn delete_comment_endpoint(
+    db_provider: web::Data<DbProvider>,
+    auth_gate: AuthenticationGate,
+    form: web::Form<DeleteCommentRequest>,
+) -> Result<impl Responder, HtmlError> {
+    if !auth_gate.is_authorized {
+        return Err(HtmlError::NotAuthorized);
+    }
+
+    info!(
+        "User auth status: [{}]. User ID: [{}]",
+        auth_gate.is_authorized,
+        auth_gate.user_id.unwrap_or_default()
+    );
+
+    let profile_id = form.id;
+    let comment_opt = db_provider
+        .find_comment_by_profile_user_ids(&profile_id, &auth_gate.user_id.unwrap())
+        .await?;
+    let comment = comment_opt.ok_or(HtmlError::NotFound)?;
+
+    info!("Deleting comment: [{}]", &profile_id);
+
+    db_provider.delete_comment(&comment).await?;
+
+    let redirect_to_view_page = format!(
+        "/view_profile?id={}&message_code={}",
+        &profile_id, MSG_COMMENT_REMOVED_CODE
+    );
+
+    Ok(HttpResponse::Found()
+        .append_header((LOCATION, redirect_to_view_page))
+        .finish())
+}
 
 pub async fn delete_profile_endpoint(
     db_provider: web::Data<DbProvider>,
@@ -207,6 +243,11 @@ pub struct AddProfilePhotoMultipartRequest {
 
 #[derive(Deserialize)]
 pub struct DeleteProfileRequest {
+    pub id: Uuid,
+}
+
+#[derive(Deserialize)]
+pub struct DeleteCommentRequest {
     pub id: Uuid,
 }
 

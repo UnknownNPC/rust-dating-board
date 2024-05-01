@@ -13,10 +13,13 @@ use sea_orm::{
 use sea_orm::{DbConn, EntityTrait};
 use uuid::Uuid;
 
+use crate::db::comment;
+
 use super::city::{self};
 use super::profile::{self, Model as ProfileModel};
 use super::profile_photo::{self, Model as ProfilePhotoModel};
 use super::user::{self, Model as UserModel};
+use super::CommentModel;
 
 #[derive(Clone)]
 pub struct DbProvider {
@@ -53,6 +56,24 @@ impl DbProvider {
             ..Default::default()
         };
         user.insert(&self.db_con).await
+    }
+
+    pub async fn add_comment(
+        &self,
+        profile_id: &Uuid,
+        user_id: &i64,
+        text: &String,
+    ) -> Result<CommentModel, DbErr> {
+        let comment = comment::ActiveModel {
+            id: Set(Uuid::new_v4()),
+            created_at: Set(Utc::now().naive_utc()),
+            profile_id: Set(profile_id.clone()),
+            user_id: Set(user_id.clone()),
+            text: Set(text.clone()),
+            status: Set(String::from("approved")),
+            ..Default::default()
+        };
+        comment.insert(&self.db_con).await
     }
 
     pub async fn count_profile_photos(&self, profile_id: &Uuid) -> Result<u64, DbErr> {
@@ -208,6 +229,34 @@ impl DbProvider {
             .await
     }
 
+    pub async fn all_profile_comments(
+        &self,
+        profile_id: &Uuid,
+    ) -> Result<Vec<(CommentModel, Option<UserModel>)>, DbErr> {
+        info!("Fetching all profile [{}] comments", profile_id);
+        comment::Entity::find()
+            .find_also_related(user::Entity)
+            .filter(comment::Column::Status.eq("approved"))
+            .filter(comment::Column::ProfileId.eq(profile_id.clone()))
+            .order_by(comment::Column::CreatedAt, Order::Desc)
+            .all(&self.db_con)
+            .await
+    }
+
+    pub async fn find_comment_by_profile_user_ids(
+        &self,
+        profile_id: &Uuid,
+        user_id: &i64,
+    ) -> Result<Option<CommentModel>, DbErr> {
+        comment::Entity::find()
+            .filter(comment::Column::Status.is_in(["approved", "in_review"]))
+            .filter(comment::Column::ProfileId.eq(profile_id.clone()))
+            .filter(comment::Column::UserId.eq(user_id.clone()))
+            .order_by(comment::Column::CreatedAt, Order::Desc)
+            .one(&self.db_con)
+            .await
+    }
+
     pub async fn search_profiles(
         &self,
         text: &str,
@@ -340,7 +389,7 @@ impl DbProvider {
             profile_photos_res.map(|profile_photos| {
                 let search = profile_ids
                     .iter()
-                    .map(|profile_id_ref| {
+                    .map(|profile_id_ref: &Uuid| {
                         let profile_id = profile_id_ref.to_owned();
                         let profile_photo_opt = profile_photos
                             .iter()
@@ -372,6 +421,13 @@ impl DbProvider {
         try_join_all(update_photos_futs).await?;
 
         Ok(())
+    }
+
+    pub async fn delete_comment(&self, comment_model: &CommentModel) -> Result<(), DbErr> {
+        let mut mutable_comment: comment::ActiveModel = comment_model.to_owned().into();
+        mutable_comment.status = Set("removed".to_owned());
+
+        mutable_comment.update(&self.db_con).await.map(|_| ())
     }
 }
 

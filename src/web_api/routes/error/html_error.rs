@@ -41,6 +41,13 @@ impl From<DbErr> for HtmlError {
     }
 }
 
+impl From<uuid::Error> for HtmlError {
+    fn from(err: uuid::Error) -> Self {
+        error!("[uuid::Error] Uuid error happens. Hacks?: [{}]", &err);
+        HtmlError::ServerError
+    }
+}
+
 impl From<CaptchaError> for HtmlError {
     fn from(err: CaptchaError) -> Self {
         error!("[CaptchaError] captcha exception: [{}]", &err);

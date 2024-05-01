@@ -22,7 +22,6 @@ async fn establish_connection(conf: &Config) -> Result<DbConn, DbErr> {
 
 #[actix_web::main]
 async fn main() {
-
     Builder::new()
         .filter_level(log::LevelFilter::Info)
         .filter_module("sqlx::query", log::LevelFilter::Off)
@@ -53,6 +52,7 @@ async fn main() {
                 "/add_or_edit_profile",
                 web::post().to(web_api::add_or_edit_profile_post),
             )
+            .route("/comment/add", web::post().to(web_api::add_comment))
             .route("/robots.txt", web::get().to(web_api::robots_txt))
             .service(
                 web::resource("/profile/delete")
@@ -65,6 +65,10 @@ async fn main() {
             .service(
                 web::resource("/profile_photo/delete")
                     .route(web::post().to(web_api::delete_profile_photo_endpoint)),
+            )
+            .service(
+                web::resource("/comment/delete")
+                    .route(web::post().to(web_api::delete_comment_endpoint)),
             )
             .service(
                 web::resource("/sign_in/google")

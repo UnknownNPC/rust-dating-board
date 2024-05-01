@@ -12,6 +12,24 @@
     <% include!("./includes/nav.stpl"); %>
 
     <div class="container pt-3">
+
+        <% if data_context.message_code.is_some() { %>
+            <% let message = data_context.message_code.as_ref().unwrap();
+                fn get_type_and_message(message: &String) -> (String, String) {
+                  match message.as_str() {
+                        "comment_added" => ("alert-success".to_string(), t!("alert_comment_added").to_string()),
+                        "comment_removed" => ("alert-success".to_string(), t!("alert_comment_removed").to_string()),
+                        _ => ("error".to_string(), "error".to_string())
+                  }
+            } %>
+            <div class="mt-3 mb-3 alert  <%= get_type_and_message(&message).0 %> alert-dismissible fade show" role="alert">
+                <%= get_type_and_message(&message).1 %>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+        <% } %>
+
         <div class="card">
           <div class="card-body">
             <div class="row">
@@ -77,47 +95,103 @@
                     <a href="/?search=0<%=data_context.phone_num%>" class="btn btn-info"><%=t!("other_profiles_by_phone")%></a>
                     <% if data_context.is_user_profile_author { %>
                       <a href="/edit_profile?id=<%= data_context.id.to_string() %>" class="btn btn-primary"><%=t!("edit_profile_btn")%></a>
-                      <a id="delete_profile" href="#" class="btn btn-danger"><%=t!("delete_profile_btn")%></a>
+                      <a id="delete_profile" href="#" class="btn btn-danger"><%=t!("delete_txt")%></a>
                     <% } %>
                   </div>
                 </div>    
 
               </div>
             </div>
+            <% let user_comment_opt = &data_context.user_comment; %>
+            <% let all_comments = &data_context.all_comments; %>
+            <% let profile_id = &data_context.id.to_string(); %>
+            <% let is_auth = !nav_context.name.is_empty(); %>
+            <% let error_context = &error_context; %>
+            <% include!("./includes/comments.stpl"); %>
           </div>
         </div>
-        
 
-        <!-- delete profile modal -->
-        <div class="modal fade" id="delete_profile_modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel"><%=t!("delete_profile")%></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                  <%=t!("delete_profile_desc")%>
-              </div>
-              <div class="modal-footer">
-                <form action="/profile/delete" method="post">
-                  <input name="id" type="hidden" value="<%= data_context.id.to_string() %>"/>
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal"><%=t!("cancel_btn")%></button>
-                  <button type="submit" class="btn btn-primary"><%=t!("delete_profile_btn")%></button>
-                </form>
+        
+        <% if data_context.is_user_profile_author { %>
+            <!-- delete profile modal -->
+            <div class="modal fade" id="delete_profile_modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel"><%=t!("delete_profile")%></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                      <%=t!("delete_profile_desc")%>
+                  </div>
+                  <div class="modal-footer">
+                    <form action="/profile/delete" method="post">
+                      <input name="id" type="hidden" value="<%= data_context.id.to_string() %>"/>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal"><%=t!("cancel_btn")%></button>
+                      <button type="submit" class="btn btn-primary"><%=t!("delete_txt")%></button>
+                    </form>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>    
+        <% } %>
+
+        <% let is_draft_comment = data_context.user_comment.as_ref().map(|comment| comment.is_draft).unwrap_or_default(); %>
+        <% if data_context.user_comment.is_some() && !is_draft_comment { %>
+            <!-- delete comment modal -->
+            <div class="modal fade" id="delete_comment_modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel"><%=t!("delete_comment")%></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                      <%=t!("delete_comment_desc")%>
+                  </div>
+                  <div class="modal-footer">
+                    <form action="/comment/delete" method="post">
+                      <input name="id" type="hidden" value="<%= data_context.id.to_string() %>"/>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal"><%=t!("cancel_btn")%></button>
+                      <button type="submit" class="btn btn-primary"><%=t!("delete_txt")%></button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+        <% } %>
       </div>
   <% include!("./includes/footer.stpl"); %>
 </body>
     <% include!("./includes/extra_scripts.stpl"); %>
-    <script>
-      $(document).on("click", "#delete_profile", function () {
-       $('#delete_profile_modal').modal('show')
-  });
-  </script>
+
+    <% if data_context.is_user_profile_author { %>
+      <script>
+          $(document).on("click", "#delete_profile", function () {
+            $('#delete_profile_modal').modal('show')
+          });
+      </script>
+    <% } %>
+    <% let is_draft_comment = data_context.user_comment.as_ref().map(|comment| comment.is_draft).unwrap_or_default(); %>
+    <% if data_context.user_comment.is_some() && !is_draft_comment { %>
+      <script>
+          $(document).on("click", "#delete_comment", function () {
+            $('#delete_comment_modal').modal('show')
+          });
+      </script>
+    <% } %>
+    <% if !data_context.user_comment.is_some() || is_draft_comment {%>
+      <script>
+          grecaptcha.enterprise.ready(function() {
+              grecaptcha.enterprise.execute('<%= nav_context.google_captcha_id %>', {action: 'add_comment'})
+                  .then(function(token) {
+                      document.getElementById('add_comment_captcha_token').value = token;
+              });
+          });
+      </script>
+    <% } %>
 </html>

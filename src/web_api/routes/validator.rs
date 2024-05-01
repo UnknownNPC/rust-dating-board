@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::add_profile_page::{AddOrEditProfileFormRequest, AddOrEditProfileFormRequestRaw};
+use super::{add_profile_page::{AddOrEditProfileFormRequest, AddOrEditProfileFormRequestRaw}, view_profile_page::{AddCommentFormRequest, AddCommentFormRequestRaw}};
 
 type Key = String;
 type Code = String;
@@ -52,6 +52,27 @@ pub trait Validator<R: Sized> {
         let value = f(self);
         let len = value.chars().count() as i64;
         len < from || len > to
+    }
+}
+
+impl Validator<AddCommentFormRequest> for AddCommentFormRequestRaw {
+    fn validate(&self) -> Result<AddCommentFormRequest, ErrorContext> {
+        let mut err_context = ErrorContext::empty();
+
+        err_context.if_true_add_error(self.is_empty(|f| &f.profile_id), "profile_id", "is_empty");
+        err_context.if_true_add_error(self.is_empty(|f| &f.captcha_token), "captcha_token", "is_empty");
+        err_context.if_true_add_error(self.is_empty(|f| &f.text), "text", "is_empty");
+        err_context.if_true_add_error(
+            self.has_not_length(|f| &f.text, 10, 200),
+            "text",
+            "length",
+        );
+
+        if err_context.is_empty() {
+            Ok(AddCommentFormRequest::from_raw(self))
+        } else {
+            Err(err_context)
+        }
     }
 }
 

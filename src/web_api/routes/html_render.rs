@@ -6,7 +6,7 @@ use super::common::{HeadContext, NavContext, ProfilePageDataContext};
 use super::home_page::HomePageDataContext;
 use super::sitemap_page::SitemapContext;
 use super::validator::ErrorContext;
-use super::view_profile_page::ViewProfileResponse;
+use super::view_profile_page::ViewProfilePageDataContext;
 
 #[derive(TemplateOnce)]
 #[template(path = "p404.stpl")]
@@ -37,7 +37,8 @@ struct AddOrEditProfile<'a> {
 struct ViewProfile<'a> {
     head_context: &'a HeadContext,
     nav_context: &'a NavContext,
-    data_context: &'a ViewProfileResponse,
+    data_context: &'a ViewProfilePageDataContext,
+    error_context: &'a ErrorContext,
 }
 
 #[derive(TemplateOnce)]
@@ -86,13 +87,15 @@ impl HtmlPage {
     pub fn view_profile(
         head_context: &HeadContext,
         nav_context: &NavContext,
-        data_context: &ViewProfileResponse,
+        data_context: &ViewProfilePageDataContext,
+        error_context: &ErrorContext,
     ) -> HttpResponse {
         HttpResponse::Ok().body(
             ViewProfile {
                 head_context,
                 nav_context,
                 data_context,
+                error_context,
             }
             .render_once()
             .unwrap(),

@@ -24,10 +24,12 @@ pub use add_profile_page::add_or_edit_profile_post;
 pub use add_profile_page::add_profile_page;
 pub use edit_profile_page::edit_profile_page;
 pub use view_profile_page::view_profile_page;
+pub use view_profile_page::add_comment;
 
 pub use profile_endpoints::add_profile_photo_endpoint;
 pub use profile_endpoints::delete_profile_endpoint;
 pub use profile_endpoints::delete_profile_photo_endpoint;
+pub use profile_endpoints::delete_comment_endpoint;
 
 pub use authorization_endpoint::google_sign_in_endpoint;
 pub use authorization_endpoint::sign_out_endpoint;

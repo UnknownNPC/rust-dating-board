@@ -4,6 +4,7 @@ mod city;
 mod profile;
 mod profile_photo;
 mod user;
+mod comment;
 
 mod db_provider;
 
@@ -11,3 +12,4 @@ pub use db_provider::DbProvider;
 pub use profile::Model as ProfileModel;
 pub use profile_photo::Model as ProfilePhotoModel;
 pub use user::Model as UserModel;
+pub use comment::Model as CommentModel;

@@ -3,7 +3,7 @@ use core::fmt;
 use actix_web::web;
 use actix_web::{http::header::LOCATION, HttpResponse, Responder};
 use futures::future::OptionFuture;
-use log::{info, error};
+use log::{error, info};
 use serde::Deserialize;
 use uuid::Uuid;
 
@@ -233,7 +233,7 @@ pub async fn add_or_edit_profile_post(
 
     let is_edit_mode = form.profile_id.is_some();
 
-    db_provider
+    let new_db_profile = db_provider
         .publish_profie(
             &profile_model,
             &form.name,
@@ -243,20 +243,18 @@ pub async fn add_or_edit_profile_post(
             &form.description,
             &form.phone_number,
         )
-        .await
-        .map(|_| {
-            info!(
-                "Profile [{}] was updated and published. Edit mode: {}",
-                profile_model.id, is_edit_mode
-            );
-            let path = if is_edit_mode {
-                format!("/?show_my=true&message={}", MSG_PROFILE_UPDATED_CODE)
-            } else {
-                format!("/?message={}", MSG_PROFILE_ADDED_CODE)
-            };
-            redirect_response_to(path.as_str())
-        })
-        .map_err(|err| err.into())
+        .await?;
+
+    info!(
+        "Profile [{}] was updated and published. Edit mode: {}",
+        new_db_profile.id, is_edit_mode
+    );
+    let path = if is_edit_mode {
+        format!("/?show_my=true&message={}", MSG_PROFILE_UPDATED_CODE)
+    } else {
+        format!("/?message={}", MSG_PROFILE_ADDED_CODE)
+    };
+    Ok(redirect_response_to(path.as_str()))
 }
 
 fn redirect_response_to(path: &str) -> HttpResponse {
