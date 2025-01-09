@@ -4,4 +4,3 @@ target
 *.sqlite
 .vscode
 .env
-.env_prod
