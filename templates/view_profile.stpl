@@ -1,0 +1,184 @@
+<% use rust_i18n::t; %>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+        <% include!("./includes/head_body.stpl"); %>
+</head>
+
+<body>
+    <% let active_tab = ""; %>
+    <% include!("./includes/nav.stpl"); %>
+
+    <div class="container pt-3">
+
+    <% let message_code = &data_context.message_code; %>
+    <% include!("./includes/message_modal.stpl"); %>
+
+
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h3 class="card-title"><%= t!("photos") %></h3>
+                    <div id="profile_photos" class="carousel slide" data-ride="carousel">
+                      <ol class="carousel-indicators">
+                        <% for (i, _url) in data_context.photo_urls.iter().enumerate() { %>
+                          <% if i == 0 { %>
+                            <li data-target="#profile_photos" data-slide-to="<%= i %>" class="active"></li>
+                          <% } else { %>
+                            <li data-target="#profile_photos" data-slide-to="<%= i %>"></li>
+                          <% } %>    
+                        <% } %>
+                      </ol>
+    
+                      <div class="carousel-inner">
+                        <% for (i, url) in data_context.photo_urls.iter().enumerate() { %>
+                            <% if i == 0 { %>
+                              <div class="carousel-item active">
+                            <% } else { %>
+                              <div class="carousel-item">
+                            <% } %>
+                                <img src="<%= url %>" class="mx-auto d-block" alt="...">
+                              </div>
+                        <% } %>
+                      </div>
+                      <a class="carousel-control-prev" href="#profile_photos" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only"><%= t!("previous_page") %></span>
+                      </a>
+                      <a class="carousel-control-next" href="#profile_photos" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only"><%= t!("next_page") %></span>
+                      </a>
+                    </div>
+                  </div>
+                </div>  
+
+              </div>
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h3 class="card-title"><%= t!("information_title") %></h3>
+                   
+                    <p class="card-text mb-0"><%=t!("name_placeholder")%>: <%= data_context.name %></h2>
+                    <p class="card-text mb-0"><%=t!("height_placeholder")%>: <%= data_context.height %></p>
+                    <p class="card-text mb-0"><%=t!("weight_placeholder")%>: <%= data_context.weight %></p>
+                    <p class="card-text mb-0"><%=t!("phone_placeholder")%>: +380<%= data_context.phone_num %></p>
+                    <p class="card-text mb-0"><%=t!("description")%>: <%= data_context.description %></p>
+                    <hr class="my-12"/>
+                    <p class="card-text mb-0"><%=t!("city")%>: <%=t!(format!("city_dropdown_{}", &data_context.city).as_str())%></p>
+                    <p class="card-text mb-0"><%=t!("number_of_view")%>: <%=data_context.view_count%></p>
+                    <p class="card-text mb-0"><%=t!("published")%>: <%= data_context.date_create %></p>
+                  </div>
+                </div>    
+
+                <div class="card mt-3">
+                  <div class="card-body">
+                    <h3 class="card-title"><%=t!("profile_actions")%></h3>
+                    <a href="/?search=0<%=data_context.phone_num%>" class="btn btn-info"><%=t!("other_profiles_by_phone")%></a>
+                    <% if data_context.is_user_profile_author { %>
+                      <a href="/edit_profile?id=<%= data_context.id.to_string() %>" class="btn btn-primary"><%=t!("edit_profile_btn")%></a>
+                      <a id="delete_profile" href="#" class="btn btn-danger"><%=t!("delete_txt")%></a>
+                    <% } %>
+                  </div>
+                </div>    
+
+              </div>
+            </div>
+            <% let user_comment_opt = &data_context.user_comment; %>
+            <% let all_comments = &data_context.all_comments; %>
+            <% let profile_id = &data_context.id.to_string(); %>
+            <% let is_auth = !nav_context.name.is_empty(); %>
+            <% let error_context = &error_context; %>
+            <% include!("./includes/comments.stpl"); %>
+          </div>
+        </div>
+
+        
+        <% if data_context.is_user_profile_author { %>
+            <!-- delete profile modal -->
+            <div class="modal fade" id="delete_profile_modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel"><%=t!("delete_profile")%></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                      <%=t!("delete_profile_desc")%>
+                  </div>
+                  <div class="modal-footer">
+                    <form action="/profile/delete" method="post">
+                      <input name="id" type="hidden" value="<%= data_context.id.to_string() %>"/>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal"><%=t!("cancel_btn")%></button>
+                      <button type="submit" class="btn btn-primary"><%=t!("delete_txt")%></button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+        <% } %>
+
+        <% let is_draft_comment = data_context.user_comment.as_ref().map(|comment| comment.is_draft).unwrap_or_default(); %>
+        <% if data_context.user_comment.is_some() && !is_draft_comment { %>
+            <!-- delete comment modal -->
+            <div class="modal fade" id="delete_comment_modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel"><%=t!("delete_comment")%></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                      <%=t!("delete_comment_desc")%>
+                  </div>
+                  <div class="modal-footer">
+                    <form action="/comment/delete" method="post">
+                      <input name="id" type="hidden" value="<%= data_context.id.to_string() %>"/>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal"><%=t!("cancel_btn")%></button>
+                      <button type="submit" class="btn btn-primary"><%=t!("delete_txt")%></button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+        <% } %>
+      </div>
+  <% include!("./includes/footer.stpl"); %>
+</body>
+    <% include!("./includes/extra_scripts.stpl"); %>
+
+    <% if data_context.is_user_profile_author { %>
+      <script>
+          $(document).on("click", "#delete_profile", function () {
+            $('#delete_profile_modal').modal('show')
+          });
+      </script>
+    <% } %>
+    <% let is_draft_comment = data_context.user_comment.as_ref().map(|comment| comment.is_draft).unwrap_or_default(); %>
+    <% if data_context.user_comment.is_some() && !is_draft_comment { %>
+      <script>
+          $(document).on("click", "#delete_comment", function () {
+            $('#delete_comment_modal').modal('show')
+          });
+      </script>
+    <% } %>
+    <% if !data_context.user_comment.is_some() || is_draft_comment {%>
+      <script>
+          grecaptcha.enterprise.ready(function() {
+              grecaptcha.enterprise.execute('<%= nav_context.google_captcha_id %>', {action: 'add_comment'})
+                  .then(function(token) {
+                      document.getElementById('add_comment_captcha_token').value = token;
+              });
+          });
+      </script>
+    <% } %>
+</html>

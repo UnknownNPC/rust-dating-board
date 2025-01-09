@@ -1,0 +1,19 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="<%= head_context.description %>"/>
+<title>
+    <%= head_context.title %>
+</title>
+
+<meta property="og:title" content="<%= head_context.title %>" />
+<meta property="og:description" content="<%= head_context.description %>" />
+<meta property="og:image" content="<%= head_context.preview_url %>" />
+
+<link rel="stylesheet" href="/static/css/bootstrap.min.css">
+<link rel="stylesheet" href="/static/css/styles.css">
+<link rel="stylesheet" href="/static/css/fontello.css">
+
+<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon.png">
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://www.google.com/recaptcha/enterprise.js?render=<%= nav_context.google_captcha_id %>"></script>

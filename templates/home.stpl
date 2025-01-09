@@ -1,0 +1,164 @@
+<% use rust_i18n::t; %>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <% include!("./includes/head_body.stpl"); %>
+</head>
+
+<body>
+    <% let active_tab = "index"; %>
+    <% include!("./includes/nav.stpl"); %>
+
+        <div class="container">
+
+            <% let message_code = &data_context.message_code; %>
+            <% include!("./includes/message_modal.stpl"); %>
+
+            <% if nav_context.search.is_some() && !data_context.profiles.is_empty() { %>
+                <p class="h1 pt-3"><%=t!("search_result")%> <%= data_context.search_text.as_ref().unwrap() %></p>
+            <% } else if nav_context.is_user_profiles { %>
+                <p class="h1 pt-3"><%=t!("main_my_profiles")%></p>
+            <% } else if !nav_context.current_city.is_empty() { %>
+                <p class="h1 pt-3"><%=t!("cities_profiles")%> <%=t!(format!("profile_from_city_{}", &nav_context.current_city).as_str())%></p>
+            <% } else if !data_context.profiles.is_empty() { %>
+                <p class="h1 pt-3"><%=t!("all_country_profiles")%></p>
+            <% } %>
+
+            <% if data_context.profiles.is_empty() { %>
+                <h2 class="text-center pt-3"><%= t!("nothing_found") %></h2>
+            <% } else { %>
+                    <% for (index, profile) in data_context.profiles.iter().enumerate() { %> 
+                        <% if index % 4 == 0 { %>
+                            <div class="row">
+                        <% } %>
+                         <div class="col-sm-3 pt-3">
+                            <div class="card" style="background-color: #e3f2fd;">
+                                <% if profile.photo_url_opt.is_some() { %>
+                                    <div class="text-center">
+                                        <img class="card-img-top w-100" src="<%= profile.photo_url_opt.as_ref().unwrap() %>" alt="photo">
+                                    </div>
+                                <% } %>
+                                <div class="card-header d-flex p-2">
+                                    <b><%= profile.name %></b>
+                                    <% if nav_context.is_user_profiles { %>
+                                        <span class="ml-auto card-icons-box">
+                                            <a href="/edit_profile?id=<%= profile.id.to_string() %>">
+                                                <i class="icon-edit" title="<%= t!("edit_profile_btn") %>"></i>
+                                            </a>
+                                            <a class="delete_profile_link" data-toggle="modal" data-id="<%= profile.id.to_string() %>" href="#">
+                                                <i class="icon-trash" title="<%= t!("delete_txt") %>"></i>
+                                            </a>
+                                        </span>
+                                    <% } %>
+
+                                </div>
+                                <div class="card-body p-2">
+                                    <p class="card-text"><%= profile.short_description %>...</p>
+                                    <a href="/view_profile?id=<%= profile.id.to_string() %>" class="stretched-link"></a>
+                                </div>
+                                <div class="card-footer d-flex p-2">
+                                    <small class="text-muted">
+                                        <div><%=t!("city")%>: <%= t!(format!("city_dropdown_{}", &profile.city).as_str()) %></div>
+                                        <div><%=t!("published")%>: <%= profile.date_create %></div>
+                                        <div><%=t!("number_of_view")%>: <%= profile.view_count %></div>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <% if (index + 1) % 4 == 0 || (index + 1) == data_context.profiles.len() { %>
+                            </div>
+                        <% } %>
+                    <% } %>
+            <% } %>
+
+            <% if !nav_context.is_user_profiles && !nav_context.search.is_some() { %>
+                <% let city_query_param = if nav_context.current_city.is_empty() { 
+                    String::from("")
+                } else { 
+                    format!("&filter_city={}", nav_context.current_city)
+                };
+                %>
+                <nav aria-label="navigation" class="pt-3">
+                    <ul class="pagination justify-content-center">
+                        <% if data_context.pagination.has_previous { %>
+                            <li class="page-item">
+                                <a class="page-link" href="/?page=<%= &data_context.pagination.current - 1 %><%= city_query_param %>" tabindex="-1">
+                                <%= t!("previous_page") %>
+                                </a>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1"><%= t!("previous_page") %></a>
+                            </li>
+                        <% } %>
+                        <% for page_index in 1..data_context.pagination.total + 1 { %>
+                                <!-- select <li> -->
+                                <% if page_index == data_context.pagination.current { %>
+                                    <li class="page-item active">
+                                <% } else { %>
+                                    <li class="page-item">
+                                <% } %>
+                                        <a class="page-link" href="/?page=<%= page_index %><%= city_query_param %>"><%= page_index %></a>
+                                    </li>
+                        <% } %>
+
+                        <!-- disabled here -->
+                        <% if data_context.pagination.has_next { %>
+                            <li class="page-item">
+                                <a class="page-link" href="/?page=<%= &data_context.pagination.current + 1 %><%= city_query_param %>" tabindex="-1">
+                                    <%= t!("next_page") %>
+                                </a>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1"><%= t!("next_page") %></a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </nav>
+            <% } %>
+
+            <!-- delete profile modal -->
+            <% if nav_context.is_user_profiles { %>
+                <div class="modal fade" id="delete_profile_modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel"><%=t!("delete_profile")%></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        </div>
+                        <div class="modal-body">
+                            <%=t!("delete_profile_desc")%>
+                        </div>
+                        <div class="modal-footer">
+                        <form action="/profile/delete" method="post">
+                            <input id="id_input" name="id" type="hidden" value=""/>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"><%=t!("cancel_btn")%></button>
+                            <button type="submit" class="btn btn-primary"><%=t!("delete_txt")%></button>
+                        </form>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+
+    <% include!("./includes/footer.stpl"); %>
+</body>
+
+<% include!("./includes/extra_scripts.stpl"); %>
+<% if nav_context.is_user_profiles { %>
+    <script>
+        $(document).on("click", ".delete_profile_link", function () {
+        var delete_profile_id = $(this).data('id');
+        $("#delete_profile_modal #id_input").val(delete_profile_id);
+        $('#delete_profile_modal').modal('show')
+    });
+    </script>
+<% } %>
+
+</html>

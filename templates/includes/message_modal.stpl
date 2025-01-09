@@ -1,0 +1,26 @@
+<% use rust_i18n::t; %>
+
+<% if message_code.is_some() { %>
+    <% let message = message_code.as_ref().unwrap();
+        fn get_type_and_message(message: &String) -> (String, String) {
+            match message.as_str() {
+                "profile_added" => ("alert-success".to_string(), t!("alert_profile_added").to_string()),
+                "profile_updated" => ("alert-success".to_string(), t!("alert_profile_updated").to_string()),
+                "sign_in_ok" => ("alert-success".to_string(), t!("alert_sign_in_ok").to_string()),
+                "sign_out_ok" => ("alert-success".to_string(), t!("alert_sign_out_ok").to_string()),
+                "server_error" => ("alert-danger".to_string(),  t!("alert_server_error").to_string()),
+                "unauthorized" => ("alert-warning".to_string(),  t!("alert_unauthorized").to_string()),
+                "bad_request" => ("alert-danger".to_string(),  t!("alert_bad_request").to_string()),
+                "bot_detected" => ("alert-danger".to_string(),  t!("alert_bot_detected").to_string()),
+                "comment_added" => ("alert-success".to_string(), t!("alert_comment_added").to_string()),
+                "comment_removed" => ("alert-success".to_string(), t!("alert_comment_removed").to_string()),
+                _ => ("error".to_string(), "error".to_string())
+            }
+    } %>
+    <div class="mt-3 mb-3 alert  <%= get_type_and_message(&message).0 %> alert-dismissible fade show" role="alert">
+        <%= get_type_and_message(&message).1 %>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+<% } %>

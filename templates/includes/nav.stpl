@@ -1,0 +1,89 @@
+<% use rust_i18n::t; %>
+
+<nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
+    <a class="navbar-brand" href="/">
+        <%= t!("site_title") %>
+    </a><button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span
+            class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <% let home_active_class = if active_tab == "index" { "active" } else { "" }; %>
+            <li class="nav-item <%= home_active_class %>"><a class="nav-link" href="/"><%= t!("main_name") %></a>
+            </li>
+            <% if !nav_context.name.is_empty() { %>
+                <% let add_profile_active_class = if active_tab == "add_profile" { "active" } else { "" }; %>
+                <li class="nav-item <%= add_profile_active_class %>">
+                    <a class="nav-link" href="/add_profile"><%= t!("main_add_profile") %></a></li>
+            <% } %>
+        </ul>
+
+        <ul class="navbar-nav ml-auto">
+            <form action="/" class="form-inline pr-3">
+                <input class="form-control mr-sm-2" name="search" type="search"
+                <% if nav_context.search.is_some() { %>
+                    value="<%= nav_context.search.as_ref().unwrap().to_string() %>"
+                <% } else { %> 
+                    value=""
+                <% } %>
+                placeholder="<%= t!("search_placeholder") %>" aria-label="Search">
+                <button class="btn btn-primary my-2 my-sm-0" type="submit"><%= t!("search_text") %></button>
+              </form>
+            <li class="nav-item dropdown">
+                <!-- what user sees -->
+                <a class="nav-link dropdown-toggle" href="#" id="cities_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                   <%= t!(format!("city_dropdown_{}", &nav_context.current_city).as_str()) %> 
+                </a>
+
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="cities_dropdown">
+                    <% if !nav_context.current_city.is_empty() { %>
+                        <!-- add all if city selected -->
+                        <a class="dropdown-item" href="/">
+                            <%= t!("all_cities_dropdown") %>
+                        </a>
+                    <% } %>    
+                    <% for city in &nav_context.all_cities { %>
+                        <% if &nav_context.current_city != city { %>
+                            <a class="dropdown-item" href="/?filter_city=<%= city %>">
+                                <%= t!(format!("city_dropdown_{}", city).as_str()) %> 
+                            </a>
+                        <% } %>
+                    <% } %>
+                </div>
+            </li>
+        <% if nav_context.name.is_empty() { %>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="login_nav_dropdown" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            <%= t!("main_login") %>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="login_nav_dropdown">
+                    <a class="dropdown-item">
+                       <div id="g_id_onload"
+                          data-client_id="<%= nav_context.google_oauth_client_id %>"
+                          data-context="signin" data-ux_mode="popup" data-login_uri="<%= nav_context.google_oauth_sign_in_url %>"
+                          data-auto_prompt="false">
+                       </div>
+                       <div class="g_id_signin my-2 my-sm-0 ml-auto" data-type="standard" data-shape="pill" data-theme="outline"
+                          data-text="signin" data-size="large" data-locale="<%= rust_i18n::locale().to_string() %>" data-logo_alignment="left">
+                       </div>
+                    </a>
+                 </div>                 
+            </li>
+
+        <% } else { %>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            <%= nav_context.name %>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+                            <a class="dropdown-item" href="/?show_my=true"><%= t!("main_my_profiles") %></a>
+                            <a class="dropdown-item" href="/sign_out"><%= t!("main_logout") %></a>
+                </div>
+            </li>
+        <% } %>
+        </ul>
+    </div>
+</nav>

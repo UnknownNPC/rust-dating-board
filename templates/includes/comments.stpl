@@ -1,0 +1,103 @@
+<% use rust_i18n::t; %>
+<% 
+    fn get_error_code_by_field(name: &str, error_context: &ErrorContext) -> String {
+        let error = error_context.data.get(name);
+        error.map(|f| f.to_owned()).unwrap_or_default()
+    }
+    
+    fn get_translation(code: &String) -> String {
+        match code.as_str() {
+            "is_empty" => t!("validation_empty_field").to_string(),
+            "length" => t!("validation_length").to_string(),
+            "range" => t!("validation_range").to_string(),
+            _ => String::from("")
+        }
+    }
+%>    
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mt-3">
+            <div class="card-body">
+                <h3 class="card-title"><%=t!("comments")%></h5>
+                    <div class="row">
+                        <div class="col-md-6" style="height: 400px; overflow: auto;">
+                            <% for comment in all_comments { %>
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="card-subtitle mb-2 text-muted"><%= comment.user_name %></h6>
+                                        </div>
+                                        <p class="card-text"><%= comment.text %></p>
+                                        <p class="card-text"><small class="text-muted"><%= comment.date_create %></small></p>
+                                    </div>
+                                </div>
+                            <% } %>
+                            <% if all_comments.is_empty() { %>
+                                <div class="card mb-3">
+                                <div class="card-body">
+                                        <h5 class="text-center"><%=t!("no_comments_yet")%></h5>
+                                    </div>
+                                </div>
+                            <% } %>
+
+                        </div>
+
+                        <div class="col-md-6">
+                        <% let is_draft_comment = user_comment_opt.as_ref().map(|comment| comment.is_draft).unwrap_or_default(); %>
+                        <% if user_comment_opt.is_some() && !is_draft_comment { %>
+                            <% let user_comment = user_comment_opt.as_ref().unwrap();%>
+                            <div class="card">
+                                <div class="card-body">
+                                    <p class="card-text"><%=t!("comment_exists")%></p>
+                                    <div class="card">
+                                        <div class="card-body"> 
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="card-subtitle mb-2 text-muted"><%= &user_comment.user_name %></h6>
+                                            </div>
+                                            <p class="card-text"><%= &user_comment.text %></p>
+                                            <p class="card-text"><small class="text-muted"><%= &user_comment.date_create %></small></p>
+                                        </div>
+                                    </div>
+                                    <a type="button" href="#" id="delete_comment" class="btn btn-danger float-right mt-3"><%= t!("delete_txt") %></a>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <div class="card">
+                                <div class="card-body">
+                                    <% if is_auth { %>
+                                        <% if all_comments.is_empty() { %>
+                                            <h5 class="card-title"><%=t!("comment_first")%></h5>
+                                        <% } else { %>
+                                            <h5 class="card-title"><%=t!("comment_profile")%></h5>
+                                        <% } %>
+                                        <form action="/comment/add" method="post">
+                                            <div class="form-group">
+                                                <% let error_or_empty = get_translation(&get_error_code_by_field("text", error_context)); %>
+                                                <% let input_class_value = if error_or_empty.is_empty() { "" } else { "is-invalid" }; %>
+                                                <% let text_value = user_comment_opt.as_ref().map(|c| c.text.clone()).unwrap_or_default(); %>
+                                                <textarea name="text" class="form-control <%= input_class_value %> " 
+                                                    placeholder="<%=t!("comment_text_placeholder")%>" rows="3" maxlength="200"><%= text_value %></textarea>
+                                                <% if !error_or_empty.is_empty() { %>
+                                                    <div class="invalid-feedback">
+                                                        <%= error_or_empty %>
+                                                    </div>
+                                                <% } %>  
+                                                <input type="hidden" name="captcha_token" id="add_comment_captcha_token" />
+                                                <input type="hidden" name="profile_id" value="<%= profile_id %>" />
+
+                                            </div>
+                                            <button type="submit" class="btn btn-primary float-right"><%=t!("send")%></button>
+                                        </form>
+                                    <% } else { %>
+                                        <h5 class="card-title"><%=t!("send_a_comment")%></h5>
+                                        <p class="card-text"><%=t!("comment_for_auth_only")%></p>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% } %>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
